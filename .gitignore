@@ -5,7 +5,11 @@ build/
 dist/
 wheels/
 *.egg-info
+.idea
 
 # Virtual environments
 .venv
 .env
+
+# Personal files
+_helpers
