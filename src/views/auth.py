@@ -31,3 +31,15 @@ async def auth_google(db: DBDep, request: Request, response: Response):
     access_token = await AuthService(db).handle_google_callback(request)
     response.set_cookie("access_token", access_token, httponly=True)
     return {"status": "success", "access_token": access_token}
+
+
+@router.get("/github-login", summary="Login or signup with github")
+async def login_with_github(request: Request):
+    return await AuthService.get_github_login_url(request)
+
+
+@router.get("/github")
+async def auth_github(db: DBDep, request: Request, response: Response):
+    access_token = await AuthService(db).handle_github_callback(request)
+    response.set_cookie("access_token", access_token, httponly=True)
+    return {"status": "success", "access_token": access_token}

@@ -13,7 +13,7 @@ from src.exceptions import (
     UserNotFoundException,
     IncorrectPasswordException,
 )
-from src.schemas.users import UserAddGoogleDTO, UserAddDTO
+from src.schemas.users import UserAddGoogleDTO, UserAddDTO, UserAddGitHubDTO
 from src.services.base import BaseService
 
 
@@ -35,6 +35,19 @@ class AuthService(BaseService):
             "redirect_uri": settings.GOOGLE_REDIRECT_URL,
         },
     )
+    oauth.register(
+        name="github",
+        client_id=settings.GITHUB_CLIENT_ID,
+        client_secret=settings.GITHUB_CLIENT_SECRET,
+        authorize_url="https://github.com/login/oauth/authorize",
+        authorize_params=None,
+        access_token_url="https://github.com/login/oauth/access_token",
+        access_token_params=None,
+        refresh_token_url=None,
+        authorize_state=settings.OAUTH_SECRET_KEY,
+        redirect_uri=settings.GITHUB_REDIRECT_URL,
+        client_kwargs={"scope": "openid profile email"},
+    )
 
     @classmethod
     async def get_google_login_url(cls, request: Request):
@@ -43,6 +56,15 @@ class AuthService(BaseService):
         request.session["login_redirect"] = settings.FRONTEND_URL
         return await cls.oauth.google.authorize_redirect(
             request, settings.GOOGLE_REDIRECT_URL, prompt="consent"
+        )
+
+    @classmethod
+    async def get_github_login_url(cls, request: Request):
+        request.session.clear()
+        referer = request.headers.get("referer", settings.FRONTEND_URL)
+        request.session["login_redirect"] = referer
+        return await cls.oauth.github.authorize_redirect(
+            request, settings.GITHUB_REDIRECT_URL, prompt="consent"
         )
 
     @classmethod
@@ -115,6 +137,7 @@ class AuthService(BaseService):
             "https://www.googleapis.com/oauth2/v3/userinfo", token=token
         )
         user_info_json = user_info.json()
+        provider_id = str(user_info_json["sub"])
 
         user = await self.db.users.get_one_or_none(email=user_info_json["email"])
         if user is None:
@@ -123,6 +146,7 @@ class AuthService(BaseService):
                 name=user_info_json["name"],
                 avatar=user_info_json["picture"],
                 provider="google",
+                provider_id=provider_id,
             )
             user = await self.db.users.add_one(user_to_add)
 
@@ -134,6 +158,42 @@ class AuthService(BaseService):
                 "bio": user.bio,
                 "avatar": user.avatar,
                 "provider": user.provider,
+                "provider_id": provider_id,
+                "created_at": str(user.created_at),
+            }
+        )
+
+        await self.db.commit()
+        return access_token
+
+    async def handle_github_callback(self, request: Request) -> str:
+        """Login or register user"""
+        token = await self.oauth.github.authorize_access_token(request)
+        user_info = await self.oauth.github.get("https://api.github.com/user", token=token)
+        user_info_json = user_info.json()
+
+        provider_id = str(user_info_json["id"])
+        user = await self.db.users.get_one_or_none(provider_id=provider_id)
+
+
+        if user is None:
+            user_to_add = UserAddGitHubDTO(
+                name=user_info_json["name"],
+                avatar=user_info_json["avatar_url"],
+                provider="github",
+                provider_id=provider_id,
+            )
+            user = await self.db.users.add_one(user_to_add)
+
+        access_token = self.create_access_token(
+            {
+                "user_id": user.id,
+                "email": user.email,
+                "name": user.name,
+                "bio": user.bio,
+                "avatar": user.avatar,
+                "provider": user.provider,
+                "provider_id": provider_id,
                 "created_at": str(user.created_at),
             }
         )
