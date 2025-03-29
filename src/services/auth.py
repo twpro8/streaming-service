@@ -175,7 +175,6 @@ class AuthService(BaseService):
         provider_id = str(user_info_json["id"])
         user = await self.db.users.get_one_or_none(provider_id=provider_id)
 
-
         if user is None:
             user_to_add = UserAddGitHubDTO(
                 name=user_info_json["name"],

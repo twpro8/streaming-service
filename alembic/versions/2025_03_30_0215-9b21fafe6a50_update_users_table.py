@@ -21,17 +21,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     """Upgrade schema."""
-    op.add_column(
-        "users", sa.Column("provider_id", sa.String(length=255), nullable=True)
-    )
-    op.alter_column(
-        "users", "email", existing_type=sa.VARCHAR(length=255), nullable=True
-    )
+    op.add_column("users", sa.Column("provider_id", sa.String(length=255), nullable=True))
+    op.alter_column("users", "email", existing_type=sa.VARCHAR(length=255), nullable=True)
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.alter_column(
-        "users", "email", existing_type=sa.VARCHAR(length=255), nullable=False
-    )
+    op.alter_column("users", "email", existing_type=sa.VARCHAR(length=255), nullable=False)
     op.drop_column("users", "provider_id")
