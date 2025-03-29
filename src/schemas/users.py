@@ -8,11 +8,12 @@ from src.schemas.types import email_str, password_str
 
 class UserDTO(BaseModel):
     id: int
-    email: EmailStr
+    email: EmailStr | None
     name: str
     bio: str | None
     avatar: str | None
     provider: str | None
+    provider_id: str | None
     created_at: datetime
     is_admin: bool
     is_active: bool
@@ -49,3 +50,11 @@ class UserAddGoogleDTO(BaseModel):
     name: str
     avatar: str
     provider: str
+    provider_id: str
+
+
+class UserAddGitHubDTO(BaseModel):
+    name: str
+    avatar: str
+    provider: str
+    provider_id: str
