@@ -19,12 +19,13 @@ class UserORM(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    email: Mapped[str] = mapped_column(String(255), unique=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, nullable=True)
     name: Mapped[str] = mapped_column(String(255))
     hashed_password: Mapped[str | None] = mapped_column(String(255), default=None)
     bio: Mapped[str | None] = mapped_column(String(512), default=None)
     avatar: Mapped[str | None] = mapped_column(String(512), nullable=True)
     provider: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    provider_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=text("TIMEZONE('UTC', now())")
     )
