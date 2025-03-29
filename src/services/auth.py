@@ -9,6 +9,7 @@ from src.exceptions import InvalidCredentialsException, SignatureExpiredExceptio
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 class AuthService:
     @staticmethod
     def get_password_hash(password: str) -> str:
