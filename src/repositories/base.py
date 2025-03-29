@@ -1,7 +1,5 @@
-from select import select
-
 from pydantic import BaseModel
-from sqlalchemy import insert
+from sqlalchemy import insert, select
 from sqlalchemy.exc import NoResultFound
 
 from src.exceptions import ObjectNotFoundException
@@ -33,7 +31,7 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def add_one(self, data: BaseModel) -> BaseModel:
+    async def add_one(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         res = await self.session.execute(stmt)
         model = res.scalars().one()
