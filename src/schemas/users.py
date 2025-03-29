@@ -42,3 +42,10 @@ class UserLoginDTO(BaseSchema):
 
 class DBUserDTO(UserDTO):
     hashed_password: str
+
+
+class UserAddGoogleDTO(BaseModel):
+    email: email_str
+    name: str
+    avatar: str
+    provider: str

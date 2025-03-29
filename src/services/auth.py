@@ -7,17 +7,16 @@ from src.config import settings
 from src.exceptions import InvalidCredentialsException, SignatureExpiredException
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
 class AuthService:
-    @staticmethod
-    def get_password_hash(password: str) -> str:
-        return pwd_context.hash(password)
+    pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    @staticmethod
-    def verify_password(plain_password, hashed_password):
-        return pwd_context.verify(plain_password, hashed_password)
+    @classmethod
+    def get_password_hash(cls, password: str) -> str:
+        return cls.pwd_context.hash(password)
+
+    @classmethod
+    def verify_password(cls, plain_password, hashed_password):
+        return cls.pwd_context.verify(plain_password, hashed_password)
 
     @staticmethod
     def create_access_token(data: dict) -> str:
