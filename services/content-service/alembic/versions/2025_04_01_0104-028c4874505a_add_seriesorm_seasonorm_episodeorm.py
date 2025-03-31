@@ -38,9 +38,7 @@ def upgrade() -> None:
         sa.Column("series_id", sa.Integer(), nullable=False),
         sa.Column("title", sa.String(length=255), nullable=False),
         sa.Column("season_number", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["series_id"], ["series.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["series_id"], ["series.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
@@ -56,9 +54,7 @@ def upgrade() -> None:
             ["season_id"],
             ["seasons.id"],
         ),
-        sa.ForeignKeyConstraint(
-            ["series_id"], ["series.id"], ondelete="CASCADE"
-        ),
+        sa.ForeignKeyConstraint(["series_id"], ["series.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
 
