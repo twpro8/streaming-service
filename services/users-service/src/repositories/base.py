@@ -14,6 +14,11 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
+    async def get_filtered(self, *filter, **filter_by):
+        query = select(self.model).filter(*filter).filter_by(**filter_by)
+        res = await self.session.execute(query)
+        return [self.mapper.map_to_domain_entity(model) for model in res.scalars().all()]
+
     async def get_one(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
         res = await self.session.execute(query)
