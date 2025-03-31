@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from src.config import settings
+from src.repositories.favorites import FavoritesRepository
 from src.repositories.users import UsersRepository
 
 engine = create_async_engine(url=settings.DB_URL)
@@ -14,6 +15,7 @@ class DBManager:
     async def __aenter__(self):
         self.session = self.session_factory()
         self.users = UsersRepository(self.session)
+        self.favorites = FavoritesRepository(self.session)
         return self
 
     async def __aexit__(self, *args):
