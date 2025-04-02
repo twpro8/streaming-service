@@ -1,5 +1,6 @@
 from typing import Annotated
 
+from httpx import AsyncClient
 from fastapi import Depends, Request, HTTPException
 
 from src.db import DBManager, session_maker
@@ -31,3 +32,11 @@ def get_current_user_id(token: str = Depends(get_token)):
 
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
+
+
+async def get_async_client():
+    async with AsyncClient() as ac:
+        yield ac
+
+
+ACDep = Annotated[AsyncClient, Depends(get_async_client)]
