@@ -1,9 +1,14 @@
+from typing import List
+
 from src.schemas.films import FilmAddDTO
 from src.services.base import BaseService
 
 
 class FilmService(BaseService):
-    async def get_films(self):
+    async def get_films(self, films_ids: List[int | None] = None):
+        if films_ids is not None:
+            films = await self.db.films.get_objects_by_ids(films_ids)
+            return films
         films = await self.db.films.get_filtered()
         return films
 

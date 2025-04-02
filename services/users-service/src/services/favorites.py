@@ -1,3 +1,6 @@
+from typing import List
+
+from src.config import settings
 from src.schemas.favorites import FavoriteAddDTO
 from src.services.base import BaseService
 
@@ -9,6 +12,13 @@ class FavoriteService(BaseService):
         await self.db.commit()
         return favorite
 
-    async def get_my_favorites(self, user_id: int):
+    async def get_favorites(self, user_id: int) -> List[dict]:
         favorites = await self.db.favorites.get_filtered(user_id=user_id)
-        return favorites
+        films_ids = [favorite.film_id for favorite in favorites]
+        films = (
+            await self.ac.get(
+                f"{settings.CONTENT_SERVICE_URL}/films",
+                params=[("films_ids", film_id) for film_id in films_ids],
+            )
+        ).json()
+        return films

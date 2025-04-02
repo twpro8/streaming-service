@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from typing import List
+
+from fastapi import APIRouter, Query
 
 from src.schemas.films import FilmAddDTO
 from src.services.films import FilmService
@@ -9,8 +11,8 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep):
-    films = await FilmService(db).get_films()
+async def get_films(db: DBDep, films_ids: List[int | None] = Query(None)):
+    films = await FilmService(db).get_films(films_ids)
     return {"status": "success", "films": films}
 
 
