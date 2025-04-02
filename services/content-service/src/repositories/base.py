@@ -1,3 +1,5 @@
+from typing import List
+
 from pydantic import BaseModel
 from sqlalchemy import select, insert
 from sqlalchemy.exc import NoResultFound
@@ -18,6 +20,12 @@ class BaseRepository:
         query = select(self.model).filter(*filter).filter_by(**filter_by)
         res = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(model) for model in res.scalars().all()]
+
+    async def get_objects_by_ids(self, ids: List[int]):
+        query = select(self.model).filter(self.model.id.in_(ids))
+        res = await self.session.execute(query)
+        objects = res.scalars().all()
+        return [self.mapper.map_to_domain_entity(obj) for obj in objects]
 
     async def get_one(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
