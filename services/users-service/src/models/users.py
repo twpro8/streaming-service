@@ -1,18 +1,20 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import Table, Column, Integer, String, Boolean, ForeignKey, DateTime, text
+from sqlalchemy import String, Boolean, ForeignKey, DateTime, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base
 
 
-user_friend_association = Table(
-    "users_friends_association",
-    Base.metadata,
-    Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
-    Column("friend_id", Integer, ForeignKey("users.id"), primary_key=True),
-)
+class UserFriendORM(Base):
+    __tablename__ = "users_friends_association"
+
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    friend_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+
+    user: Mapped["UserORM"] = relationship(backref="friends_association")
+    friend: Mapped["UserORM"] = relationship()
 
 
 class UserORM(Base):
@@ -34,8 +36,8 @@ class UserORM(Base):
 
     # Relationships
     friends: Mapped[List["UserORM"]] = relationship(
-        secondary=user_friend_association,
-        primaryjoin=id == user_friend_association.c.user_id,
-        secondaryjoin=id == user_friend_association.c.friend_id,
-        backref="friend_of",
+        secondary="users_friends_association",
+        primaryjoin=id == UserFriendORM.user_id,
+        secondaryjoin=id == UserFriendORM.friend_id,
+        backref="friends_reverse",
     )

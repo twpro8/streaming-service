@@ -1,8 +1,8 @@
-"""Add UserORM
+"""Recreate users_friends_association to ORM
 
-Revision ID: ebf54b8fd0aa
+Revision ID: 9030dd4023c6
 Revises:
-Create Date: 2025-03-28 20:13:51.867232
+Create Date: 2025-04-02 21:04:22.461037
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "ebf54b8fd0aa"
+revision: str = "9030dd4023c6"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -24,12 +24,13 @@ def upgrade() -> None:
     op.create_table(
         "users",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("email", sa.String(length=255), nullable=False),
+        sa.Column("email", sa.String(length=255), nullable=True),
         sa.Column("name", sa.String(length=255), nullable=False),
         sa.Column("hashed_password", sa.String(length=255), nullable=True),
         sa.Column("bio", sa.String(length=512), nullable=True),
         sa.Column("avatar", sa.String(length=512), nullable=True),
         sa.Column("provider", sa.String(length=255), nullable=True),
+        sa.Column("provider_id", sa.String(length=255), nullable=True),
         sa.Column(
             "created_at",
             sa.DateTime(),
@@ -40,6 +41,15 @@ def upgrade() -> None:
         sa.Column("is_active", sa.Boolean(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("email"),
+    )
+    op.create_table(
+        "favorites",
+        sa.Column("id", sa.Integer(), nullable=False),
+        sa.Column("user_id", sa.Integer(), nullable=False),
+        sa.Column("film_id", sa.Integer(), nullable=False),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("user_id", "film_id", name="uq_user_film"),
     )
     op.create_table(
         "users_friends_association",
@@ -60,4 +70,5 @@ def upgrade() -> None:
 def downgrade() -> None:
     """Downgrade schema."""
     op.drop_table("users_friends_association")
+    op.drop_table("favorites")
     op.drop_table("users")
