@@ -26,6 +26,15 @@ class ObjectNotFoundHTTPException(MasterHTTPException):
     detail = "Object not found"
 
 
+class ObjectAlreadyExistsException(MasterException):
+    detail = "Object already exists"
+
+
+class ObjectAlreadyExistsHTTPException(MasterHTTPException):
+    status_code = 409
+    detail = "Object already exists"
+
+
 # JWT Exceptions
 class JWTTokenException(MasterException): ...
 
@@ -74,3 +83,22 @@ class UserNotFoundHTTPException(UsersException, ObjectNotFoundHTTPException):
 class IncorrectPasswordHTTPException(UsersHTTPException):
     status_code = 401
     detail = "Incorrect password"
+
+
+# Films and Series exceptions
+class FilmNotFoundException(ObjectNotFoundException):
+    detail = "Film not found"
+
+
+class FilmNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Film not found"
+
+
+class AlreadyInFavoritesException(ObjectAlreadyExistsException):
+    detail = "Film or TV Series is already in favorites"
+
+
+class AlreadyInFavoritesHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Film or TV Series is already in favorites"
