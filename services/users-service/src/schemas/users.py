@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from pydantic import BaseModel, EmailStr
 
@@ -58,3 +59,6 @@ class UserAddGitHubDTO(BaseModel):
     avatar: str
     provider: str
     provider_id: str
+
+class UserWithFavoritesDTO(UserDTO):
+    favorites_ids: List[int]
