@@ -72,6 +72,10 @@ class IncorrectPasswordException(UsersException):
     detail = "Incorrect password"
 
 
+class InvalidUsersDataException(UsersException):
+    detail = "Incorrect user data"
+
+
 class UsersHTTPException(MasterHTTPException): ...
 
 
@@ -83,6 +87,21 @@ class UserNotFoundHTTPException(UsersException, ObjectNotFoundHTTPException):
 class IncorrectPasswordHTTPException(UsersHTTPException):
     status_code = 401
     detail = "Incorrect password"
+
+
+class InvalidFriendIdException(UsersHTTPException):
+    status_code = 422
+    detail = "Friend ID cannot be equal to users one"
+
+
+# Friendships
+class FriendshipAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Friendship already exists"
+
+
+class FriendshipAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Friendship already exists"
 
 
 # Films and Series exceptions
