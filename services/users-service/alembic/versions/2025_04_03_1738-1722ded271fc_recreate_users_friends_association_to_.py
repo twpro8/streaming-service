@@ -62,12 +62,8 @@ def upgrade() -> None:
             server_default=sa.text("TIMEZONE('UTC', now())"),
             nullable=False,
         ),
-        sa.CheckConstraint(
-            "user_id != friend_id", name="check_not_self_friend"
-        ),
-        sa.ForeignKeyConstraint(
-            ["friend_id"], ["users.id"], ondelete="CASCADE"
-        ),
+        sa.CheckConstraint("user_id != friend_id", name="check_not_self_friend"),
+        sa.ForeignKeyConstraint(["friend_id"], ["users.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("user_id", "friend_id", name="uq_friendship"),
