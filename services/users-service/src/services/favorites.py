@@ -1,5 +1,3 @@
-from typing import List
-
 from src.config import settings
 from src.exceptions import (
     FilmNotFoundException,
@@ -21,12 +19,12 @@ class FavoriteService(BaseService):
             favorite = await self.db.favorites.add_one(favorite_to_add)
         except ObjectAlreadyExistsException:
             raise AlreadyInFavoritesException
+
         await self.db.commit()
         return favorite
 
-    async def get_favorites(self, user_id: int) -> List[dict] | []:
-        favorites = await self.db.favorites.get_filtered(user_id=user_id)
-        films_ids = {favorite.film_id for favorite in favorites}
+    async def get_favorites(self, user_id: int):
+        films_ids = await self.db.favorites.get_favorites_ids(user_id)
         if films_ids:
             films = (
                 await self.ac.get(
