@@ -16,6 +16,12 @@ from src.views.dependencies import DBDep, UserIdDep
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
+@router.get("/{user_id}/friends")
+async def get_my_friends(db: DBDep, user_id: UserIdDep):
+    friends = await FriendshipService(db).get_friends(user_id)
+    return {"status": "success", "friends": friends}
+
+
 @router.post("/{user_id}/friends/{friend_id}")
 async def add_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
     try:
@@ -26,6 +32,12 @@ async def add_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
         raise UserNotFoundHTTPException
     except InvalidUsersDataException:
         raise InvalidFriendIdException
+    return {"status": "success"}
+
+
+@router.delete("/{user_id}/friends/{friend_id}")
+async def remove_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
+    await FriendshipService(db).remove_friend(user_id, friend_id)
     return {"status": "success"}
 
 

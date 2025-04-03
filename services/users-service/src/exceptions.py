@@ -121,3 +121,7 @@ class AlreadyInFavoritesException(ObjectAlreadyExistsException):
 class AlreadyInFavoritesHTTPException(ObjectAlreadyExistsHTTPException):
     status_code = 409
     detail = "Film or TV Series is already in favorites"
+
+
+class FriendshipNotFoundException(ObjectNotFoundException):
+    detail = "Friendship not found"
