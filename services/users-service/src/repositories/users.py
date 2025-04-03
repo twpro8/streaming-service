@@ -3,7 +3,10 @@ from sqlalchemy.exc import NoResultFound
 
 from src.exceptions import ObjectNotFoundException
 from src.repositories.base import BaseRepository
-from src.repositories.mappers.mappers import UserDataMapper, DBUserDataMapper
+from src.repositories.mappers.mappers import (
+    UserDataMapper,
+    DBUserDataMapper,
+)
 
 from src.models.users import UserORM
 from src.schemas.users import UserDTO

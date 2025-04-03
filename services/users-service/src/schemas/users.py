@@ -60,5 +60,6 @@ class UserAddGitHubDTO(BaseModel):
     provider: str
     provider_id: str
 
+
 class UserWithFavoritesDTO(UserDTO):
     favorites_ids: List[int]

@@ -18,6 +18,6 @@ class UserService(BaseService):
             created_at=user.created_at,
             is_admin=user.is_admin,
             is_active=user.is_active,
-            favorites_ids=users_favorites
+            favorites_ids=users_favorites,
         )
         return user
