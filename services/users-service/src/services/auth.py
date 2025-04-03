@@ -126,6 +126,8 @@ class AuthService(BaseService):
                 "avatar": user.avatar,
                 "provider": user.provider,
                 "created_at": str(user.created_at),
+                "is_admin": str(user.is_admin),
+                "is_active": str(user.is_active),
             }
         )
         return access_token
@@ -160,6 +162,8 @@ class AuthService(BaseService):
                 "provider": user.provider,
                 "provider_id": provider_id,
                 "created_at": str(user.created_at),
+                "is_admin": str(user.is_admin),
+                "is_active": str(user.is_active),
             }
         )
 
