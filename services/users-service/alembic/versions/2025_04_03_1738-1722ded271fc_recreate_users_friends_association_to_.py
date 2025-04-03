@@ -1,8 +1,8 @@
 """Recreate users_friends_association to ORM
 
-Revision ID: 9030dd4023c6
+Revision ID: 1722ded271fc
 Revises:
-Create Date: 2025-04-02 21:04:22.461037
+Create Date: 2025-04-03 17:38:11.841229
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "9030dd4023c6"
+revision: str = "1722ded271fc"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -52,23 +52,30 @@ def upgrade() -> None:
         sa.UniqueConstraint("user_id", "film_id", name="uq_user_film"),
     )
     op.create_table(
-        "users_friends_association",
+        "friendships",
+        sa.Column("id", sa.Integer(), nullable=False),
         sa.Column("user_id", sa.Integer(), nullable=False),
         sa.Column("friend_id", sa.Integer(), nullable=False),
-        sa.ForeignKeyConstraint(
-            ["friend_id"],
-            ["users.id"],
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            server_default=sa.text("TIMEZONE('UTC', now())"),
+            nullable=False,
+        ),
+        sa.CheckConstraint(
+            "user_id != friend_id", name="check_not_self_friend"
         ),
         sa.ForeignKeyConstraint(
-            ["user_id"],
-            ["users.id"],
+            ["friend_id"], ["users.id"], ondelete="CASCADE"
         ),
-        sa.PrimaryKeyConstraint("user_id", "friend_id"),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("user_id", "friend_id", name="uq_friendship"),
     )
 
 
 def downgrade() -> None:
     """Downgrade schema."""
-    op.drop_table("users_friends_association")
+    op.drop_table("friendships")
     op.drop_table("favorites")
     op.drop_table("users")

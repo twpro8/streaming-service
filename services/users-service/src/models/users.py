@@ -1,20 +1,37 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy import String, Boolean, ForeignKey, DateTime, text
+from sqlalchemy import (
+    String,
+    Boolean,
+    ForeignKey,
+    DateTime,
+    text,
+    CheckConstraint,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base
 
 
-class UserFriendORM(Base):
-    __tablename__ = "users_friends_association"
+class FriendshipORM(Base):
+    __tablename__ = "friendships"
 
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
-    friend_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    friend_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=text("TIMEZONE('UTC', now())")
+    )
 
-    user: Mapped["UserORM"] = relationship(backref="friends_association")
-    friend: Mapped["UserORM"] = relationship()
+    __table_args__ = (
+        UniqueConstraint("user_id", "friend_id", name="uq_friendship"),
+        CheckConstraint("user_id != friend_id", name="check_not_self_friend"),
+    )
+
+    def __repr__(self):
+        return f"<Friendship(user_id={self.user_id}, friend_id={self.friend_id})>"
 
 
 class UserORM(Base):
@@ -36,8 +53,8 @@ class UserORM(Base):
 
     # Relationships
     friends: Mapped[List["UserORM"]] = relationship(
-        secondary="users_friends_association",
-        primaryjoin=id == UserFriendORM.user_id,
-        secondaryjoin=id == UserFriendORM.friend_id,
+        secondary="friendships",
+        primaryjoin=id == FriendshipORM.user_id,
+        secondaryjoin=id == FriendshipORM.friend_id,
         backref="friends_reverse",
     )
