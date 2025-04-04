@@ -2,7 +2,7 @@ from src.config import settings
 from src.exceptions import (
     FilmNotFoundException,
     ObjectAlreadyExistsException,
-    AlreadyInFavoritesException,
+    AlreadyInFavoritesException, FavoriteNotFoundException,
 )
 from src.schemas.favorites import FavoriteAddDTO
 from src.services.base import BaseService
@@ -34,3 +34,10 @@ class FavoriteService(BaseService):
             ).json()["films"]
             return films
         return []
+
+    async def remove_favorite(self, film_id: int) -> None:
+        favorite_exists = await self.db.favorites.get_one_or_none(film_id=film_id)
+        if favorite_exists is None:
+            raise FavoriteNotFoundException
+        await self.db.favorites.delete(film_id=film_id)
+        await self.db.commit()

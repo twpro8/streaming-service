@@ -125,3 +125,12 @@ class AlreadyInFavoritesHTTPException(ObjectAlreadyExistsHTTPException):
 
 class FriendshipNotFoundException(ObjectNotFoundException):
     detail = "Friendship not found"
+
+
+class FavoriteNotFoundException(ObjectNotFoundException):
+    detail = "Favorite content not found"
+
+
+class FavoriteNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Provided content is not in favorites"
