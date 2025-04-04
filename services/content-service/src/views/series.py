@@ -1,5 +1,7 @@
 from fastapi import APIRouter
 
+from src.schemas.series import SeriesAddRequestDTO
+from src.services.series import SeriesService
 from src.views.dependencies import DBDep, AdminDep
 
 
@@ -17,8 +19,9 @@ async def get_one_series(db: DBDep):
 
 
 @router.post("", dependencies=[AdminDep])
-async def add_new_series(db: DBDep):
-    ...
+async def add_new_series(db: DBDep, data: SeriesAddRequestDTO):
+    series = await SeriesService(db).add_series(data)
+    return {"status": "success", "series": series}
 
 
 @router.patch("", dependencies=[AdminDep])
