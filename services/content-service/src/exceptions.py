@@ -54,3 +54,9 @@ class InvalidCredentialsHTTPException(JWTTokenHTTPException):
 class NoTokenHTTPException(JWTTokenHTTPException):
     status_code = 401
     detail = "No token"
+
+
+# Permissions
+class PermissionDeniedHTTPException(MasterHTTPException):
+    status_code = 403
+    detail = "You do not have permission to access this resource"

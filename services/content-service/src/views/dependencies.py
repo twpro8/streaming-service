@@ -3,7 +3,7 @@ from typing import Annotated
 from fastapi import Depends, Request
 
 from src.db import DBManager, session_maker
-from src.exceptions import NoTokenHTTPException
+from src.exceptions import NoTokenHTTPException, PermissionDeniedHTTPException
 from src.services.auth import AuthService
 
 
@@ -32,8 +32,14 @@ def get_current_user_id(token: str = Depends(get_token)):
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
 
 
-def get_admin_rights(token: str = Depends(get_token)):
+def get_admin(token: str = Depends(get_token)):
     data = AuthService().decode_token(token)
-    return data.get("is_admin", None)
+    is_admin = data.get("is_admin", False)
 
-AdminDep = Annotated[UserIdDep, Depends(get_admin_rights)]
+    if isinstance(is_admin, str):
+        is_admin = is_admin.lower() == "true"
+
+    if not is_admin:
+        raise PermissionDeniedHTTPException
+
+AdminDep = Depends(get_admin)
