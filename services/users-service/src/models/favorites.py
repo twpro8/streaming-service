@@ -6,8 +6,12 @@ from src.models.base import Base
 
 class FavoritesORM(Base):
     __tablename__ = "favorites"
+
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
-    film_id: Mapped[int]
+    content_id: Mapped[int]
+    content_type: Mapped[str]
 
-    __table_args__ = (UniqueConstraint("user_id", "film_id", name="uq_user_film"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "content_id", "content_type", name="unique_favorite"),
+    )

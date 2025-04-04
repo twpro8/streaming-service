@@ -162,8 +162,8 @@ class AuthService(BaseService):
                 "provider": user.provider,
                 "provider_id": provider_id,
                 "created_at": str(user.created_at),
-                "is_admin": str(user.is_admin),
-                "is_active": str(user.is_active),
+                "is_admin": user.is_admin,
+                "is_active": user.is_active,
             }
         )
 
@@ -198,6 +198,8 @@ class AuthService(BaseService):
                 "provider": user.provider,
                 "provider_id": provider_id,
                 "created_at": str(user.created_at),
+                "is_admin": user.is_admin,
+                "is_active": user.is_active,
             }
         )
 
