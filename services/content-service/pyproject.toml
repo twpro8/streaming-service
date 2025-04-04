@@ -9,6 +9,7 @@ dependencies = [
     "asyncpg>=0.30.0",
     "black>=25.1.0",
     "fastapi[all]>=0.115.12",
+    "pyjwt>=2.10.1",
     "ruff>=0.11.2",
     "sqlalchemy>=2.0.40",
 ]

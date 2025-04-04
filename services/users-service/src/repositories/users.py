@@ -1,3 +1,5 @@
+from typing import List
+
 from sqlalchemy import select
 from sqlalchemy.exc import NoResultFound
 
@@ -25,3 +27,8 @@ class UsersRepository(BaseRepository):
         except NoResultFound:
             raise ObjectNotFoundException
         return DBUserDataMapper.map_to_domain_entity(model)
+
+    async def get_users_by_ids(self, user_ids: List[int]):
+        stmt = select(self.model).filter(UserORM.id.in_(user_ids))
+        models = (await self.session.execute(stmt)).scalars().all()
+        return [self.mapper.map_to_domain_entity(model) for model in models]

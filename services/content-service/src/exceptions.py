@@ -24,3 +24,39 @@ class ObjectNotFoundException(MasterException):
 class ObjectNotFoundHTTPException(MasterHTTPException):
     status_code = 404
     detail = "Object not found"
+
+
+# JWT Exceptions
+class JWTTokenException(MasterException): ...
+
+
+class SignatureExpiredException(JWTTokenException):
+    detail = "Signature has expired: JWT"
+
+
+class InvalidCredentialsException(JWTTokenException):
+    detail = "Could not validate credentials: JWT"
+
+
+class JWTTokenHTTPException(MasterHTTPException): ...
+
+
+class SignatureExpiredHTTPException(JWTTokenHTTPException):
+    status_code = 401
+    detail = "Signature has expired: JWT"
+
+
+class InvalidCredentialsHTTPException(JWTTokenHTTPException):
+    status_code = 401
+    detail = "Could not validate credentials: JWT"
+
+
+class NoTokenHTTPException(JWTTokenHTTPException):
+    status_code = 401
+    detail = "No token"
+
+
+# Permissions
+class PermissionDeniedHTTPException(MasterHTTPException):
+    status_code = 403
+    detail = "You do not have permission to access this resource"

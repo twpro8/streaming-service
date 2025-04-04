@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from sqlalchemy import insert, select
+from sqlalchemy import insert, select, delete
 from sqlalchemy.exc import NoResultFound, IntegrityError
 
 from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException
@@ -47,4 +47,8 @@ class BaseRepository:
 
     async def add_bulk(self, data: list[BaseModel]):
         stmt = insert(self.model).values([item.model_dump() for item in data])
+        await self.session.execute(stmt)
+
+    async def delete(self, **filter_by) -> None:
+        stmt = delete(self.model).filter_by(**filter_by)
         await self.session.execute(stmt)

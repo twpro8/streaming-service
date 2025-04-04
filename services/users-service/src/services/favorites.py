@@ -1,38 +1,26 @@
-from typing import List
-
-from src.config import settings
 from src.exceptions import (
-    FilmNotFoundException,
     ObjectAlreadyExistsException,
     AlreadyInFavoritesException,
 )
-from src.schemas.favorites import FavoriteAddDTO
+from src.schemas.favorites import FavoriteAddDTO, FavoriteAddRequestDTO
 from src.services.base import BaseService
 
 
 class FavoriteService(BaseService):
-    async def add_to_favorites(self, user_id: int, film_id: int):
+    async def add_to_favorites(self, user_id: int, favorite: FavoriteAddRequestDTO):
+        favorite_to_add = FavoriteAddDTO(
+            user_id=user_id, content_id=favorite.content_id, content_type=favorite.content_type
+        )
         try:
-            film_exists = await self.ac.get(f"{settings.CONTENT_SERVICE_URL}/films/{film_id}")
-            if film_exists.status_code != 200:
-                raise FilmNotFoundException
-
-            favorite_to_add = FavoriteAddDTO(user_id=user_id, film_id=film_id)
             favorite = await self.db.favorites.add_one(favorite_to_add)
         except ObjectAlreadyExistsException:
             raise AlreadyInFavoritesException
+
         await self.db.commit()
         return favorite
 
-    async def get_favorites(self, user_id: int) -> List[dict] | []:
+    async def get_favorites(self, user_id: int):
         favorites = await self.db.favorites.get_filtered(user_id=user_id)
-        films_ids = {favorite.film_id for favorite in favorites}
-        if films_ids:
-            films = (
-                await self.ac.get(
-                    f"{settings.CONTENT_SERVICE_URL}/films",
-                    params=[("films_ids", film_id) for film_id in films_ids],
-                )
-            ).json()["films"]
-            return films
-        return []
+        return favorites
+
+    async def remove_favorite(self, film_id: int) -> None: ...
