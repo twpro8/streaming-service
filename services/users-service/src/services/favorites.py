@@ -20,7 +20,9 @@ class FavoriteService(BaseService):
         return favorite
 
     async def get_favorites(self, user_id: int):
-        favorites = await self.db.favorites.get_filtered(user_id=user_id)
-        return favorites
+        films_ids = await self.db.favorites.get_ids(user_id=user_id, content_type="film")
+        films = (await self.adapter.content.get_films_by_ids(films_ids)).get("films")
+
+        return films
 
     async def remove_favorite(self, film_id: int) -> None: ...
