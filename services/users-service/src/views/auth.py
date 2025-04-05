@@ -11,14 +11,14 @@ router = APIRouter(prefix="/auth", tags=["Auth"])
 @router.post("/register")
 async def register(db: DBDep, user_data: UserAddRequestDTO):
     user = await AuthService(db).register_user(user_data)
-    return {"status": "ok", "user": user}
+    return {"status": "ok", "data": user}
 
 
 @router.post("/login")
 async def login_with_password(db: DBDep, user_data: UserLoginRequestDTO, response: Response):
     access_token = await AuthService(db).login_with_password(user_data)
     response.set_cookie("access_token", access_token, httponly=True)
-    return {"status": "success", "access_token": access_token}
+    return {"status": "ok"}
 
 
 @router.get("/google-login", summary="Login or signup with google")
@@ -30,7 +30,7 @@ async def login_with_google(request: Request):
 async def auth_google(db: DBDep, request: Request, response: Response):
     access_token = await AuthService(db).handle_google_callback(request)
     response.set_cookie("access_token", access_token, httponly=True)
-    return {"status": "success", "access_token": access_token}
+    return {"status": "ok"}
 
 
 @router.get("/github-login", summary="Login or signup with github")
@@ -42,4 +42,4 @@ async def login_with_github(request: Request):
 async def auth_github(db: DBDep, request: Request, response: Response):
     access_token = await AuthService(db).handle_github_callback(request)
     response.set_cookie("access_token", access_token, httponly=True)
-    return {"status": "success", "access_token": access_token}
+    return {"status": "ok"}

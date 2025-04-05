@@ -1,4 +1,6 @@
-from fastapi import APIRouter
+from typing import List
+
+from fastapi import APIRouter, Query
 
 from src.schemas.series import SeriesAddRequestDTO
 from src.services.series import SeriesService
@@ -9,19 +11,15 @@ router = APIRouter(prefix="/series", tags=["Series"])
 
 
 @router.get("")
-async def get_series(db: DBDep):
-    ...
-
-
-@router.get("/{series_id}")
-async def get_one_series(db: DBDep):
-    ...
+async def get_series(db: DBDep, ids: List[int | None] = Query()):
+    series = await SeriesService(db).get_series(ids)
+    return {"status": "ok", "data": series}
 
 
 @router.post("", dependencies=[AdminDep])
 async def add_new_series(db: DBDep, data: SeriesAddRequestDTO):
     series = await SeriesService(db).add_series(data)
-    return {"status": "success", "series": series}
+    return {"status": "ok", "data": series}
 
 
 @router.patch("", dependencies=[AdminDep])
