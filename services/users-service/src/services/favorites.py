@@ -1,8 +1,10 @@
+from typing import List
+
 from src.exceptions import (
     ObjectAlreadyExistsException,
-    AlreadyInFavoritesException,
+    AlreadyInFavoritesException, FavoriteNotFoundException, ObjectNotFoundException,
 )
-from src.schemas.favorites import FavoriteAddDTO, FavoriteAddRequestDTO
+from src.schemas.favorites import FavoriteAddDTO, FavoriteAddRequestDTO, ContentType
 from src.services.base import BaseService
 
 
@@ -19,13 +21,21 @@ class FavoriteService(BaseService):
         await self.db.commit()
         return favorite
 
-    async def get_favorites(self, user_id: int):
+    async def get_favorites(self, user_id: int) -> List:
         films_ids = await self.db.favorites.get_ids(user_id=user_id, content_type="film")
         series_ids = await self.db.favorites.get_ids(user_id=user_id, content_type="series")
 
-        films = (await self.adapter.content.get_films_by_ids(films_ids)).get("data")
-        series = (await self.adapter.content.get_series_by_ids(series_ids)).get("data")
+        films = (await self.adapter.content.get_films_by_ids(films_ids)).get("data", [])
+        series = (await self.adapter.content.get_series_by_ids(series_ids)).get("data", [])
 
-        return films + series
+        content = films + series
 
-    async def remove_favorite(self, film_id: int) -> None: ...
+        return content
+
+    async def remove_favorite(self, user_id: int, favorite_id: int) -> None:
+        try:
+            await self.db.favorites.get_one(id=favorite_id, user_id=user_id)
+        except ObjectNotFoundException:
+            raise FavoriteNotFoundException
+        await self.db.favorites.delete(id=favorite_id, user_id=user_id)
+        await self.db.commit()

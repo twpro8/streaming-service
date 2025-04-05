@@ -7,6 +7,8 @@ from src.exceptions import (
     FilmNotFoundHTTPException,
     AlreadyInFavoritesHTTPException,
     AlreadyInFavoritesException,
+    FavoriteNotFoundException,
+    FavoriteNotFoundHTTPException,
 )
 from src.schemas.favorites import FavoriteAddRequestDTO
 from src.views.dependencies import DBDep, UserIdDep
@@ -34,6 +36,10 @@ async def add_favorite(db: DBDep, user_id: UserIdDep, favorite: FavoriteAddReque
     return {"status": "ok", "data": favorite}
 
 
-@router.delete("/{film_id}", summary="Remove from favorites")
-async def remove_favorite(db: DBDep, film_id: int):
+@router.delete("/{favorite_id}", summary="Remove from favorites")
+async def remove_favorite(db: DBDep, user_id: UserIdDep, favorite_id: int):
+    try:
+        await FavoriteService(db).remove_favorite(user_id, favorite_id)
+    except FavoriteNotFoundException:
+        raise FavoriteNotFoundHTTPException
     return {"status": "ok"}
