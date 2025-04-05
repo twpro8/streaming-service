@@ -11,21 +11,15 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep, films_ids: List[int | None] = Query(None)):
-    films = await FilmService(db).get_films(films_ids)
-    return {"status": "success", "films": films}
-
-
-@router.get("/{film_id}")
-async def get_film(db: DBDep, film_id: int):
-    film = await FilmService(db).get_film(film_id)
-    return {"status": "success", "film": film}
+async def get_films(db: DBDep, ids: List[int | None] = Query(...)):
+    films = await FilmService(db).get_films(films_ids=ids)
+    return {"status": "ok", "data": films}
 
 
 @router.post("/", dependencies=[AdminDep])
 async def add_film(db: DBDep, film_data: FilmAddDTO):
     film = await FilmService(db).add_film(film_data)
-    return {"status": "success", "film": film}
+    return {"status": "ok", "data": film}
 
 
 @router.put("/{film_id}", dependencies=[AdminDep])

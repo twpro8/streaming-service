@@ -19,7 +19,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
 @router.get("/{user_id}/friends")
 async def get_my_friends(db: DBDep, user_id: UserIdDep):
     friends = await FriendshipService(db).get_friends(user_id)
-    return {"status": "success", "friends": friends}
+    return {"status": "ok", "data": friends}
 
 
 @router.post("/{user_id}/friends/{friend_id}")
@@ -32,16 +32,16 @@ async def add_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
         raise UserNotFoundHTTPException
     except InvalidUsersDataException:
         raise InvalidFriendIdException
-    return {"status": "success"}
+    return {"status": "ok"}
 
 
 @router.delete("/{user_id}/friends/{friend_id}")
 async def remove_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
     await FriendshipService(db).remove_friend(user_id, friend_id)
-    return {"status": "success"}
+    return {"status": "ok"}
 
 
 @router.get("")
 async def get_me(db: DBDep, user_id: UserIdDep):
     user = await UserService(db).get_user(user_id=user_id)
-    return {"status": "success", "user": user}
+    return {"status": "ok", "data": user}
