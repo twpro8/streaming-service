@@ -1,4 +1,5 @@
 import sys
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -9,6 +10,17 @@ from starlette.middleware.sessions import SessionMiddleware
 
 from src.config import settings
 from src.views import master_router
+
+from src.connectors.rabbit_conn import RabbitManager
+
+rabbit = RabbitManager()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await rabbit.connect()
+    yield
+    await rabbit.close()
 
 
 app = FastAPI()
