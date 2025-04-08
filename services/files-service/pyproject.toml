@@ -1,0 +1,14 @@
+[project]
+name = "files-service"
+version = "0.1.0"
+description = ""
+readme = ""
+requires-python = ">=3.13.2"
+dependencies = []
+
+[project.scripts]
+files-service = "files_service:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
