@@ -26,3 +26,14 @@ class FilmAddDTO(BaseSchema):
     duration: int
     file_id: int
     cover_id: int
+
+
+class FilmPatchRequestDTO(BaseSchema):
+    title: str | None = None
+    description: str | None = None
+    director: str | None = None
+    release_year: date | None = None
+    rating: float | None = None
+    duration: int | None = None
+    file_id: int | None = None
+    cover_id: int | None = None
