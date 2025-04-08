@@ -1,6 +1,7 @@
 from typing import List
 
-from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
+from pydantic import BaseModel
+
 from src.services.base import BaseService
 
 
@@ -16,16 +17,16 @@ class FilmService(BaseService):
         film = await self.db.films.get_one(id=film_id)
         return film
 
-    async def add_film(self, film_data: FilmAddDTO):
-        film = await self.db.films.add_one(film_data)
+    async def add_film(self, film_data: BaseModel):
+        film = await self.db.films.add(film_data)
         await self.db.commit()
         return film
 
-    async def update_entire_film(self, film_id: int, film_data: FilmAddDTO):
+    async def update_entire_film(self, film_id: int, film_data: BaseModel):
         await self.db.films.update(id=film_id, data=film_data)
         await self.db.commit()
 
-    async def partly_update_film(self, film_id: int, film_data: FilmPatchRequestDTO):
+    async def partly_update_film(self, film_id: int, film_data: BaseModel):
         await self.db.films.update(id=film_id, data=film_data, exclude_unset=True)
         await self.db.commit()
 

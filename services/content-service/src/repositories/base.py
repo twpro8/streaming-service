@@ -44,7 +44,7 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def add_one(self, data: BaseModel):
+    async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         res = await self.session.execute(stmt)
         model = res.scalars().one()

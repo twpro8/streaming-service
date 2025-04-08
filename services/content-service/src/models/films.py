@@ -15,5 +15,5 @@ class FilmORM(Base):
     release_year: Mapped[datetime]
     rating: Mapped[float] = mapped_column(DECIMAL(3, 1))
     duration: Mapped[int]
-    file_id: Mapped[int]
-    cover_id: Mapped[int]
+    file_id: Mapped[int | None]
+    cover_id: Mapped[int | None]
