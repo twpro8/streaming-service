@@ -1,3 +1,4 @@
+from src.adapters.rabbit_adapter import RabbitAdapter
 from src.adapters.service import ServiceAdapter
 from src.db import DBManager
 
@@ -8,3 +9,4 @@ class BaseService:
     def __init__(self, db: DBManager | None = None, adapter: ServiceAdapter | None = None) -> None:
         self.db = db
         self.adapter = adapter
+        self.rabbit_adapter = RabbitAdapter()

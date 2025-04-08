@@ -1,7 +1,7 @@
 from typing import List
 
 from pydantic import BaseModel
-from sqlalchemy import select, insert, delete
+from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound
 
 from src.exceptions import ObjectNotFoundException
@@ -44,7 +44,7 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def add_one(self, data: BaseModel):
+    async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
         res = await self.session.execute(stmt)
         model = res.scalars().one()
@@ -52,6 +52,14 @@ class BaseRepository:
 
     async def add_bulk(self, data: list[BaseModel]):
         stmt = insert(self.model).values([item.model_dump() for item in data])
+        await self.session.execute(stmt)
+
+    async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
+        stmt = (
+            update(self.model)
+            .values(**data.model_dump(exclude_unset=exclude_unset))
+            .filter_by(**filter_by)
+        )
         await self.session.execute(stmt)
 
     async def delete(self, **filter_by) -> None:

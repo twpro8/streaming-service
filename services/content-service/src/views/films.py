@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Query
 
-from src.schemas.films import FilmAddDTO
+from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
 from src.services.films import FilmService
 from src.views.dependencies import DBDep, AdminDep
 
@@ -23,11 +23,15 @@ async def add_film(db: DBDep, film_data: FilmAddDTO):
 
 
 @router.put("/{film_id}", dependencies=[AdminDep])
-async def update_entire_film(db: DBDep, film_id: int): ...
+async def update_entire_film(db: DBDep, film_id: int, film_data: FilmAddDTO):
+    await FilmService(db).update_entire_film(film_id, film_data)
+    return {"status": "ok"}
 
 
 @router.patch("/{film_id}", dependencies=[AdminDep])
-async def partly_update_film(db: DBDep, film_id: int): ...
+async def partly_update_film(db: DBDep, film_id: int, film_data: FilmPatchRequestDTO):
+    await FilmService(db).partly_update_film(film_id, film_data)
+    return {"status": "ok"}
 
 
 @router.delete("/{film_id}", dependencies=[AdminDep])

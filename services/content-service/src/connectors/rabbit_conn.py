@@ -46,7 +46,6 @@ class RabbitManager:
 
     async def consume(self, queue_name: str, callback: Callable):
         """Launches an asynchronous consumer"""
-        await self.connect()
         queue = await self.channel.declare_queue(queue_name, durable=True)
 
         async def wrapper(message: IncomingMessage):

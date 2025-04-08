@@ -9,8 +9,8 @@ class MasterException(Exception):
 
 
 class MasterHTTPException(HTTPException):
-    status_code = 500
-    detail = "Unexpected error"
+    status_code = 418
+    detail = "I'm a teapot"
 
     def __init__(self):
         super().__init__(status_code=self.status_code, detail=self.detail)

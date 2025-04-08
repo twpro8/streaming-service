@@ -15,7 +15,7 @@ class SeriesORM(Base):
     director: Mapped[str] = mapped_column(String(255))
     release_year: Mapped[date]
     rating: Mapped[float] = mapped_column(DECIMAL(3, 1))
-    cover_id: Mapped[int]
+    cover_id: Mapped[int | None]
 
     # Relationships
     seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="series")
@@ -41,7 +41,7 @@ class EpisodeORM(Base):
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
     duration: Mapped[int]
-    file_id: Mapped[int]
+    file_id: Mapped[int | None]
 
     # Relationships
     series: Mapped["SeriesORM"] = relationship()
