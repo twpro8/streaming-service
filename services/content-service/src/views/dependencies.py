@@ -25,9 +25,11 @@ def get_token(request: Request) -> str:
         raise NoTokenHTTPException
     return token
 
+
 def get_current_user_id(token: str = Depends(get_token)):
     data = AuthService().decode_token(token)
     return data.get("user_id", None)
+
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
 
@@ -41,5 +43,6 @@ def get_admin(token: str = Depends(get_token)):
 
     if not is_admin:
         raise PermissionDeniedHTTPException
+
 
 AdminDep = Depends(get_admin)

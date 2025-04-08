@@ -11,5 +11,6 @@ class SeriesAddRequestDTO(BaseSchema):
     rating: float
     cover_id: int
 
+
 class SeriesDTO(SeriesAddRequestDTO):
     id: int

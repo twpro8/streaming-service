@@ -20,3 +20,8 @@ class FilmService(BaseService):
         film = await self.db.films.add_one(film_data)
         await self.db.commit()
         return film
+
+    async def remove_film(self, film_id: int):
+        await self.db.films.delete(id=film_id)
+        await self.rabbit_adapter.send_message("film_delete", str(film_id))
+        await self.db.commit()

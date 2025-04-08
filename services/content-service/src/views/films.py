@@ -11,7 +11,7 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep, ids: List[int | None] = Query(...)):
+async def get_films(db: DBDep, ids: List[int | None] = Query(None)):
     films = await FilmService(db).get_films(films_ids=ids)
     return {"status": "ok", "data": films}
 
@@ -31,4 +31,6 @@ async def partly_update_film(db: DBDep, film_id: int): ...
 
 
 @router.delete("/{film_id}", dependencies=[AdminDep])
-async def delete_film(db: DBDep, film_id: int): ...
+async def delete_film(db: DBDep, film_id: int):
+    await FilmService(db).remove_film(film_id)
+    return {"status": "ok"}
