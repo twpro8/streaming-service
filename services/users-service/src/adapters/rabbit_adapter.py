@@ -10,5 +10,5 @@ class RabbitAdapter:
     async def send_message(self, queue_name: str, message: str):
         await self.rabbit.publish(queue_name, message)
 
-    async def receive_message(self, queue_name, function: Callable):
-        await self.rabbit.start_consumer(queue_name, function)
+    async def receive_message(self, queue_name, func: Callable):
+        await self.rabbit.start_consumer(queue_name, func)
