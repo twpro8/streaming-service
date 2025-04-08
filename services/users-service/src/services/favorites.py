@@ -2,7 +2,9 @@ from typing import List
 
 from src.exceptions import (
     ObjectAlreadyExistsException,
-    AlreadyInFavoritesException, FavoriteNotFoundException, ObjectNotFoundException,
+    AlreadyInFavoritesException,
+    FavoriteNotFoundException,
+    ObjectNotFoundException,
 )
 from src.schemas.favorites import FavoriteAddDTO, FavoriteAddRequestDTO, ContentType
 from src.services.base import BaseService

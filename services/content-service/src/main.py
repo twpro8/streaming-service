@@ -8,13 +8,14 @@ import uvicorn
 from fastapi import FastAPI
 
 from src.views import master_router
+from src import rabbitmq_manager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ...
+    await rabbitmq_manager.connect()
     yield
-    ...
+    await rabbitmq_manager.close()
 
 
 app = FastAPI(lifespan=lifespan)

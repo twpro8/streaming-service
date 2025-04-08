@@ -1,6 +1,5 @@
 from typing import List
 
-from src.connectors.rabbit_conn import RabbitManager
 from src.schemas.films import FilmAddDTO
 from src.services.base import BaseService
 
@@ -24,10 +23,5 @@ class FilmService(BaseService):
 
     async def remove_film(self, film_id: int):
         await self.db.films.delete(id=film_id)
-
-        rabbit = RabbitManager()
-        await rabbit.connect()
-        await rabbit.publish("film_delete", "%s" % film_id)
-        await rabbit.close()
-
+        await self.rabbit_adapter.send_message("film_delete", str(film_id))
         await self.db.commit()
