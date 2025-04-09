@@ -2,6 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Query
 
+from src.exceptions import FilmNotFoundException, FilmNotFoundHTTPException
 from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
 from src.services.films import FilmService
 from src.views.dependencies import DBDep, AdminDep
@@ -11,7 +12,7 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep, ids: List[int | None] = Query(None)):
+async def get_films(db: DBDep, ids: List[int | None] = Query(...)):
     films = await FilmService(db).get_films(films_ids=ids)
     return {"status": "ok", "data": films}
 
@@ -38,3 +39,12 @@ async def partly_update_film(db: DBDep, film_id: int, film_data: FilmPatchReques
 async def delete_film(db: DBDep, film_id: int):
     await FilmService(db).remove_film(film_id)
     return {"status": "ok"}
+
+
+@router.get("/{film_id}/exists")
+async def check_exists(db: DBDep, film_id: int):
+    try:
+        await FilmService(db).check_film_exists(film_id)
+    except FilmNotFoundException:
+        raise FilmNotFoundHTTPException
+    return {}

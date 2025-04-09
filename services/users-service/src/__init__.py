@@ -7,6 +7,4 @@ redis_manager = RedisManager(
     host=settings.REDIS_HOST,
     port=settings.REDIS_PORT,
 )
-rabbitmq_manager = RabbitManager(
-    amqp_url=settings.RABBITMQ_URL
-)
+rabbitmq_manager = RabbitManager(amqp_url=settings.RABBITMQ_URL)
