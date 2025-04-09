@@ -1,26 +1,26 @@
 from enum import Enum
 
-from pydantic import BaseModel
+from src.schemas.base import BaseSchema
 
 
 class ContentType(str, Enum):
-    film = "film"
+    films = "films"
     series = "series"
 
 
-class FavoriteDTO(BaseModel):
+class FavoriteDTO(BaseSchema):
     id: int
     user_id: int
     content_id: int
     content_type: ContentType
 
 
-class FavoriteAddRequestDTO(BaseModel):
+class FavoriteAddRequestDTO(BaseSchema):
     content_id: int
     content_type: ContentType
 
 
-class FavoriteAddDTO(BaseModel):
+class FavoriteAddDTO(BaseSchema):
     user_id: int
     content_id: int
     content_type: ContentType
