@@ -60,3 +60,22 @@ class NoTokenHTTPException(JWTTokenHTTPException):
 class PermissionDeniedHTTPException(MasterHTTPException):
     status_code = 403
     detail = "You do not have permission to access this resource"
+
+
+# Films
+class FilmNotFoundException(ObjectNotFoundException):
+    detail = "Film not found"
+
+
+class FilmNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Film not found"
+
+
+class SeriesNotFoundException(ObjectNotFoundException):
+    detail = "Film not found"
+
+
+class SeriesNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Film not found"

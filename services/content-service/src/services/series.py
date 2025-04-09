@@ -2,6 +2,7 @@ from typing import List
 
 from pydantic import BaseModel
 
+from src.exceptions import SeriesNotFoundException
 from src.services.base import BaseService
 
 
@@ -29,3 +30,8 @@ class SeriesService(BaseService):
     async def delete_series(self, series_id: int):
         await self.db.series.delete(id=series_id)
         await self.db.commit()
+
+    async def check_series_exists(self, series_id: int):
+        series = await self.db.series.get_one_or_none(id=series_id)
+        if series is None:
+            raise SeriesNotFoundException
