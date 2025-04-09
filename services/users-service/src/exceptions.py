@@ -9,8 +9,8 @@ class MasterException(Exception):
 
 
 class MasterHTTPException(HTTPException):
-    status_code = 500
-    detail = "Unexpected error"
+    status_code = 418
+    detail = "I'm a teapot"
 
     def __init__(self):
         super().__init__(status_code=self.status_code, detail=self.detail)
@@ -104,23 +104,28 @@ class FriendshipAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Friendship already exists"
 
 
+class FriendshipNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 204
+    detail = "Friendship does not exist"
+
+
 # Films and Series exceptions
-class FilmNotFoundException(ObjectNotFoundException):
-    detail = "Film not found"
+class ContentNotFoundException(ObjectNotFoundException):
+    detail = "Content not found"
 
 
-class FilmNotFoundHTTPException(ObjectNotFoundHTTPException):
+class ContentNotFoundHTTPException(ObjectNotFoundHTTPException):
     status_code = 404
-    detail = "Film not found"
+    detail = "Content not found"
 
 
 class AlreadyInFavoritesException(ObjectAlreadyExistsException):
-    detail = "Film or TV Series is already in favorites"
+    detail = "Content is already in favorites"
 
 
 class AlreadyInFavoritesHTTPException(ObjectAlreadyExistsHTTPException):
     status_code = 409
-    detail = "Film or TV Series is already in favorites"
+    detail = "Content is already in favorites"
 
 
 class FriendshipNotFoundException(ObjectNotFoundException):
@@ -128,9 +133,9 @@ class FriendshipNotFoundException(ObjectNotFoundException):
 
 
 class FavoriteNotFoundException(ObjectNotFoundException):
-    detail = "Favorite content not found"
+    detail = "Favorite not found"
 
 
 class FavoriteNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
+    status_code = 204
     detail = "Provided content is not in favorites"
