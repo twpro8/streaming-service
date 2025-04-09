@@ -1,12 +1,12 @@
-from src.adapters.rabbit_adapter import RabbitAdapter
-from src.adapters.service import ServiceAdapter
+from src.adapters.base import BaseRabbitAdapter
+from src.adapters.content import ContentHTTPAdapter
 from src.db import DBManager
 
 
 class BaseService:
     db: DBManager = None
 
-    def __init__(self, db: DBManager | None = None, adapter: ServiceAdapter | None = None) -> None:
+    def __init__(self, db: DBManager | None = None) -> None:
         self.db = db
-        self.adapter = adapter
-        self.rabbit_adapter = RabbitAdapter()
+        self.http_adapter = ContentHTTPAdapter()
+        self.rabbit_adapter = BaseRabbitAdapter()
