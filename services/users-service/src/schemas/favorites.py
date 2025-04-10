@@ -22,3 +22,17 @@ class FavoriteAddDTO(FavoriteAddRequestDTO):
 class FavoriteDTO(FavoriteAddDTO):
     id: int
     created_at: datetime
+
+
+class FavoriteResponseDTO(BaseSchema):
+    id: int
+    cover_id: int
+    content_type: ContentType
+    title: str
+    rating: float
+    created_at: datetime
+
+
+class FavoriteDeleteRequestDTO(BaseSchema):
+    content_id: int
+    content_type: ContentType
