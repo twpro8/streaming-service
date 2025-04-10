@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from enum import Enum
 
 from src.schemas.base import BaseSchema
@@ -8,19 +10,29 @@ class ContentType(str, Enum):
     series = "series"
 
 
-class FavoriteDTO(BaseSchema):
-    id: int
-    user_id: int
-    content_id: int
-    content_type: ContentType
-
-
 class FavoriteAddRequestDTO(BaseSchema):
     content_id: int
     content_type: ContentType
 
 
-class FavoriteAddDTO(BaseSchema):
+class FavoriteAddDTO(FavoriteAddRequestDTO):
     user_id: int
+
+
+class FavoriteDTO(FavoriteAddDTO):
+    id: int
+    created_at: datetime
+
+
+class FavoriteResponseDTO(BaseSchema):
+    id: int
+    cover_id: int
+    content_type: ContentType
+    title: str
+    rating: float
+    created_at: datetime
+
+
+class FavoriteDeleteRequestDTO(BaseSchema):
     content_id: int
     content_type: ContentType

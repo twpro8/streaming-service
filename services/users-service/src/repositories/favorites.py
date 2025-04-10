@@ -19,3 +19,14 @@ class FavoritesRepository(BaseRepository):
         )
         ids = (await self.session.execute(query)).scalars().all()
         return ids
+
+    async def get_favorites(self, user_id: int, page: int, per_page: int) -> List:
+        query = (
+            select(FavoritesORM)
+            .filter_by(user_id=user_id)
+            .order_by(FavoritesORM.id)
+            .limit(per_page)
+            .offset(page)
+        )
+        res = await self.session.execute(query)
+        return [self.mapper.map_to_domain_entity(model) for model in res.scalars().all()]

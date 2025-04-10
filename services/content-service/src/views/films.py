@@ -12,7 +12,7 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep, ids: List[int | None] = Query(...)):
+async def get_films(db: DBDep, ids: List[int | None] = Query(None)):
     films = await FilmService(db).get_films(films_ids=ids)
     return {"status": "ok", "data": films}
 

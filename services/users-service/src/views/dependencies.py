@@ -1,6 +1,7 @@
+from pydantic import BaseModel
 from typing import Annotated
 
-from fastapi import Depends, Request, HTTPException
+from fastapi import Depends, Request, HTTPException, Query
 
 from src.db import DBManager, session_maker
 from src.services.auth import AuthService
@@ -31,3 +32,11 @@ def get_current_user_id(token: str = Depends(get_token)):
 
 
 UserIdDep = Annotated[int, Depends(get_current_user_id)]
+
+
+class PaginationParams(BaseModel):
+    page: Annotated[int, Query(1, ge=1, le=999999)]
+    per_page: Annotated[int, Query(5, ge=1, le=30)]
+
+
+PaginationDep = Annotated[PaginationParams, Depends()]

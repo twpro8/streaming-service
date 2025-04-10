@@ -8,8 +8,8 @@ from src.exceptions import (
     FavoriteNotFoundException,
     FavoriteNotFoundHTTPException,
 )
-from src.schemas.favorites import FavoriteAddRequestDTO
-from src.views.dependencies import DBDep, UserIdDep
+from src.schemas.favorites import FavoriteAddRequestDTO, FavoriteDeleteRequestDTO
+from src.views.dependencies import DBDep, UserIdDep, PaginationDep
 from src.services.favorites import FavoriteService
 
 
@@ -17,8 +17,10 @@ router = APIRouter(prefix="/favorites", tags=["Favorites"])
 
 
 @router.get("", summary="Get my favorites")
-async def get_favorites(db: DBDep, user_id: UserIdDep):
-    favorites = await FavoriteService(db).get_favorites(user_id=user_id)
+async def get_favorites(db: DBDep, user_id: UserIdDep, pagination: PaginationDep):
+    favorites = await FavoriteService(db).get_favorites(
+        user_id=user_id, page=pagination.page, per_page=pagination.per_page
+    )
     return {"status": "ok", "data": favorites}
 
 
@@ -34,9 +36,9 @@ async def add_favorite(db: DBDep, user_id: UserIdDep, favorite: FavoriteAddReque
 
 
 @router.delete("/{favorite_id}", summary="Remove from favorites")
-async def remove_favorite(db: DBDep, user_id: UserIdDep, favorite_id: int):
+async def remove_favorite(db: DBDep, user_id: UserIdDep, favorites_data: FavoriteDeleteRequestDTO):
     try:
-        await FavoriteService(db).remove_favorite(user_id=user_id, favorite_id=favorite_id)
+        await FavoriteService(db).remove_favorite(user_id=user_id, favorites_data=favorites_data)
     except FavoriteNotFoundException:
         raise FavoriteNotFoundHTTPException
     return {"status": "ok"}
