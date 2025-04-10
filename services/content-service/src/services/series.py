@@ -14,7 +14,7 @@ class SeriesService(BaseService):
 
     async def get_series(self, series_ids: List[int | None] = None):
         if series_ids is not None:
-            series = await self.db.films.get(series_ids)
+            series = await self.db.series.get_objects_by_ids(series_ids)
             return series
         series = await self.db.series.get_filtered()
         return series
