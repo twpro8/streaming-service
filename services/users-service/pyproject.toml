@@ -13,6 +13,7 @@ dependencies = [
     "celery>=5.5.0",
     "fastapi[all]>=0.115.12",
     "passlib[bcrypt]>=1.7.4",
+    "prometheus-client>=0.21.1",
     "pyjwt>=2.10.1",
     "redis>=5.2.1",
     "ruff>=0.11.2",

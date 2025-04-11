@@ -11,6 +11,7 @@ from starlette.middleware.sessions import SessionMiddleware
 from src import rabbitmq_manager
 from src.config import settings
 from src.views import master_router
+from src.middleware import MetricsMiddleware
 
 
 @asynccontextmanager
@@ -22,6 +23,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=settings.FASTAPI_SECRET_KEY)
+app.add_middleware(MetricsMiddleware)
 app.include_router(master_router)
 
 
