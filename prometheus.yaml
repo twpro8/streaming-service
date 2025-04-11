@@ -6,3 +6,8 @@ scrape_configs:
     metrics_path: /metrics
     static_configs:
       - targets: ["172.17.0.1:8000"]
+
+  - job_name: "content-service"
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["172.17.0.1:8001"]

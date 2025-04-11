@@ -7,6 +7,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 import uvicorn
 from fastapi import FastAPI
 
+from src.middleware import MetricsMiddleware
 from src.views import master_router
 from src import rabbitmq_manager
 
@@ -19,6 +20,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(MetricsMiddleware)
 app.include_router(master_router)
 
 
