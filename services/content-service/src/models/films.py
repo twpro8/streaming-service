@@ -1,7 +1,11 @@
+# ruff: noqa
+
+from typing import List
+
 from datetime import datetime
 
 from sqlalchemy import String, DECIMAL
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base
 
@@ -17,3 +21,6 @@ class FilmORM(Base):
     duration: Mapped[int]
     file_id: Mapped[int | None]
     cover_id: Mapped[int | None]
+
+    # Relationships
+    comments: Mapped[List["CommentORM"]] = relationship(back_populates="film")

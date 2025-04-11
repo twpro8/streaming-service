@@ -25,7 +25,7 @@ class RabbitManager:
                 logging.info("✅ Connected to RabbitMQ")
             except Exception as e:
                 logging.error(f"❌ Failed to connect: {e}")
-                logging.info(f"⚠️ Retying to connect to RabbitMQ in 5 seconds")
+                logging.info("⚠️ Retying to connect to RabbitMQ in 5 seconds")
                 await asyncio.sleep(5)
                 await self.connect()
 
@@ -33,7 +33,7 @@ class RabbitManager:
         """Closes the connection to RabbitMQ"""
         if self.connection and not self.connection.is_closed:
             await self.connection.close()
-            logging.info(f"✅️ RabbitMQ connection closed")
+            logging.info("✅️ RabbitMQ connection closed")
 
     async def publish(self, queue_name: str, message: str):
         """Publishes a message to a RabbitMQ queue"""
