@@ -3,7 +3,7 @@
 from datetime import date
 from typing import List
 
-from sqlalchemy import String, DECIMAL, ForeignKey
+from sqlalchemy import String, DECIMAL, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.models.base import Base
@@ -34,6 +34,8 @@ class SeasonORM(Base):
     # Relationships
     series: Mapped["SeriesORM"] = relationship(back_populates="seasons")
     episodes: Mapped[List["EpisodeORM"]] = relationship(back_populates="season")
+
+    __table_args__ = (UniqueConstraint("series_id", "season_number", name="unique_season"),)
 
 
 class EpisodeORM(Base):
