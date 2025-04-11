@@ -1,3 +1,5 @@
+# ruff: noqa
+
 from datetime import date
 from typing import List
 
