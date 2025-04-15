@@ -1,17 +1,18 @@
-from typing import List
+from typing import Type, List
 
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound
 
+from src.models.base import Base
 from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 
 
 class BaseRepository:
     model = None
-    schema: BaseModel = None
-    mapper: DataMapper = None
+    schema: Type[BaseModel] = None
+    mapper: Type[DataMapper] = None
 
     def __init__(self, session):
         self.session = session

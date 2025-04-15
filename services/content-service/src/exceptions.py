@@ -79,3 +79,8 @@ class SeriesNotFoundException(ObjectNotFoundException):
 class SeriesNotFoundHTTPException(ObjectNotFoundHTTPException):
     status_code = 404
     detail = "Film not found"
+
+
+class EpisodeNotFoundException(ObjectNotFoundException):
+    detail = "Episode not found"
+
