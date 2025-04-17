@@ -1,19 +1,20 @@
 from src.schemas.base import BaseSchema
+from src.schemas.pydantic_types import TypeID, TypeTitle
 
 
 class SeasonAddRequestDTO(BaseSchema):
-    title: str
+    title: TypeTitle
     season_number: int
 
 
 class SeasonAddDTO(SeasonAddRequestDTO):
-    series_id: int
+    series_id: TypeID
 
 
 class SeasonPatchRequestDTO(BaseSchema):
-    title: str | None = None
+    title: TypeTitle | None = None
     season_number: int | None = None
 
 
 class SeasonDTO(SeasonAddDTO):
-    id: int
+    id: TypeID

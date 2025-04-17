@@ -3,37 +3,38 @@ from datetime import date
 from pydantic import BaseModel
 
 from src.schemas.base import BaseSchema
+from src.schemas.pydantic_types import TypeID, TypeTitle, TypeDuration, TypeRating
 
 
 class FilmDTO(BaseModel):
-    id: int
-    title: str
+    id: TypeID
+    title: TypeTitle
     description: str
     director: str
     release_year: date
-    rating: float
-    duration: int
-    file_id: int
-    cover_id: int
+    rating: TypeRating
+    duration: TypeDuration
+    file_id: TypeID
+    cover_id: TypeID
 
 
 class FilmAddDTO(BaseSchema):
-    title: str
+    title: TypeTitle
     description: str
     director: str
     release_year: date
-    rating: float
-    duration: int
-    file_id: int
-    cover_id: int
+    rating: TypeRating
+    duration: TypeDuration
+    file_id: TypeID
+    cover_id: TypeID
 
 
 class FilmPatchRequestDTO(BaseSchema):
-    title: str | None = None
-    description: str | None = None
-    director: str | None = None
-    release_year: date | None = None
-    rating: float | None = None
-    duration: int | None = None
-    file_id: int | None = None
-    cover_id: int | None = None
+    title: TypeTitle | None
+    description: str | None
+    director: str | None
+    release_year: date | None
+    rating: TypeRating | None
+    duration: TypeDuration | None
+    file_id: TypeID | None
+    cover_id: TypeID | None
