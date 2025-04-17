@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, Query
 
-from src.exceptions import FilmNotFoundException, FilmNotFoundHTTPException
 from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
 from src.services.films import FilmService
 from src.views.dependencies import DBDep, AdminDep

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 from src.services.episodes import EpisodeService
 from src.views.dependencies import AdminDep, DBDep, PaginationDep

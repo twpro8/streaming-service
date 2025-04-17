@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import APIRouter, Query
 
-from src.exceptions import SeriesNotFoundHTTPException
 from src.schemas.series import (
     SeriesAddRequestDTO,
     SeriesPatchRequestDTO,

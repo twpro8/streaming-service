@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound
 
-from src.models.base import Base
 from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 
