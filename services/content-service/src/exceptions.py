@@ -62,7 +62,7 @@ class PermissionDeniedHTTPException(MasterHTTPException):
     detail = "You do not have permission to access this resource"
 
 
-# Films
+# Content
 class FilmNotFoundException(ObjectNotFoundException):
     detail = "Film not found"
 
@@ -73,14 +73,17 @@ class FilmNotFoundHTTPException(ObjectNotFoundHTTPException):
 
 
 class SeriesNotFoundException(ObjectNotFoundException):
-    detail = "Film not found"
+    detail = "Series not found"
 
 
 class SeriesNotFoundHTTPException(ObjectNotFoundHTTPException):
     status_code = 404
-    detail = "Film not found"
+    detail = "Series not found"
 
 
 class EpisodeNotFoundException(ObjectNotFoundException):
     detail = "Episode not found"
 
+
+class SeasonNotFoundException(ObjectNotFoundException):
+    detail = "Season not found"

@@ -1,6 +1,7 @@
 from typing import Annotated
 
 from fastapi import Depends, Request
+from pydantic import BaseModel, Field
 
 from src.db import DBManager, session_maker
 from src.exceptions import NoTokenHTTPException, PermissionDeniedHTTPException
@@ -46,3 +47,11 @@ def get_admin(token: str = Depends(get_token)):
 
 
 AdminDep = Depends(get_admin)
+
+
+class PaginationParams(BaseModel):
+    page: int = Field(default=1, ge=1)
+    per_page: int = Field(default=5, ge=1, le=30)
+
+
+PaginationDep = Annotated[PaginationParams, Depends()]

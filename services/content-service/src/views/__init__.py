@@ -12,4 +12,3 @@ master_router.include_router(router)
 master_router.include_router(seasons_router)
 master_router.include_router(episodes_router)
 master_router.include_router(metrics_router)
-

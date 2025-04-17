@@ -2,7 +2,7 @@ from typing import List
 
 from fastapi import APIRouter, Query
 
-from src.exceptions import SeriesNotFoundException, SeriesNotFoundHTTPException
+from src.exceptions import SeriesNotFoundHTTPException
 from src.schemas.series import (
     SeriesAddRequestDTO,
     SeriesPatchRequestDTO,
@@ -43,12 +43,3 @@ async def partly_update_series(db: DBDep, series_id: int, series_data: SeriesPat
 async def delete_series(db: DBDep, series_id: int):
     await SeriesService(db).delete_series(series_id)
     return {"status": "ok"}
-
-
-@router.get("/{series_id}/exists")
-async def check_exists(db: DBDep, series_id: int):
-    try:
-        await SeriesService(db).check_series_exists(series_id)
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
-    return {}

@@ -39,12 +39,3 @@ async def partly_update_film(db: DBDep, film_id: int, film_data: FilmPatchReques
 async def delete_film(db: DBDep, film_id: int):
     await FilmService(db).remove_film(film_id)
     return {"status": "ok"}
-
-
-@router.get("/{film_id}/exists")
-async def check_exists(db: DBDep, film_id: int):
-    try:
-        await FilmService(db).check_film_exists(film_id)
-    except FilmNotFoundException:
-        raise FilmNotFoundHTTPException
-    return {}
