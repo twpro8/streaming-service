@@ -25,4 +25,3 @@ class SeasonDataMapper(DataMapper):
 class EpisodeDataMapper(DataMapper):
     db_model = EpisodeORM
     schema = EpisodeDTO
-
