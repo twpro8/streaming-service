@@ -108,9 +108,13 @@ class SeasonNotFoundHTTPException(ObjectNotFoundHTTPException):
     detail = "Season not found"
 
 
-class EpisodeAlreadyDeletedHTTPException(ObjectNotFoundHTTPException):
+class EpisodeDoesNotExistHTTPException(ObjectNotFoundHTTPException):
     status_code = 204
-    detail = "Episode not found"
+    detail = "Episode does not exist"
+
+
+class EpisodeDoesNotExistException(ObjectNotFoundException):
+    detail = "Episode does not exist"
 
 
 class EpisodeAlreadyExistsException(ObjectAlreadyExistsException):
@@ -120,3 +124,39 @@ class EpisodeAlreadyExistsException(ObjectAlreadyExistsException):
 class EpisodeAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     status_code = 409
     detail = "Episode with the provided data already exists."
+
+
+class UniqueViolationException(MasterException):
+    detail = "Unique violation error"
+
+
+class UniqueViolationHTTPException(MasterHTTPException):
+    status_code = 409
+    detail = "Unique violation error"
+
+
+class UniqueEpisodePerSeasonException(UniqueViolationException):
+    detail = "Unique episode per season already exists"
+
+
+class UniqueSeasonPerSeriesException(UniqueViolationException):
+    detail = "Unique episode per season already exists"
+
+
+class UniqueFileIDException(UniqueViolationException):
+    detail = "Unique file id already exists"
+
+
+class UniqueEpisodePerSeasonHTTPException(UniqueViolationHTTPException):
+    status_code = 409
+    detail = "Unique episode per season already exists"
+
+
+class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
+    status_code = 409
+    detail = "Unique episode per season already exists"
+
+
+class UniqueFileIDHTTPException(UniqueViolationHTTPException):
+    status_code = 409
+    detail = "Unique file id already exists"
