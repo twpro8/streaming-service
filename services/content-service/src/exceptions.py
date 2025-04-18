@@ -26,6 +26,15 @@ class ObjectNotFoundHTTPException(MasterHTTPException):
     detail = "Object not found"
 
 
+class ObjectAlreadyExistsException(MasterException):
+    detail = "Object already exists"
+
+
+class ObjectAlreadyExistsHTTPException(MasterHTTPException):
+    status_code = 409
+    detail = "Object already exists"
+
+
 # JWT Exceptions
 class JWTTokenException(MasterException): ...
 
@@ -85,5 +94,29 @@ class EpisodeNotFoundException(ObjectNotFoundException):
     detail = "Episode not found"
 
 
+class EpisodeNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Episode not found"
+
+
 class SeasonNotFoundException(ObjectNotFoundException):
     detail = "Season not found"
+
+
+class SeasonNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Season not found"
+
+
+class EpisodeAlreadyDeletedHTTPException(ObjectNotFoundHTTPException):
+    status_code = 204
+    detail = "Episode not found"
+
+
+class EpisodeAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Episode already exists"
+
+
+class EpisodeAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Episode with the provided data already exists."

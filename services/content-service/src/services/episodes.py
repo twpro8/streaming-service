@@ -8,6 +8,8 @@ from src.exceptions import (
     EpisodeNotFoundException,
     SeriesNotFoundException,
     SeasonNotFoundException,
+    ObjectAlreadyExistsException,
+    EpisodeAlreadyExistsException,
 )
 
 
@@ -59,7 +61,10 @@ class EpisodeService(BaseService):
             raise SeriesNotFoundException
         if not await self.check_season_exists(data.season_id):
             raise SeasonNotFoundException
-        new_episode = await self.db.episodes.add(data)
+        try:
+            new_episode = await self.db.episodes.add(data)
+        except ObjectAlreadyExistsException:
+            raise EpisodeAlreadyExistsException
         await self.db.commit()
         return new_episode
 
