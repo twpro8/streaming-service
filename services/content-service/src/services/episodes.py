@@ -8,8 +8,10 @@ from src.exceptions import (
     EpisodeNotFoundException,
     SeriesNotFoundException,
     SeasonNotFoundException,
-    ObjectAlreadyExistsException,
-    EpisodeAlreadyExistsException,
+    EpisodeDoesNotExistException,
+    UniqueEpisodePerSeasonException,
+    UniqueSeasonPerSeriesException,
+    UniqueFileIDException,
 )
 
 
@@ -62,9 +64,13 @@ class EpisodeService(BaseService):
         if not await self.check_season_exists(data.season_id):
             raise SeasonNotFoundException
         try:
-            new_episode = await self.db.episodes.add(data)
-        except ObjectAlreadyExistsException:
-            raise EpisodeAlreadyExistsException
+            new_episode = await self.db.episodes.add_episode(data)
+        except UniqueEpisodePerSeasonException:
+            raise UniqueEpisodePerSeasonException
+        except UniqueSeasonPerSeriesException:
+            raise UniqueSeasonPerSeriesException
+        except UniqueFileIDException:
+            raise UniqueFileIDException
         await self.db.commit()
         return new_episode
 
@@ -78,7 +84,14 @@ class EpisodeService(BaseService):
             raise SeriesNotFoundException
         if data.season_id and not await self.check_season_exists(data.season_id):
             raise SeasonNotFoundException
-        await self.db.episodes.update(id=episode_id, data=data)
+        try:
+            await self.db.episodes.update_episode(episode_id=episode_id, episode_data=data)
+        except UniqueEpisodePerSeasonException:
+            raise UniqueEpisodePerSeasonException
+        except UniqueSeasonPerSeriesException:
+            raise UniqueSeasonPerSeriesException
+        except UniqueFileIDException:
+            raise UniqueFileIDException
         await self.db.commit()
 
     async def delete_episode(self, episode_id: int, data: EpisodeDeleteRequestDTO):
@@ -90,7 +103,7 @@ class EpisodeService(BaseService):
         if not await self.check_season_exists(data.season_id):
             raise SeasonNotFoundException
         if not await self.check_episode_exists(episode_id):
-            raise EpisodeNotFoundException
+            raise EpisodeDoesNotExistException
         await self.db.episodes.delete(
             id=episode_id, series_id=data.series_id, season_id=data.season_id
         )

@@ -1,5 +1,13 @@
+from pydantic import BaseModel
 from sqlalchemy import select, func
+from sqlalchemy.exc import IntegrityError
+from asyncpg.exceptions import UniqueViolationError
 
+from src.exceptions import (
+    UniqueEpisodePerSeasonException,
+    UniqueSeasonPerSeriesException,
+    UniqueFileIDException,
+)
 from src.repositories.base import BaseRepository
 from src.models.series import EpisodeORM
 from src.schemas.episodes import EpisodeDTO
@@ -33,3 +41,32 @@ class EpisodeRepository(BaseRepository):
         res = await self.session.execute(query)
         episodes = res.scalars().all()
         return [EpisodeDataMapper.map_to_domain_entity(ep) for ep in episodes]
+
+    async def add_episode(self, episode_data: BaseModel):
+        try:
+            episode = await self.add(data=episode_data)
+        except IntegrityError as e:
+            if isinstance(e.orig.__cause__, UniqueViolationError):
+                match getattr(e.orig.__cause__, "constraint_name", None):
+                    case "unique_episode_per_season":
+                        raise UniqueEpisodePerSeasonException
+                    case "unique_season_per_series":
+                        raise UniqueSeasonPerSeriesException
+                    case "episodes_file_id_key":
+                        raise UniqueFileIDException
+            raise
+        return episode
+
+    async def update_episode(self, episode_id: int, episode_data: EpisodeDTO):
+        try:
+            await self.update(id=episode_id, data=episode_data)
+        except IntegrityError as e:
+            if isinstance(e.orig.__cause__, UniqueViolationError):
+                match getattr(e.orig.__cause__, "constraint_name", None):
+                    case "unique_episode_per_season":
+                        raise UniqueEpisodePerSeasonException
+                    case "unique_season_per_series":
+                        raise UniqueSeasonPerSeriesException
+                    case "episodes_file_id_key":
+                        raise UniqueFileIDException
+            raise
