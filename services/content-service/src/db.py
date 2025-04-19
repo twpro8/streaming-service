@@ -4,6 +4,7 @@ from src.config import settings
 from src.repositories.films import FilmRepository
 from src.repositories.seasons import SeasonRepository
 from src.repositories.series import SeriesRepository
+from src.repositories.episodes import EpisodeRepository
 
 
 engine = create_async_engine(url=settings.DB_URL)
@@ -19,6 +20,7 @@ class DBManager:
         self.films = FilmRepository(self.session)
         self.series = SeriesRepository(self.session)
         self.seasons = SeasonRepository(self.session)
+        self.episodes = EpisodeRepository(self.session)
         return self
 
     async def __aexit__(self, *args):

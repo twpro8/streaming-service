@@ -1,28 +1,29 @@
 from datetime import date
 
 from src.schemas.base import BaseSchema
+from src.schemas.pydantic_types import TypeID, TypeTitle, TypeRating
 
 
 class SeriesAddRequestDTO(BaseSchema):
-    title: str
+    title: TypeTitle
     description: str
     director: str
     release_year: date
-    rating: float
+    rating: TypeRating
     cover_id: int | None = None
 
 
 class SeriesDTO(SeriesAddRequestDTO):
-    id: int
+    id: TypeID
 
 
 class SeriesPatchRequestDTO(BaseSchema):
-    title: str | None = None
-    description: str | None = None
-    director: str | None = None
-    release_year: date | None = None
-    rating: float | None = None
-    cover_id: int | None = None
+    title: TypeTitle | None
+    description: str | None
+    director: str | None
+    release_year: date | None
+    rating: TypeRating | None
+    cover_id: int | None
 
 
 class SeriesPutRequestDTO(SeriesAddRequestDTO):

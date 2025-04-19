@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     RABBITMQ_HOST: str
     RABBITMQ_PORT: int
 
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR"]
+
     @property
     def RABBITMQ_URL(self):
         return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}"

@@ -35,7 +35,9 @@ class SeasonORM(Base):
     series: Mapped["SeriesORM"] = relationship(back_populates="seasons")
     episodes: Mapped[List["EpisodeORM"]] = relationship(back_populates="season")
 
-    __table_args__ = (UniqueConstraint("series_id", "season_number", name="unique_season"),)
+    __table_args__ = (
+        UniqueConstraint("series_id", "season_number", name="unique_season_per_series"),
+    )
 
 
 class EpisodeORM(Base):
@@ -46,8 +48,12 @@ class EpisodeORM(Base):
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
     duration: Mapped[int]
-    file_id: Mapped[int | None]
+    file_id: Mapped[int | None] = mapped_column(unique=True)
 
     # Relationships
     series: Mapped["SeriesORM"] = relationship()
     season: Mapped["SeasonORM"] = relationship(back_populates="episodes")
+
+    __table_args__ = (
+        UniqueConstraint("season_id", "episode_number", name="unique_episode_per_season"),
+    )

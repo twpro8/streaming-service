@@ -2,7 +2,7 @@
 
 from typing import List
 
-from datetime import datetime
+from datetime import date
 
 from sqlalchemy import String, DECIMAL
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -16,11 +16,11 @@ class FilmORM(Base):
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(512))
     director: Mapped[str] = mapped_column(String(255))
-    release_year: Mapped[datetime]
+    release_year: Mapped[date]
     rating: Mapped[float] = mapped_column(DECIMAL(3, 1))
     duration: Mapped[int]
-    file_id: Mapped[int | None]
-    cover_id: Mapped[int | None]
+    file_id: Mapped[int | None] = mapped_column(unique=True)
+    cover_id: Mapped[int | None] = mapped_column(unique=True)
 
     # Relationships
     comments: Mapped[List["CommentORM"]] = relationship(back_populates="film")

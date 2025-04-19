@@ -2,7 +2,6 @@ from typing import List
 
 from pydantic import BaseModel
 
-from src.exceptions import FilmNotFoundException
 from src.services.base import BaseService
 
 
@@ -35,8 +34,3 @@ class FilmService(BaseService):
         await self.db.films.delete(id=film_id)
         await self.rabbit_adapter.film_deletion(film_id)
         await self.db.commit()
-
-    async def check_film_exists(self, film_id: int):
-        film = await self.db.films.get_one_or_none(id=film_id)
-        if film is None:
-            raise FilmNotFoundException
