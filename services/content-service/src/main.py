@@ -9,7 +9,6 @@ from fastapi import FastAPI
 
 from src.middleware import MetricsMiddleware
 from src.views import master_router
-from src import rabbitmq_manager
 from src.log_config import configure_logging
 
 
@@ -19,9 +18,9 @@ configure_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await rabbitmq_manager.connect()
+    ...
     yield
-    await rabbitmq_manager.close()
+    ...
 
 
 app = FastAPI(lifespan=lifespan)
