@@ -12,6 +12,11 @@ from src import rabbitmq_manager
 from src.config import settings
 from src.views import master_router
 from src.middleware import MetricsMiddleware
+from src.log_config import configure_logging
+
+
+# Configuring the logging level and format
+configure_logging()
 
 
 @asynccontextmanager
