@@ -61,7 +61,6 @@ class RabbitManager:
         await queue.consume(callback=wrapper, no_ack=False)
 
     async def publish_to_exchange(self, exchange_name: str, routing_key: str, message: str):
-        await self.connect()
         exchange = await self.channel.declare_exchange(
             name=exchange_name, type="topic", durable=True
         )
@@ -77,4 +76,3 @@ class RabbitManager:
         log.info(
             f'RabbitMQ: Sent to exchange "{exchange_name}" with routing key "{routing_key}" message "{message}"'
         )
-        await self.close()

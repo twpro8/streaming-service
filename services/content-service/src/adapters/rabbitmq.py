@@ -10,7 +10,7 @@ class RabbitAdapter:
         self.rabbit = rabbit
         self.exchange_name = exchange_name
 
-    async def publish_to_exchange(self, event: str, message: BaseModel):
+    async def publish_to_exchange(self, event: str, message: BaseModel | dict):
         """
         Publishes a message about a specific event to exchange
         Examples:
@@ -18,7 +18,9 @@ class RabbitAdapter:
         Event — "v1.film.created" => "version.subject.event"
         Message — {"id": 123}
         """
-        message = message.model_dump()
+        if isinstance(message, BaseModel):
+            message = message.model_dump()
+
         await self.rabbit.publish_to_exchange(
             exchange_name=self.exchange_name,
             routing_key=event,
