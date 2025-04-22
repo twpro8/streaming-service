@@ -8,7 +8,6 @@ import uvicorn
 from fastapi import FastAPI
 from starlette.middleware.sessions import SessionMiddleware
 
-from src import rabbitmq_manager
 from src.config import settings
 from src.views import master_router
 from src.middleware import MetricsMiddleware
@@ -21,9 +20,9 @@ configure_logging()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await rabbitmq_manager.connect()
+    ...
     yield
-    await rabbitmq_manager.connect()
+    ...
 
 
 app = FastAPI(lifespan=lifespan)

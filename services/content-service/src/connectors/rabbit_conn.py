@@ -1,12 +1,12 @@
-import logging
-
-from typing import Callable
 import asyncio
+
+import logging as log
+from typing import Callable
 
 from aio_pika import connect_robust, Message, DeliveryMode, IncomingMessage
 
 
-log = logging.getLogger(__name__)
+log.basicConfig(level=log.INFO)
 
 
 class RabbitManager:
@@ -15,14 +15,18 @@ class RabbitManager:
         self.connection = None
         self.channel = None
 
+    async def __aenter__(self):
+        await self.connect()
+        return self
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
+
     async def connect(self):
-        """Creates an asynchronous connection with RabbitMQ"""
         if not self.connection or self.connection.is_closed:
-            log.info("RabbitMQ: Connecting...")
             try:
-                self.connection = await connect_robust(self.amqp_url)
+                self.connection = await connect_robust(url=self.amqp_url)
                 self.channel = await self.connection.channel()
-                log.info("RabbitMQ: Connected")
             except Exception as e:
                 log.error(f"RabbitMQ: Failed to connect: {e}")
                 log.info("RabbitMQ: Retying to connect in 5 seconds")
@@ -30,39 +34,47 @@ class RabbitManager:
                 await self.connect()
 
     async def close(self):
-        """Closes the connection to RabbitMQ"""
         if self.connection and not self.connection.is_closed:
             await self.connection.close()
-            log.info("RabbitMQ: Connection closed")
 
-    async def publish(self, queue_name: str, message: str):
-        """Publishes a message to a RabbitMQ queue"""
-        queue = await self.channel.declare_queue(queue_name, durable=True)
-        await self.channel.default_exchange.publish(
-            Message(body=message.encode(), delivery_mode=DeliveryMode.PERSISTENT),
-            routing_key=queue.name,
+    async def start_consuming_from_exchange(
+        self, exchange_name: str, queue_name: str, routing_key: str, callback: Callable
+    ):
+        exchange = await self.channel.declare_exchange(
+            name=exchange_name, type="topic", durable=True
         )
-        log.info(f"RabbitMQ: Sent message to queue {queue_name}: {message}")
+        queue = await self.channel.declare_queue(name=queue_name, durable=True)
 
-    async def consume(self, queue_name: str, callback: Callable):
-        """Launches an asynchronous consumer"""
-        queue = await self.channel.declare_queue(queue_name, durable=True)
+        await queue.bind(exchange=exchange, routing_key=routing_key)
+
+        log.info(f'RabbitMQ: Waiting for exchange "{exchange_name}". To exit press CTRL+C')
 
         async def wrapper(message: IncomingMessage):
-            async with message.process():
-                log.info(f"RabbitMQ: Received message: {message.body.decode()}")
-                try:
-                    await callback(message.body.decode())
-                except Exception as e:
-                    log.error(f"RabbitMQ: Error processing message: {e}. Retrying in 5 seconds...")
-                    await asyncio.sleep(5)
-                    await message.nack(requeue=True)
+            try:
+                await callback(message)
+                await message.ack()
+            except Exception as e:
+                await message.nack(requeue=True)
+                log.exception(f"RabbitMQ: Error: {e}")
+                raise
 
-        await queue.consume(wrapper)
-        log.info(f"RabbitMQ: Listening on queue: {queue_name}")
-        await asyncio.Future()  # Keeping the process going
+        await queue.consume(callback=wrapper, no_ack=False)
 
-    async def start_consumer(self, queue_name: str, callback: Callable):
-        """Launches the consumer in a separate asyncio Task"""
-        asyncio.create_task(self.consume(queue_name, callback))
-        log.info(f"RabbitMQ: Consumer started for queue {queue_name}")
+    async def publish_to_exchange(self, exchange_name: str, routing_key: str, message: str):
+        await self.connect()
+        exchange = await self.channel.declare_exchange(
+            name=exchange_name, type="topic", durable=True
+        )
+
+        await exchange.publish(
+            Message(
+                body=message.encode(),
+                delivery_mode=DeliveryMode.PERSISTENT,
+            ),
+            routing_key=routing_key,
+        )
+
+        log.info(
+            f'RabbitMQ: Sent to exchange "{exchange_name}" with routing key "{routing_key}" message "{message}"'
+        )
+        await self.close()
