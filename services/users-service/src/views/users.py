@@ -5,6 +5,8 @@ from src.exceptions import (
     FriendshipAlreadyExistsHTTPException,
     UserNotFoundException,
     UserNotFoundHTTPException,
+    FriendshipNotFoundException,
+    NoContentHTTPException,
     InvalidUsersDataException,
     InvalidFriendIdException,
 )
@@ -37,7 +39,10 @@ async def add_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
 
 @router.delete("/{user_id}/friends/{friend_id}")
 async def remove_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
-    await FriendshipService(db).remove_friend(user_id, friend_id)
+    try:
+        await FriendshipService(db).remove_friend(user_id, friend_id)
+    except FriendshipNotFoundException:
+        raise NoContentHTTPException
     return {"status": "ok"}
 
 

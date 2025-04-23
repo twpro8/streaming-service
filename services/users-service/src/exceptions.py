@@ -104,11 +104,6 @@ class FriendshipAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Friendship already exists"
 
 
-class FriendshipNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 204
-    detail = "Friendship does not exist"
-
-
 # Films and Series exceptions
 class ContentNotFoundException(ObjectNotFoundException):
     detail = "Content not found"
@@ -139,3 +134,7 @@ class FavoriteNotFoundException(ObjectNotFoundException):
 class FavoriteNotFoundHTTPException(ObjectNotFoundHTTPException):
     status_code = 204
     detail = "Provided content is not in favorites"
+
+
+class NoContentHTTPException(MasterHTTPException):
+    status_code = 204

@@ -11,7 +11,8 @@ from src.exceptions import (
     InvalidCredentialsException,
     SignatureExpiredException,
     UserNotFoundException,
-    IncorrectPasswordException, ObjectNotFoundException,
+    IncorrectPasswordException,
+    ObjectNotFoundException,
 )
 from src.schemas.users import UserAddGoogleDTO, UserAddDTO, UserAddGitHubDTO
 from src.services.base import BaseService

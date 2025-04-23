@@ -14,3 +14,7 @@ class BaseService:
     async def check_user_exists(self, **kwargs) -> bool:
         user = await self.db.users.get_one_or_none(**kwargs)
         return user is not None
+
+    async def is_friend(self, user_id: int, friend_id: int) -> bool:
+        friend = await self.db.friendships.get_one_or_none(user_id=user_id, friend_id=friend_id)
+        return friend is not None
