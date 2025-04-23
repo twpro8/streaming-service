@@ -61,7 +61,10 @@ class InvalidCredentialsHTTPException(JWTTokenHTTPException):
 
 
 # Users Exceptions
-class UsersException(MasterHTTPException): ...
+class UsersException(MasterException): ...
+
+
+class UsersHTTPException(MasterHTTPException): ...
 
 
 class UserNotFoundException(UsersException, ObjectNotFoundException):
@@ -76,10 +79,7 @@ class InvalidUsersDataException(UsersException):
     detail = "Incorrect user data"
 
 
-class UsersHTTPException(MasterHTTPException): ...
-
-
-class UserNotFoundHTTPException(UsersException, ObjectNotFoundHTTPException):
+class UserNotFoundHTTPException(UsersHTTPException, ObjectNotFoundHTTPException):
     status_code = 404
     detail = "User not found"
 
