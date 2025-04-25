@@ -24,3 +24,4 @@ dependencies = [
 
 [tool.ruff]
 line-length = 100
+exclude = ["alembic", "protos"]

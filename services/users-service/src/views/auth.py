@@ -54,3 +54,13 @@ async def auth_github(db: DBDep, request: Request, response: Response):
     access_token = await AuthService(db).handle_github_callback(request)
     response.set_cookie("access_token", access_token, httponly=True)
     return {"status": "ok"}
+
+
+# Example
+from src.views.dependencies import gRpcDep
+
+
+@router.get("/hello")
+async def hello(client: gRpcDep):
+    message = await client.say_hello(name="John!")
+    return {"status": message}
