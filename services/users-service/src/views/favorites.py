@@ -24,7 +24,7 @@ async def get_favorites(db: DBDep, user_id: UserIdDep, pagination: PaginationDep
     return {"status": "ok", "data": favorites}
 
 
-@router.post("/{film_id}", summary="Add to favorites")
+@router.post("", summary="Add to favorites")
 async def add_favorite(db: DBDep, user_id: UserIdDep, favorite: FavoriteAddRequestDTO):
     try:
         favorite = await FavoriteService(db).add_to_favorites(user_id, favorite)

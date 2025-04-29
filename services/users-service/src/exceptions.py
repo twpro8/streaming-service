@@ -138,3 +138,17 @@ class FavoriteNotFoundHTTPException(ObjectNotFoundHTTPException):
 
 class NoContentHTTPException(MasterHTTPException):
     status_code = 204
+
+
+# Playlists
+class PlaylistAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Playlist already exists"
+
+
+class PlaylistNotFoundException(ObjectNotFoundException):
+    detail = "Playlist does not exist"
+
+
+class PlaylistAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Playlist with the provided name already exists"

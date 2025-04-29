@@ -19,6 +19,10 @@ class BaseService:
         user = await self.db.favorites.get_one_or_none(**kwargs)
         return user is not None
 
+    async def check_playlist_exists(self, **kwargs) -> bool:
+        user = await self.db.playlists.get_one_or_none(**kwargs)
+        return user is not None
+
     async def is_friend(self, user_id: int, friend_id: int) -> bool:
         friend = await self.db.friendships.get_one_or_none(user_id=user_id, friend_id=friend_id)
         return friend is not None
