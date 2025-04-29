@@ -16,6 +16,6 @@ class ContentHTTPAdapter:
         return []
 
     async def content_exists(self, content_id: int, content_type: str) -> bool:
-        url = f"/{content_type}/{content_id}/exists"
+        url = f"/{content_type}s/{content_id}"
         status_code = await self.client.get_status_code(path=url)
         return True if status_code == 200 else False

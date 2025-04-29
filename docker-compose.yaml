@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: postgres
     volumes:
-      - postgres_data:/var/lib/postgresql/data \
+      - postgres_data:/var/lib/postgresql/data
 
   rabbitmq:
     container_name: "rabbitmq"

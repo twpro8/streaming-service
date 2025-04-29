@@ -16,6 +16,12 @@ async def get_films(db: DBDep, ids: List[int | None] = Query(None)):
     return {"status": "ok", "data": films}
 
 
+@router.get("/{film_id}")
+async def get_film(db: DBDep, film_id: int):
+    film = await FilmAppService(db).get_film(film_id=film_id)
+    return {"status": "ok", "data": film}
+
+
 @router.post("/", dependencies=[AdminDep])
 async def add_film(db: DBDep, film_data: FilmAddDTO):
     film = await FilmAppService(db).add_film(film_data)
