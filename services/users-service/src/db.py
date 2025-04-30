@@ -4,6 +4,8 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from src.config import settings
 from src.repositories.favorites import FavoritesRepository
 from src.repositories.friendship import FriendshipRepository
+from src.repositories.playlist_items import PlaylistItemRepository
+from src.repositories.playlists import PlaylistRepository
 from src.repositories.users import UsersRepository
 
 engine = create_async_engine(url=settings.DB_URL)
@@ -22,6 +24,8 @@ class DBManager:
         self.users = UsersRepository(self.session)
         self.friendships = FriendshipRepository(self.session)
         self.favorites = FavoritesRepository(self.session)
+        self.playlists = PlaylistRepository(self.session)
+        self.playlist_items = PlaylistItemRepository(self.session)
         return self
 
     async def __aexit__(self, *args):

@@ -12,6 +12,8 @@ dependencies = [
     "black>=25.1.0",
     "celery>=5.5.0",
     "fastapi[all]>=0.115.12",
+    "grpcio>=1.71.0",
+    "grpcio-tools>=1.71.0",
     "passlib[bcrypt]>=1.7.4",
     "prometheus-client>=0.21.1",
     "pyjwt>=2.10.1",
@@ -22,3 +24,4 @@ dependencies = [
 
 [tool.ruff]
 line-length = 100
+exclude = ["alembic", "protos"]

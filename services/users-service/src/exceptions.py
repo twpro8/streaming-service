@@ -61,7 +61,10 @@ class InvalidCredentialsHTTPException(JWTTokenHTTPException):
 
 
 # Users Exceptions
-class UsersException(MasterHTTPException): ...
+class UsersException(MasterException): ...
+
+
+class UsersHTTPException(MasterHTTPException): ...
 
 
 class UserNotFoundException(UsersException, ObjectNotFoundException):
@@ -76,10 +79,7 @@ class InvalidUsersDataException(UsersException):
     detail = "Incorrect user data"
 
 
-class UsersHTTPException(MasterHTTPException): ...
-
-
-class UserNotFoundHTTPException(UsersException, ObjectNotFoundHTTPException):
+class UserNotFoundHTTPException(UsersHTTPException, ObjectNotFoundHTTPException):
     status_code = 404
     detail = "User not found"
 
@@ -102,11 +102,6 @@ class FriendshipAlreadyExistsException(ObjectAlreadyExistsException):
 class FriendshipAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     status_code = 409
     detail = "Friendship already exists"
-
-
-class FriendshipNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 204
-    detail = "Friendship does not exist"
 
 
 # Films and Series exceptions
@@ -139,3 +134,39 @@ class FavoriteNotFoundException(ObjectNotFoundException):
 class FavoriteNotFoundHTTPException(ObjectNotFoundHTTPException):
     status_code = 204
     detail = "Provided content is not in favorites"
+
+
+class NoContentHTTPException(MasterHTTPException):
+    status_code = 204
+
+
+# Playlists
+class PlaylistAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Playlist already exists"
+
+
+class PlaylistNotFoundException(ObjectNotFoundException):
+    detail = "Playlist does not exist"
+
+
+class PlaylistAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Playlist with the provided name already exists"
+
+
+class PlaylistNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Playlist does not exist"
+
+
+class PlaylistItemAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Playlist item already exists"
+
+
+class PlaylistItemAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Content already in playlist"
+
+
+class PlaylistItemNotFoundException(ObjectNotFoundException):
+    detail = "Playlist item not found"

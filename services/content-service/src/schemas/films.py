@@ -30,11 +30,11 @@ class FilmAddDTO(BaseSchema):
 
 
 class FilmPatchRequestDTO(BaseSchema):
-    title: TypeTitle | None
-    description: str | None
-    director: str | None
-    release_year: date | None
-    rating: TypeRating | None
-    duration: TypeDuration | None
-    file_id: TypeID | None
-    cover_id: TypeID | None
+    title: TypeTitle | None = None
+    description: str | None = None
+    director: str | None = None
+    release_year: date | None = None
+    rating: TypeRating | None = None
+    duration: TypeDuration | None = None
+    file_id: TypeID | None = None
+    cover_id: TypeID | None = None

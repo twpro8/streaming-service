@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package content;
+
+service ContentService {
+  rpc CheckContent(CheckContentRequest) returns (CheckContentResponse);
+}
+
+message CheckContentRequest {
+  string content_id = 1;
+  string content_type = 2;
+}
+
+message CheckContentResponse {
+  bool exists = 1;
+}

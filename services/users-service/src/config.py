@@ -36,6 +36,11 @@ class Settings(BaseSettings):
     RABBITMQ_HOST: str
     RABBITMQ_PORT: int
 
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR"]
+
+    GRPC_HOST: str
+    GRPC_PORT: int
+
     @property
     def REDIS_URL(self):
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"

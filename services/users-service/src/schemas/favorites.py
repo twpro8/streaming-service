@@ -3,36 +3,23 @@ from datetime import datetime
 from enum import Enum
 
 from src.schemas.base import BaseSchema
+from src.schemas.pydatic_types import TypeID
 
 
 class ContentType(str, Enum):
-    films = "films"
+    films = "film"
     series = "series"
 
 
 class FavoriteAddRequestDTO(BaseSchema):
-    content_id: int
+    content_id: TypeID
     content_type: ContentType
 
 
 class FavoriteAddDTO(FavoriteAddRequestDTO):
-    user_id: int
+    user_id: TypeID
 
 
 class FavoriteDTO(FavoriteAddDTO):
-    id: int
+    id: TypeID
     created_at: datetime
-
-
-class FavoriteResponseDTO(BaseSchema):
-    id: int
-    cover_id: int
-    content_type: ContentType
-    title: str
-    rating: float
-    created_at: datetime
-
-
-class FavoriteDeleteRequestDTO(BaseSchema):
-    content_id: int
-    content_type: ContentType

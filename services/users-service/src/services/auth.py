@@ -12,6 +12,7 @@ from src.exceptions import (
     SignatureExpiredException,
     UserNotFoundException,
     IncorrectPasswordException,
+    ObjectNotFoundException,
 )
 from src.schemas.users import UserAddGoogleDTO, UserAddDTO, UserAddGitHubDTO
 from src.services.base import BaseService
@@ -112,8 +113,9 @@ class AuthService(BaseService):
         return user
 
     async def login_with_password(self, user_data: BaseModel):
-        user = await self.db.users.get_db_user(email=user_data.email)
-        if not user:
+        try:
+            user = await self.db.users.get_db_user(email=user_data.email)
+        except ObjectNotFoundException:
             raise UserNotFoundException
         if not AuthService.verify_password(user_data.password, user.hashed_password):
             raise IncorrectPasswordException

@@ -1,5 +1,4 @@
 from src.db import DBManager
-from src.adapters.rabbit_adapter import RabbitAdapter
 
 
 class BaseService:
@@ -7,7 +6,6 @@ class BaseService:
 
     def __init__(self, db: DBManager | None = None) -> None:
         self.db = db
-        self.rabbit_adapter = RabbitAdapter()
 
     async def check_film_exists(self, film_id: int) -> bool:
         film = await self.db.films.get_one_or_none(id=film_id)

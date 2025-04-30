@@ -1,5 +1,11 @@
 from fastapi import APIRouter, Response, Request
 
+from src.exceptions import (
+    UserNotFoundException,
+    UserNotFoundHTTPException,
+    IncorrectPasswordException,
+    IncorrectPasswordHTTPException,
+)
 from src.schemas.users import UserAddRequestDTO, UserLoginRequestDTO
 from src.services.auth import AuthService
 from src.views.dependencies import DBDep
@@ -16,7 +22,12 @@ async def register(db: DBDep, user_data: UserAddRequestDTO):
 
 @router.post("/login")
 async def login_with_password(db: DBDep, user_data: UserLoginRequestDTO, response: Response):
-    access_token = await AuthService(db).login_with_password(user_data)
+    try:
+        access_token = await AuthService(db).login_with_password(user_data)
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
+    except IncorrectPasswordException:
+        raise IncorrectPasswordHTTPException
     response.set_cookie("access_token", access_token, httponly=True)
     return {"status": "ok"}
 
