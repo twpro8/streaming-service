@@ -4,6 +4,7 @@ from datetime import datetime
 
 from src.schemas.base import BaseSchema
 from src.schemas.favorites import ContentType
+from src.schemas.pydatic_types import TypeID
 
 
 class PlaylistAddRequestDTO(BaseSchema):
@@ -11,25 +12,25 @@ class PlaylistAddRequestDTO(BaseSchema):
 
 
 class PlaylistAddDTO(PlaylistAddRequestDTO):
-    user_id: int
+    user_id: TypeID
 
 
 class PlaylistDTO(PlaylistAddDTO):
-    id: int
+    id: TypeID
     created_at: datetime
 
 
 class PlaylistItemAddRequestDTO(BaseSchema):
-    content_id: int
+    content_id: TypeID
     content_type: ContentType
 
 
 class PlaylistItemAddDTO(PlaylistItemAddRequestDTO):
-    playlist_id: int
+    playlist_id: TypeID
 
 
 class PlaylistItemDTO(PlaylistItemAddRequestDTO):
-    id: int
+    id: TypeID
     added_at: datetime
 
 
