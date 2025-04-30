@@ -16,12 +16,12 @@ class BaseService:
         return user is not None
 
     async def check_favorite_exists(self, **kwargs) -> bool:
-        user = await self.db.favorites.get_one_or_none(**kwargs)
-        return user is not None
+        favorite = await self.db.favorites.get_one_or_none(**kwargs)
+        return favorite is not None
 
     async def check_playlist_exists(self, **kwargs) -> bool:
-        user = await self.db.playlists.get_one_or_none(**kwargs)
-        return user is not None
+        playlist = await self.db.playlists.get_one_or_none(**kwargs)
+        return playlist is not None
 
     async def is_friend(self, user_id: int, friend_id: int) -> bool:
         friend = await self.db.friendships.get_one_or_none(user_id=user_id, friend_id=friend_id)
@@ -29,3 +29,7 @@ class BaseService:
 
     async def check_content_exists(self, content_id: int, content_type: str) -> bool:
         return await self.http_adapter.content_exists(content_id, content_type)
+
+    async def check_item_exists(self, **kwargs) -> bool:
+        item = await self.db.playlist_items.get_one_or_none(**kwargs)
+        return item is not None

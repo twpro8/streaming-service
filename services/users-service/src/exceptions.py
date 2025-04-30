@@ -152,3 +152,21 @@ class PlaylistNotFoundException(ObjectNotFoundException):
 class PlaylistAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     status_code = 409
     detail = "Playlist with the provided name already exists"
+
+
+class PlaylistNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Playlist does not exist"
+
+
+class PlaylistItemAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Playlist item already exists"
+
+
+class PlaylistItemAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    status_code = 409
+    detail = "Content already in playlist"
+
+
+class PlaylistItemNotFoundException(ObjectNotFoundException):
+    detail = "Playlist item not found"
