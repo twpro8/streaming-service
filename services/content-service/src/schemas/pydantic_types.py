@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Annotated
 
 from pydantic import Field
@@ -9,3 +10,7 @@ TypeTitle = Annotated[
 TypeDuration = Annotated[int, Field(ge=1, le=9999, title="Pydantic Type: Duration, Integer 9999")]
 TypeID = Annotated[int, Field(ge=1, le=2147483647, title="Pydantic Type: ID, Integer 32 bit")]
 TypeRating = Annotated[float, Field(ge=0.0, le=10.0, title="Pydantic Type: Rating, Float 10.0")]
+
+class ContentType(str, Enum):
+    film = "film"
+    series = "series"

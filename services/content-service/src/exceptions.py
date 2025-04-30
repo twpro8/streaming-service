@@ -35,6 +35,11 @@ class ObjectAlreadyExistsHTTPException(MasterHTTPException):
     detail = "Object already exists"
 
 
+class NoContentHTTPException(MasterHTTPException):
+    status_code = 204
+    detail = "No content"
+
+
 # JWT Exceptions
 class JWTTokenException(MasterException): ...
 
@@ -92,6 +97,15 @@ class SeriesNotFoundHTTPException(ObjectNotFoundHTTPException):
 
 class EpisodeNotFoundException(ObjectNotFoundException):
     detail = "Episode not found"
+
+
+class ContentNotFoundException(ObjectNotFoundException):
+    detail = "Content not found"
+
+
+class ContentNotFoundHTTPException(ObjectNotFoundHTTPException):
+    status_code = 404
+    detail = "Film or TV Series not found"
 
 
 class EpisodeNotFoundHTTPException(ObjectNotFoundHTTPException):
@@ -160,3 +174,8 @@ class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
 class UniqueFileIDHTTPException(UniqueViolationHTTPException):
     status_code = 409
     detail = "Unique file id already exists"
+
+
+# Comments
+class CommentNotFoundException(ObjectNotFoundException):
+    detail = "Comment not found"
