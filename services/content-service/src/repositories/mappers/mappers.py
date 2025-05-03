@@ -1,8 +1,9 @@
-from src.models import SeriesORM, SeasonORM, EpisodeORM, CommentORM
+from src.models import SeriesORM, SeasonORM, EpisodeORM, CommentORM, RatingORM
 from src.repositories.mappers.base import DataMapper
 from src.models.films import FilmORM
 from src.schemas.comments import CommentDTO
 from src.schemas.films import FilmDTO
+from src.schemas.rating import RatingDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.series import SeriesDTO
 from src.schemas.episodes import EpisodeDTO
@@ -31,3 +32,8 @@ class EpisodeDataMapper(DataMapper):
 class CommentDataMapper(DataMapper):
     db_model = CommentORM
     schema = CommentDTO
+
+
+class RatingDataMapper(DataMapper):
+    db_model = RatingORM
+    schema = RatingDTO

@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from src.config import settings
 from src.repositories.comments import CommentRepository
 from src.repositories.films import FilmRepository
+from src.repositories.rating import RatingRepository
 from src.repositories.seasons import SeasonRepository
 from src.repositories.series import SeriesRepository
 from src.repositories.episodes import EpisodeRepository
@@ -23,6 +24,7 @@ class DBManager:
         self.seasons = SeasonRepository(self.session)
         self.episodes = EpisodeRepository(self.session)
         self.comments = CommentRepository(self.session)
+        self.rating = RatingRepository(self.session)
         return self
 
     async def __aexit__(self, *args):
