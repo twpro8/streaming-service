@@ -4,17 +4,17 @@ from typing import List
 from pydantic import BaseModel, EmailStr
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydatic_types import email_str, password_str, TypeID
+from src.schemas.pydatic_types import email_str, password_str, IDInt
 
 
 class UserDTO(BaseModel):
-    id: TypeID
+    id: IDInt
     email: EmailStr | None
     name: str
     bio: str | None
     avatar: str | None
     provider: str | None
-    provider_id: TypeID | None
+    provider_id: IDInt | None
     created_at: datetime
     is_admin: bool
     is_active: bool
@@ -51,14 +51,14 @@ class UserAddGoogleDTO(BaseModel):
     name: str
     avatar: str
     provider: str
-    provider_id: TypeID
+    provider_id: IDInt
 
 
 class UserAddGitHubDTO(BaseModel):
     name: str
     avatar: str
     provider: str
-    provider_id: TypeID
+    provider_id: IDInt
 
 
 class UserWithFavoritesDTO(UserDTO):
