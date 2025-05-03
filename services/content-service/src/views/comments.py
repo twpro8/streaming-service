@@ -9,7 +9,7 @@ from src.exceptions import (
 from src.schemas.comments import CommentAddRequestDTO
 from src.schemas.pydantic_types import ContentType
 from src.services.comments import CommentService
-from src.views.dependencies import DBDep, UserIdDep
+from src.views.dependencies import DBDep, UserDep
 
 
 router = APIRouter(tags=["Comments"])
@@ -27,7 +27,7 @@ async def get_comments(db: DBDep, content_type: ContentType, content_id: int):
 
 
 @router.post("/comments")
-async def add_comment(db: DBDep, user_id: UserIdDep, data: CommentAddRequestDTO):
+async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
     try:
         comment = await CommentService(db).add_comment(user_id=user_id, data=data)
     except ContentNotFoundException:
@@ -36,7 +36,7 @@ async def add_comment(db: DBDep, user_id: UserIdDep, data: CommentAddRequestDTO)
 
 
 @router.delete("/comments/{comment_id}")
-async def delete_comment(db: DBDep, user_id: UserIdDep, comment_id: int):
+async def delete_comment(db: DBDep, user_id: UserDep, comment_id: int):
     try:
         await CommentService(db).remove_comment(comment_id=comment_id, user_id=user_id)
     except CommentNotFoundException:
