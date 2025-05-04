@@ -1,7 +1,7 @@
 from src.models.films import FilmORM
 from src.models.series import SeriesORM, SeasonORM, EpisodeORM
 from src.models.comments import CommentORM
-from src.models.rating import RatingORM
+from src.models.rating import RatingORM, RatingAggregateORM
 
 __all__ = [
     "FilmORM",
@@ -10,4 +10,5 @@ __all__ = [
     "EpisodeORM",
     "CommentORM",
     "RatingORM",
+    "RatingAggregateORM",
 ]
