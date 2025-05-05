@@ -31,9 +31,9 @@ class BaseService:
     async def check_content_exists(self, content_id: int, content_type: ContentType) -> bool:
         exists = False
 
-        if content_type.film:
+        if content_type == ContentType.film:
             exists |= await self.check_film_exists(content_id)
-        if content_type.series:
+        if content_type == ContentType.series:
             exists |= await self.check_series_exists(content_id)
 
         return exists

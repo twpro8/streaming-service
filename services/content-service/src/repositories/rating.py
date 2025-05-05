@@ -35,17 +35,15 @@ class RatingRepository(BaseRepository):
         delta_sum = value
         delta_count = 1
 
-        # Checking an existing rating
-        query = select(RatingORM).filter_by(
+        # Checking an existing rating.
+        rating = await self.get_one_or_none(
             user_id=user_id,
             content_id=content_id,
             content_type=content_type,
         )
-        res = await self.session.execute(query)
-        rating = res.scalars().one_or_none()
 
         if rating:
-            if rating.rating == value:  # Check if the rating changed
+            if rating.rating == value:  # Checking if the average rating has changed.
                 return
             delta_sum = value - rating.rating
             delta_count = 0
@@ -59,7 +57,7 @@ class RatingRepository(BaseRepository):
 
         await self.session.flush()
 
-        # Update aggregates
+        # Updating aggregates
         agg_query = select(RatingAggregateORM).filter_by(
             content_id=content_id, content_type=content_type
         )
