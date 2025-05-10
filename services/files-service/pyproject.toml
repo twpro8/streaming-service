@@ -4,11 +4,18 @@ version = "0.1.0"
 description = ""
 readme = ""
 requires-python = ">=3.13.2"
-dependencies = []
+dependencies = [
+    "aiobotocore>=2.22.0",
+    "alembic>=1.15.2",
+    "asyncpg>=0.30.0",
+    "black>=25.1.0",
+    "fastapi>=0.115.12",
+    "pydantic-settings>=2.9.1",
+    "python-multipart>=0.0.20",
+    "ruff>=0.11.9",
+    "sqlalchemy>=2.0.40",
+    "uvicorn>=0.34.2",
+]
 
-[project.scripts]
-files-service = "files_service:main"
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
+[tool.ruff]
+line-length = 100
