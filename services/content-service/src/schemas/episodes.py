@@ -1,37 +1,37 @@
 from pydantic import Field
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import TypeTitle, TypeDuration, TypeID
+from src.schemas.pydantic_types import TitleStr, DurationInt, IDInt
 
 
 class EpisodeDTO(BaseSchema):
-    id: TypeID
-    series_id: TypeID
-    season_id: TypeID
-    title: TypeTitle
+    id: IDInt
+    series_id: IDInt
+    season_id: IDInt
+    title: TitleStr
     episode_number: int = Field(ge=1, le=9999, title="Episode Number")
-    duration: TypeDuration
-    file_id: TypeID | None
+    duration: DurationInt
+    file_id: IDInt | None
 
 
 class EpisodeAddDTO(BaseSchema):
-    series_id: TypeID
-    season_id: TypeID
-    title: TypeTitle
+    series_id: IDInt
+    season_id: IDInt
+    title: TitleStr
     episode_number: int = Field(ge=1, le=9999, title="Episode Number")
-    duration: TypeDuration
-    file_id: TypeID | None
+    duration: DurationInt
+    file_id: IDInt | None
 
 
 class EpisodePatchRequestDTO(BaseSchema):
-    series_id: TypeID | None
-    season_id: TypeID | None
-    title: TypeTitle | None
+    series_id: IDInt | None
+    season_id: IDInt | None
+    title: TitleStr | None
     episode_number: int = Field(ge=1, le=9999, title="Episode Number")
-    duration: TypeDuration | None
-    file_id: TypeID | None
+    duration: DurationInt | None
+    file_id: IDInt | None
 
 
 class EpisodeDeleteRequestDTO(BaseSchema):
-    series_id: TypeID
-    season_id: TypeID
+    series_id: IDInt
+    season_id: IDInt

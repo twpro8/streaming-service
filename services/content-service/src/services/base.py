@@ -1,4 +1,5 @@
 from src.db import DBManager
+from src.schemas.pydantic_types import ContentType
 
 
 class BaseService:
@@ -22,3 +23,21 @@ class BaseService:
     async def check_episode_exists(self, episode_id: int) -> bool:
         episode = await self.db.episodes.get_one_or_none(id=episode_id)
         return episode is not None
+
+    async def check_comment_exists(self, **filter_by):
+        comment = await self.db.comments.get_one_or_none(**filter_by)
+        return comment is not None
+
+    async def check_content_exists(self, content_id: int, content_type: ContentType) -> bool:
+        exists = False
+
+        if content_type == ContentType.film:
+            exists |= await self.check_film_exists(content_id)
+        if content_type == ContentType.series:
+            exists |= await self.check_series_exists(content_id)
+
+        return exists
+
+    @staticmethod
+    def get_content_type_key(content_type: ContentType):
+        return "film_id" if content_type == ContentType.film else "series_id"

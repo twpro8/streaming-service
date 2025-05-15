@@ -12,20 +12,20 @@ from src.exceptions import (
 )
 from src.services.friendship import FriendshipService
 from src.services.users import UserService
-from src.views.dependencies import DBDep, UserIdDep
+from src.views.dependencies import DBDep, UserDep
 
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
 @router.get("/{user_id}/friends")
-async def get_my_friends(db: DBDep, user_id: UserIdDep):
+async def get_my_friends(db: DBDep, user_id: UserDep):
     friends = await FriendshipService(db).get_friends(user_id)
     return {"status": "ok", "data": friends}
 
 
 @router.post("/{user_id}/friends/{friend_id}")
-async def add_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
+async def add_friend(db: DBDep, user_id: UserDep, friend_id: int):
     try:
         await FriendshipService(db).add_friend(user_id, friend_id)
     except FriendshipAlreadyExistsException:
@@ -38,7 +38,7 @@ async def add_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
 
 
 @router.delete("/{user_id}/friends/{friend_id}")
-async def remove_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
+async def remove_friend(db: DBDep, user_id: UserDep, friend_id: int):
     try:
         await FriendshipService(db).remove_friend(user_id, friend_id)
     except FriendshipNotFoundException:
@@ -47,6 +47,6 @@ async def remove_friend(db: DBDep, user_id: UserIdDep, friend_id: int):
 
 
 @router.get("")
-async def get_me(db: DBDep, user_id: UserIdDep):
+async def get_me(db: DBDep, user_id: UserDep):
     user = await UserService(db).get_user(user_id=user_id)
     return {"status": "ok", "data": user}

@@ -32,7 +32,7 @@ def get_current_user_id(token: str = Depends(get_token)):
     return data.get("user_id", None)
 
 
-UserIdDep = Annotated[int, Depends(get_current_user_id)]
+UserDep = Annotated[int, Depends(get_current_user_id)]
 
 
 class PaginationParams(BaseModel):

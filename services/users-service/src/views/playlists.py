@@ -12,14 +12,14 @@ from src.exceptions import (
 )
 from src.schemas.playlists import PlaylistAddRequestDTO, PlaylistItemAddRequestDTO
 from src.services.playlists import PlaylistService
-from src.views.dependencies import DBDep, UserIdDep, PaginationDep
+from src.views.dependencies import DBDep, UserDep, PaginationDep
 
 
 router = APIRouter(prefix="/playlists", tags=["Playlists"])
 
 
 @router.get("", summary="Get my playlists")
-async def get_playlists(db: DBDep, user_id: UserIdDep, pagination: PaginationDep):
+async def get_playlists(db: DBDep, user_id: UserDep, pagination: PaginationDep):
     playlists = await PlaylistService(db).get_playlists(
         user_id=user_id, page=pagination.page, per_page=pagination.per_page
     )
@@ -27,7 +27,7 @@ async def get_playlists(db: DBDep, user_id: UserIdDep, pagination: PaginationDep
 
 
 @router.get("/{playlist_id}/items", summary="Get my playlist items")
-async def get_items(db: DBDep, user_id: UserIdDep, pagination: PaginationDep, playlist_id: int):
+async def get_items(db: DBDep, user_id: UserDep, pagination: PaginationDep, playlist_id: int):
     try:
         items = await PlaylistService(db).get_items(
             user_id=user_id,
@@ -41,7 +41,7 @@ async def get_items(db: DBDep, user_id: UserIdDep, pagination: PaginationDep, pl
 
 
 @router.post("", summary="Create an empty playlist")
-async def add_playlist(db: DBDep, user_id: UserIdDep, playlist_data: PlaylistAddRequestDTO):
+async def add_playlist(db: DBDep, user_id: UserDep, playlist_data: PlaylistAddRequestDTO):
     try:
         playlist = await PlaylistService(db).add_playlist(user_id=user_id, data=playlist_data)
     except PlaylistAlreadyExistsException:
@@ -51,7 +51,7 @@ async def add_playlist(db: DBDep, user_id: UserIdDep, playlist_data: PlaylistAdd
 
 @router.post("/{playlist_id}/items", summary="Add an item to playlist")
 async def add_item(
-    db: DBDep, user_id: UserIdDep, playlist_id: int, item_data: PlaylistItemAddRequestDTO
+    db: DBDep, user_id: UserDep, playlist_id: int, item_data: PlaylistItemAddRequestDTO
 ):
     try:
         # before we have to check if content exists in content service
@@ -66,7 +66,7 @@ async def add_item(
 
 
 @router.delete("/{playlist_id}", summary="Remove a playlist")
-async def remove_playlist(db: DBDep, user_id: UserIdDep, playlist_id: int):
+async def remove_playlist(db: DBDep, user_id: UserDep, playlist_id: int):
     try:
         await PlaylistService(db).remove_playlist(user_id=user_id, playlist_id=playlist_id)
     except PlaylistNotFoundException:
@@ -75,7 +75,7 @@ async def remove_playlist(db: DBDep, user_id: UserIdDep, playlist_id: int):
 
 
 @router.delete("/{playlist_id}/items/{item_id}", summary="Remove an item from playlist")
-async def remove_item(db: DBDep, user_id: UserIdDep, playlist_id: int, item_id: int):
+async def remove_item(db: DBDep, user_id: UserDep, playlist_id: int, item_id: int):
     try:
         await PlaylistService(db).remove_item(
             user_id=user_id, playlist_id=playlist_id, item_id=item_id
