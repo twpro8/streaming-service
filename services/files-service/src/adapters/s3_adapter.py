@@ -91,17 +91,3 @@ class S3Client:
                 ExpiresIn=expires,
             )
             return url
-
-    @staticmethod
-    def sanitize_filename(filename: str, max_length: int = 50) -> str:
-        """
-        Sanitize a filename by removing invalid characters and truncating its base name.
-        """
-
-        if "." not in filename:
-            raise ValueError("Filename must contain an extension.")
-
-        name, ext = filename.rsplit(".", 1)
-        name = re.sub(r"[^a-zA-Z0-9_\-]", "_", name)
-
-        return f"{name[:max_length]}.{ext}"

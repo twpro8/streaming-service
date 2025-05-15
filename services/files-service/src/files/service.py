@@ -1,13 +1,17 @@
-import shutil
-from tempfile import NamedTemporaryFile
 from typing import List
 
 from fastapi import UploadFile
 
-from src import s3_client
 from src.core.base.service import BaseService
 from src.core.enums import Qualities, ContentType
 from src.tasks.tasks import process_video_and_upload_to_s3, upload_file_to_s3
+from src.files.utils import (
+    save_to_temp_file,
+    generate_film_s3_key,
+    generate_episode_s3_key,
+    generate_image_s3_key,
+    sanitize_filename,
+)
 
 
 class FileService(BaseService):
@@ -17,11 +21,9 @@ class FileService(BaseService):
         qualities: List[Qualities],
         file: UploadFile
     ):
-        with NamedTemporaryFile(delete=False, suffix=file.filename) as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            temp_file_path = tmp.name
+        temp_file_path = save_to_temp_file(file)
 
-        s3_key = f"films/{film_id}"
+        s3_key = generate_film_s3_key(film_id)
         process_video_and_upload_to_s3.delay(
             input_file_path=temp_file_path,
             s3_key=s3_key,
@@ -35,11 +37,9 @@ class FileService(BaseService):
         qualities: List[Qualities],
         file: UploadFile
     ):
-        with NamedTemporaryFile(delete=False, suffix=file.filename) as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            temp_file_path = tmp.name
+        temp_file_path = save_to_temp_file(file)
 
-        s3_key = f"series/{series_id}/episodes/{episode_number}"
+        s3_key = generate_episode_s3_key(series_id, episode_number)
         process_video_and_upload_to_s3.delay(
             input_file_path=temp_file_path,
             s3_key=s3_key,
@@ -52,13 +52,11 @@ class FileService(BaseService):
         content_type: ContentType,
         file: UploadFile
     ):
-        with NamedTemporaryFile(delete=False, suffix=file.filename) as tmp:
-            shutil.copyfileobj(file.file, tmp)
-            temp_file_path = tmp.name
+        temp_file_path = save_to_temp_file(file)
 
-        filename = s3_client.sanitize_filename(file.filename)
+        filename = sanitize_filename(file.filename)
 
-        s3_key = f"{content_type}/{content_id}/covers/{filename}"
+        s3_key = generate_image_s3_key(content_type, content_id, filename)
         upload_file_to_s3.delay(
             input_file_path=temp_file_path,
             s3_key=s3_key,
