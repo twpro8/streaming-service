@@ -6,10 +6,17 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from fastapi import FastAPI
 import uvicorn
 
-from src.views import master_router
+from src.core.router import master_router
+from src import redis_manager
 
 
-app = FastAPI()
+async def lifespan(app: FastAPI):
+    await redis_manager.connect()
+    yield
+    await redis_manager.close()
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(master_router)
 
 

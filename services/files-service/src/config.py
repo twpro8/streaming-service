@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+
+    @property
+    def REDIS_URL(self):  # noqa
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
+
     @property
     def RABBITMQ_URL(self):
         return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}"
