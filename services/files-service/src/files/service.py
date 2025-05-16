@@ -15,12 +15,7 @@ from src.files.utils import (
 
 
 class FileService(BaseService):
-    async def upload_film(
-        self,
-        film_id: int,
-        qualities: List[Qualities],
-        file: UploadFile
-    ):
+    async def upload_film(self, film_id: int, qualities: List[Qualities], file: UploadFile):
         temp_file_path = save_to_temp_file(file)
 
         s3_key = generate_film_s3_key(film_id)
@@ -31,11 +26,7 @@ class FileService(BaseService):
         )
 
     async def upload_episode(
-        self,
-        series_id: int,
-        episode_number: int,
-        qualities: List[Qualities],
-        file: UploadFile
+        self, series_id: int, episode_number: int, qualities: List[Qualities], file: UploadFile
     ):
         temp_file_path = save_to_temp_file(file)
 
@@ -46,12 +37,7 @@ class FileService(BaseService):
             qualities=qualities,
         )
 
-    async def upload_image(
-        self,
-        content_id: int,
-        content_type: ContentType,
-        file: UploadFile
-    ):
+    async def upload_image(self, content_id: int, content_type: ContentType, file: UploadFile):
         temp_file_path = save_to_temp_file(file)
 
         filename = sanitize_filename(file.filename)

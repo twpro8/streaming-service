@@ -8,7 +8,7 @@ from pathlib import Path
 from src import s3_client
 from src.core.enums import Qualities
 from src.tasks.celery_app import celery_instance
-from src.tasks.utils import transcode_to_hls
+from src.video.transcoder import HlsTranscoder
 
 
 log = logging.getLogger(__name__)
@@ -23,7 +23,9 @@ def process_video_and_upload_to_s3(
     with TemporaryDirectory() as tmp:
         temp_dir = Path(tmp)
 
-        transcode_to_hls(input_path=input_file_path, output_dir=temp_dir, qualities=qualities)
+        HlsTranscoder(
+            input_path=input_file_path, output_dir=temp_dir, qualities=qualities
+        ).transcode()
 
         for quality_dir in temp_dir.iterdir():
             if not quality_dir.is_dir():
@@ -35,15 +37,7 @@ def process_video_and_upload_to_s3(
             for file in quality_dir.iterdir():
                 if file.is_file():
                     key = f"{s3_key}/{quality_dir.name}/{file.name}"
-
-                    with open(file, "rb") as f:
-                        data = f.read()
-
-                    success = asyncio.run(s3_client.upload_file(key, data))
-                    if success:
-                        log.info(f"Uploaded {s3_key}")
-                    else:
-                        log.error(f"Failed to upload {s3_key}")
+                    upload_file_to_s3(file, key)
 
     # clear tmp uploaded video file
     os.remove(input_file_path)
@@ -54,7 +48,6 @@ def upload_file_to_s3(
     input_file_path: str,
     s3_key: str,
 ):
-
     with open(input_file_path, "rb") as f:
         data = f.read()
 

@@ -1,4 +1,3 @@
-import re
 from contextlib import asynccontextmanager
 
 from aiobotocore.session import get_session
@@ -77,11 +76,8 @@ class S3Client:
 
                 objects = [{"Key": obj["Key"]} for obj in page["Contents"]]
                 for i in range(0, len(objects), 1000):
-                    chunk = objects[i:i + 1000]
-                    await client.delete_objects(
-                        Bucket=self.bucket_name,
-                        Delete={"Objects": chunk}
-                    )
+                    chunk = objects[i : i + 1000]
+                    await client.delete_objects(Bucket=self.bucket_name, Delete={"Objects": chunk})
 
     async def generate_presigned_url(self, key: str, expires: int = 3600) -> str | None:
         async with self._get_client() as client:
