@@ -8,8 +8,8 @@ from pathlib import Path
 from src import s3_client
 from src.core.enums import Qualities
 from src.tasks.celery_app import celery_instance
-from src.video.transcoder import HlsTranscoder
-
+from src.tasks.utils import update_master_playlist_from_s3
+from src.video.transcoder import HlsTranscoder, BITRATE_SETTINGS
 
 log = logging.getLogger(__name__)
 
@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 @celery_instance.task
 def process_video_and_upload_to_s3(
     input_file_path: str,
-    s3_key: int,
+    s3_key: str,
     qualities: List[Qualities],
 ):
     with TemporaryDirectory() as tmp:
@@ -38,6 +38,8 @@ def process_video_and_upload_to_s3(
                 if file.is_file():
                     key = f"{s3_key}/{quality_dir.name}/{file.name}"
                     upload_file_to_s3(file, key)
+
+        asyncio.run(update_master_playlist_from_s3(s3_key=s3_key, input_path=input_file_path))
 
     # clear tmp uploaded video file
     os.remove(input_file_path)

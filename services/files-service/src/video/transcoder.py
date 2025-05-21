@@ -23,7 +23,7 @@ class HlsTranscoder:
         self.qualities = qualities
 
     def transcode(self):
-        original_width, original_height = self.get_video_resolution()
+        original_width, original_height = self.get_video_resolution(self.input_path)
 
         for quality in self.qualities:
             target_height = int(quality.rstrip("p"))
@@ -64,14 +64,15 @@ class HlsTranscoder:
 
             subprocess.run(cmd, check=True)
 
-    def get_video_resolution(self) -> Tuple[int, int]:
+    @staticmethod
+    def get_video_resolution(input_path: str) -> Tuple[int, int]:
         cmd = [
             "ffprobe",
             "-v", "error",
             "-select_streams", "v:0",
             "-show_entries", "stream=width,height",
             "-of", "csv=s=x:p=0",
-            self.input_path
+            input_path
         ]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         width, height = map(int, result.stdout.strip().split("x"))
