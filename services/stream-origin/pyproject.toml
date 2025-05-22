@@ -10,3 +10,6 @@ dependencies = [
     "pydantic-settings>=2.9.1",
     "uvicorn>=0.34.2",
 ]
+
+[tool.ruff]
+line-length = 100

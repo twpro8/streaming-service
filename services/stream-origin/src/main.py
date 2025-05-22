@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.views import master_router
 
 
-app = FastAPI()
+app = FastAPI(title="Stream Origin")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
