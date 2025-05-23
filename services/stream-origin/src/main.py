@@ -8,7 +8,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from src.views import master_router
+from src.views import router as stream_router
 
 
 app = FastAPI(title="Stream Origin")
@@ -19,7 +19,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.include_router(master_router)
+app.include_router(stream_router)
 
 
 if __name__ == "__main__":
