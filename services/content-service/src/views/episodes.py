@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 
 from src.services.episodes import EpisodeService
@@ -14,8 +16,8 @@ router = APIRouter(prefix="/episodes", tags=["Episodes"])
 async def get_episodes(
     db: DBDep,
     pagination: PaginationDep,
-    series_id: int,
-    season_id: int = None,
+    series_id: UUID,
+    season_id: UUID = None,
     episode_title: str = None,
     episode_number: int = None,
 ):
@@ -39,13 +41,12 @@ async def add_new_episode(db: DBDep, episode_data: EpisodeAddDTO):
 
 @router.patch("/{episode_id}", dependencies=[AdminDep])
 @handle_episode_exceptions
-async def update_episode(db: DBDep, episode_id: int, episode_data: EpisodePatchRequestDTO):
+async def update_episode(db: DBDep, episode_id: UUID, episode_data: EpisodePatchRequestDTO):
     await EpisodeService(db).update_episode(episode_id=episode_id, data=episode_data)
     return {"status": "ok"}
 
 
-@router.delete("/{episode_id}", dependencies=[AdminDep])
+@router.delete("/{episode_id}", dependencies=[AdminDep], status_code=204)
 @handle_episode_exceptions
-async def delete_episode(db: DBDep, episode_id: int, episode_data: EpisodeDeleteRequestDTO):
+async def delete_episode(db: DBDep, episode_id: UUID, episode_data: EpisodeDeleteRequestDTO):
     await EpisodeService(db).delete_episode(episode_id=episode_id, data=episode_data)
-    return {"status": "ok"}

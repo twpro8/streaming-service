@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from src.exceptions import CommentNotFoundException, ContentNotFoundException
 from src.schemas.comments import CommentAddRequestDTO, CommentAddDTO
 from src.schemas.pydantic_types import ContentType
@@ -5,7 +7,7 @@ from src.services.base import BaseService
 
 
 class CommentService(BaseService):
-    async def get_content_comments(self, content_id: int, content_type: ContentType):
+    async def get_content_comments(self, content_id: UUID, content_type: ContentType):
         if not await self.check_content_exists(content_id, content_type):
             raise ContentNotFoundException
 
@@ -24,7 +26,7 @@ class CommentService(BaseService):
         await self.db.commit()
         return comment
 
-    async def remove_comment(self, user_id: int, comment_id: int):
+    async def remove_comment(self, user_id: int, comment_id: UUID):
         if not await self.check_comment_exists(id=comment_id):
             raise CommentNotFoundException
 

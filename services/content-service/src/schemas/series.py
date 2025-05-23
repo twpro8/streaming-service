@@ -1,7 +1,9 @@
+from uuid import UUID
+
 from datetime import date
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import IDInt, TitleStr, RatingDecimal, DescriptionStr
+from src.schemas.pydantic_types import TitleStr, RatingDecimal, DescriptionStr
 
 
 class SeriesAddRequestDTO(BaseSchema):
@@ -14,7 +16,7 @@ class SeriesAddRequestDTO(BaseSchema):
 
 
 class SeriesDTO(SeriesAddRequestDTO):
-    id: IDInt
+    id: UUID
 
 
 class SeriesPatchRequestDTO(BaseSchema):
