@@ -18,12 +18,14 @@ async def update_master_playlist_from_s3(s3_key: str, input_path: str):
         target_height = int(quality.rstrip("p"))
 
         original_width, original_height = HlsTranscoder.get_video_resolution(input_path)
-        width, height = HlsTranscoder.calculate_scaled_resolution(original_width, original_height, target_height)
+        width, height = HlsTranscoder.calculate_scaled_resolution(
+            original_width, original_height, target_height
+        )
 
         lines.append(
-            f'#EXT-X-STREAM-INF:BANDWIDTH={bitrate_to_int(settings["bitrate"])},'
-            f'AVERAGE-BANDWIDTH={bitrate_to_int(settings["bitrate"])},'
-            f'RESOLUTION={width}x{height},'
+            f"#EXT-X-STREAM-INF:BANDWIDTH={bitrate_to_int(settings['bitrate'])},"
+            f"AVERAGE-BANDWIDTH={bitrate_to_int(settings['bitrate'])},"
+            f"RESOLUTION={width}x{height},"
             f'CODECS="avc1.4d401f,mp4a.40.2"'
         )
         lines.append(f"{quality}/index.m3u8")
