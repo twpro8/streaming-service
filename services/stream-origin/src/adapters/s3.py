@@ -60,12 +60,9 @@ class S3Client:
 
         return objects
 
-    async def delete_file(self, key: str) -> bool:
+    async def delete_file(self, key: str):
         async with self._get_client() as client:
-            resp = await client.delete_object(Bucket=self.bucket_name, Key=key)
-            status_code = resp.get("ResponseMetadata", {}).get("HTTPStatusCode")
-
-            return True if status_code == 204 else False
+            await client.delete_object(Bucket=self.bucket_name, Key=key)
 
     async def delete_bulk(self, key: str) -> None:
         async with self._get_client() as client:

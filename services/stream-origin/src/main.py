@@ -1,14 +1,13 @@
 import sys
 from pathlib import Path
 
-import uvicorn
-
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
 
-from src.views import router as stream_router
+from src.views.video import router as stream_router
 
 
 app = FastAPI(title="Stream Origin")
