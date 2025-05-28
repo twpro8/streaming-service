@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from src.views.video import router as stream_router
+from src.api.video import router as stream_router
 
 
 app = FastAPI(title="Stream Origin")

@@ -5,7 +5,7 @@ from fastapi.responses import Response, RedirectResponse
 
 from src.enums import Quality
 from src.exceptions import PlaylistNotFoundException, PlaylistNotFoundHTTPException
-from src.views.dependencies import VideoServiceDep
+from src.api.dependencies import VideoServiceDep
 
 
 router = APIRouter(prefix="/videos", tags=["Stream"])
