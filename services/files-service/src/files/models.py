@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import String, BigInteger, DateTime, text, Enum
 from sqlalchemy.orm import Mapped, mapped_column
 
+from src.core.enums import ContentType
 from src.db import Base
-from src.schemas.pydantic_types import ContentType
 
 
 class FileORM(Base):

@@ -4,8 +4,12 @@ from fastapi.exceptions import HTTPException
 class MasterException(Exception):
     detail = "Unexpected error"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, detail: str = None, *args, **kwargs):
+        self.detail = detail or self.detail
         super().__init__(self.detail, *args, **kwargs)
+
+    def __str__(self):
+        return self.detail
 
 
 class MasterHTTPException(HTTPException):
@@ -16,6 +20,6 @@ class MasterHTTPException(HTTPException):
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
-class NoContentException(MasterHTTPException):
-    status_code = 204
-    detail = "No content"
+class ObjectNotFoundException(MasterException):
+    status_code = 404
+    detail = "Object not found"

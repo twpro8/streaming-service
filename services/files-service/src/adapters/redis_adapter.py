@@ -3,7 +3,7 @@ import logging
 import redis.asyncio as redis
 
 
-class RedisManager:
+class RedisAdapter:
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port

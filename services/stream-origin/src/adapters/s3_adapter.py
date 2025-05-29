@@ -73,7 +73,7 @@ class S3Adapter(AbstractStorage):
         async with self._get_client() as client:
             await client.delete_object(Bucket=self.bucket_name, Key=key)
 
-    async def delete_bulk(self, key: str) -> None:
+    async def delete_many(self, key: str) -> None:
         async with self._get_client() as client:
             paginator = client.get_paginator("list_objects_v2")
             async for page in paginator.paginate(Bucket=self.bucket_name, Prefix=key):

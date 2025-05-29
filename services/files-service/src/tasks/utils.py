@@ -1,17 +1,17 @@
-from src import s3_client
+from src.container import storage
 from src.video.transcoder import BITRATE_SETTINGS, HlsTranscoder
 
 
 async def update_master_playlist_from_s3(s3_key: str, input_path: str):
-    files = await s3_client.get_files_list(f"{s3_key}/")
+    files = await storage.get_files_list(f"{s3_key}/")
 
     index_files = [f for f in files if f["Key"].endswith("index.m3u8")]
 
     lines = ["#EXTM3U", "#EXT-X-VERSION:3"]
 
     for obj in sorted(index_files, key=lambda o: o["Key"]):
-        key = obj["Key"]  # e.g. 'videos/123/720p/index.m3u8'
-        quality = key.split("/")[-2]  # '720p'
+        key = obj["Key"]
+        quality = key.split("/")[-2]
 
         settings = BITRATE_SETTINGS.get(quality)
 
@@ -31,7 +31,7 @@ async def update_master_playlist_from_s3(s3_key: str, input_path: str):
         lines.append(f"{quality}/index.m3u8")
 
     master_text = "\n".join(lines)
-    await s3_client.upload_file(f"{s3_key}/master.m3u8", master_text.encode("utf-8"))
+    await storage.upload_file(f"{s3_key}/master.m3u8", master_text.encode("utf-8"))
 
 
 def bitrate_to_int(bitrate_str: str) -> int:

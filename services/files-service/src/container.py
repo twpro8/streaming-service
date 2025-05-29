@@ -1,6 +1,6 @@
 from src.config import settings
 from src.adapters.s3_adapter import S3Adapter
-from src.services.video import VideoService
+from src.adapters.redis_adapter import RedisAdapter
 
 storage = S3Adapter(
     access_key=settings.S3_ACCESS_KEY,
@@ -8,4 +8,8 @@ storage = S3Adapter(
     bucket_name=settings.S3_BUCKET_NAME,
     endpoint_url=settings.S3_ENDPOINT_URL,
 )
-video_service = VideoService(storage=storage)
+
+redis_manager = RedisAdapter(
+    host=settings.REDIS_HOST,
+    port=settings.REDIS_PORT,
+)

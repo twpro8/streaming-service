@@ -1,9 +1,14 @@
 from contextlib import asynccontextmanager
+from typing import List
 
 from aiobotocore.session import get_session
+from botocore.exceptions import ClientError
+
+from src.interfaces.storage import AbstractStorage
+from src.exceptions import ObjectNotFoundException
 
 
-class S3Client:
+class S3Adapter(AbstractStorage):
     def __init__(
         self,
         access_key: str,
@@ -37,18 +42,22 @@ class S3Client:
 
     async def get_file(self, key: str) -> bytes:
         """
-        Get object from s3
+        Get object from s3 storage
         """
         async with self._get_client() as client:
-            resp = await client.get_object(Bucket=self.bucket_name, Key=key)
-            # This will ensure the connection is correctly re-used/closed
-            async with resp["Body"] as stream:
-                data = await stream.read()
-            return data
+            try:
+                resp = await client.get_object(Bucket=self.bucket_name, Key=key)
+                async with resp["Body"] as stream:
+                    data = await stream.read()
+            except ClientError as e:
+                if e.response["Error"]["Code"] == "NoSuchKey":
+                    raise ObjectNotFoundException(detail=f"File {key} not found")
+                raise
+        return data
 
-    async def get_files_list(self, folder_path: str) -> list[dict]:
+    async def get_files_list(self, folder_path: str) -> List[dict]:
         """
-        Get list of S3 objects under the given folder path using paginator
+        Get list of objects under the given folder path using paginator
         """
         objects = []
 
@@ -60,14 +69,11 @@ class S3Client:
 
         return objects
 
-    async def delete_file(self, key: str) -> bool:
+    async def delete_file(self, key: str):
         async with self._get_client() as client:
-            resp = await client.delete_object(Bucket=self.bucket_name, Key=key)
-            status_code = resp.get("ResponseMetadata", {}).get("HTTPStatusCode")
+            await client.delete_object(Bucket=self.bucket_name, Key=key)
 
-            return True if status_code == 204 else False
-
-    async def delete_bulk(self, key: str) -> None:
+    async def delete_many(self, key: str) -> None:
         async with self._get_client() as client:
             paginator = client.get_paginator("list_objects_v2")
             async for page in paginator.paginate(Bucket=self.bucket_name, Prefix=key):

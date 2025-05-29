@@ -10,8 +10,7 @@ from src.files.utils import save_to_temp_file, sanitize_filename
 
 
 class FileService(BaseService):
-    @staticmethod
-    async def upload_video(content_id: UUID, qualities: List[Qualities], file: UploadFile):
+    async def upload_video(self, content_id: UUID, qualities: List[Qualities], file: UploadFile):
         temp_file_path = save_to_temp_file(file)
 
         process_video_and_upload_to_s3.delay(
@@ -20,8 +19,7 @@ class FileService(BaseService):
             qualities=qualities,
         )
 
-    @staticmethod
-    async def upload_image(content_id: UUID, file: UploadFile):
+    async def upload_image(self, content_id: UUID, file: UploadFile):
         temp_file_path = save_to_temp_file(file)
 
         filename = sanitize_filename(file.filename)

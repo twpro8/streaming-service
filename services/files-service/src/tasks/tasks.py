@@ -5,11 +5,12 @@ import asyncio
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
-from src import s3_client
+from src.container import storage
 from src.core.enums import Qualities
 from src.tasks.celery_app import celery_instance
 from src.tasks.utils import update_master_playlist_from_s3
-from src.video.transcoder import HlsTranscoder, BITRATE_SETTINGS
+from src.video.transcoder import HlsTranscoder
+
 
 log = logging.getLogger(__name__)
 
@@ -32,12 +33,12 @@ def process_video_and_upload_to_s3(
                 continue
 
             # delete old files for exact resolution if any
-            asyncio.run(s3_client.delete_bulk(f"{s3_key}/{quality_dir.name}"))
+            asyncio.run(storage.delete_many(f"{s3_key}/{quality_dir.name}"))
 
             for file in quality_dir.iterdir():
                 if file.is_file():
                     key = f"{s3_key}/{quality_dir.name}/{file.name}"
-                    upload_file_to_s3(file, key)
+                    upload_file_to_s3(input_file_path=file, s3_key=key)
 
         asyncio.run(update_master_playlist_from_s3(s3_key=s3_key, input_path=input_file_path))
 
@@ -53,7 +54,7 @@ def upload_file_to_s3(
     with open(input_file_path, "rb") as f:
         data = f.read()
 
-    success = asyncio.run(s3_client.upload_file(s3_key, data))
+    success = asyncio.run(storage.upload_file(s3_key, data))
     if success:
         log.info(f"Uploaded {s3_key}")
     else:
