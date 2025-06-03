@@ -1,7 +1,11 @@
 from uuid import UUID
 
 from src.enums import Quality
-from src.exceptions import ObjectNotFoundException, PlaylistNotFoundException
+from src.exceptions import (
+    ObjectNotFoundException,
+    PlaylistNotFoundException,
+    SegmentNotFoundException,
+)
 from src.services.base import BaseService
 
 
@@ -21,6 +25,14 @@ class VideoService(BaseService):
         except ObjectNotFoundException:
             raise PlaylistNotFoundException
         return playlist
+
+    async def get_segment(self, video_id: UUID, quality: Quality, segment_name: str):
+        key = f"videos/{video_id}/{quality}/{segment_name}"
+        try:
+            segment = await self.storage.get_file(key)
+        except ObjectNotFoundException:
+            raise SegmentNotFoundException
+        return segment
 
     async def get_segment_url(self, video_id: UUID, quality: Quality, segment_name: str):
         key = f"videos/{video_id}/{quality}/{segment_name}"

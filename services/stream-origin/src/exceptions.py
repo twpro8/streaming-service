@@ -35,3 +35,11 @@ class PlaylistNotFoundException(ObjectNotFoundException):
 
 class PlaylistNotFoundHTTPException(ObjectNotFoundHTTPException):
     detail = "Playlist not found"
+
+
+class SegmentNotFoundException(ObjectNotFoundException):
+    detail = "Segment not found"
+
+
+class SegmentNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Segment not found"

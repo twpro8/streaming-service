@@ -1,10 +1,15 @@
 from uuid import UUID
 
 from fastapi import APIRouter
-from fastapi.responses import Response, RedirectResponse
+from fastapi.responses import Response
 
 from src.enums import Quality
-from src.exceptions import PlaylistNotFoundException, PlaylistNotFoundHTTPException
+from src.exceptions import (
+    PlaylistNotFoundException,
+    PlaylistNotFoundHTTPException,
+    SegmentNotFoundException,
+    SegmentNotFoundHTTPException,
+)
 from src.api.dependencies import VideoServiceDep
 
 
@@ -33,5 +38,8 @@ async def get_index_playlist(video_service: VideoServiceDep, video_id: UUID, qua
 async def get_segment(
     video_service: VideoServiceDep, video_id: UUID, quality: Quality, segment_name: str
 ):
-    url = await video_service.get_segment_url(video_id, quality, segment_name)
-    return RedirectResponse(url, status_code=307)
+    try:
+        segment = await video_service.get_segment(video_id, quality, segment_name)
+    except SegmentNotFoundException:
+        raise SegmentNotFoundHTTPException
+    return Response(content=segment, media_type="application/vnd.apple.mpegurl")
