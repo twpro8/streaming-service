@@ -1,8 +1,11 @@
-from src.container import storage
+from src.factories.file_adapter_factories import FileAdapterFactory
 from src.video.transcoder import BITRATE_SETTINGS, HlsTranscoder
 
 
 async def update_master_playlist_from_s3(s3_key: str, input_path: str):
+
+    storage = FileAdapterFactory.s3_adapter_sync_factory()
+
     files = await storage.get_files_list(f"{s3_key}/")
 
     index_files = [f for f in files if f["Key"].endswith("index.m3u8")]

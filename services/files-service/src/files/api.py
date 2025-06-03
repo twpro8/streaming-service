@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, UploadFile, File, Query
 
 from src.core.enums import Qualities
-from src.files.service import FileService
+from src.files.dependencies import FileServiceDep
 
 
 router = APIRouter(tags=["Files"])
@@ -12,15 +12,20 @@ router = APIRouter(tags=["Files"])
 
 @router.post("/videos/{content_id}")
 async def upload_video(
+    file_service: FileServiceDep,
     content_id: UUID,
     qualities: List[Qualities] = Query(default=[Qualities.CD]),
     file: UploadFile = File(...),
 ):
-    await FileService().upload_video(content_id=content_id, qualities=qualities, file=file)
+    await file_service.upload_video(content_id=content_id, qualities=qualities, file=file)
     return {"status": "ok"}
 
 
 @router.post("/images/{content_id}")
-async def upload_image(content_id: UUID, file: UploadFile = File(...)):
-    await FileService().upload_image(content_id=content_id, file=file)
+async def upload_image(
+    file_service: FileServiceDep,
+    content_id: UUID,
+    file: UploadFile = File(...)
+):
+    await file_service.upload_image(content_id=content_id, file=file)
     return {"status": "ok"}
