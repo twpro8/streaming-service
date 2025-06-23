@@ -28,3 +28,9 @@ class FileService(BaseService):
             input_file_path=temp_file_path,
             s3_key=f"images/{content_id}/{filename}",
         )
+
+    async def delete_video(self, content_id: UUID):
+        await self.storage.delete_dir(key=f"videos/{content_id}")
+
+    async def delete_image(self, content_id: UUID):
+        await self.storage.delete_dir(key=f"images/{content_id}")

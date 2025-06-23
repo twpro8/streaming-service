@@ -29,3 +29,13 @@ async def upload_image(
 ):
     await file_service.upload_image(content_id=content_id, file=file)
     return {"status": "ok"}
+
+
+@router.delete("/videos/{content_id}", status_code=204)
+async def delete_video(file_service: FileServiceDep, content_id: UUID):
+    await file_service.delete_video(content_id=content_id)
+
+
+@router.delete("/images/{content_id}", status_code=204)
+async def delete_image(file_service: FileServiceDep, content_id: UUID):
+    await file_service.delete_image(content_id=content_id)
