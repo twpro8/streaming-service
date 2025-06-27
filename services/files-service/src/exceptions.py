@@ -21,7 +21,6 @@ class MasterHTTPException(HTTPException):
 
 
 class ObjectNotFoundException(MasterException):
-    status_code = 404
     detail = "Object not found"
 
 
