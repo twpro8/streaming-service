@@ -7,7 +7,7 @@ from fastapi import FastAPI
 import uvicorn
 
 from src.core.router import master_router
-from src import redis_manager
+from src.container import redis_manager
 
 
 async def lifespan(app: FastAPI):

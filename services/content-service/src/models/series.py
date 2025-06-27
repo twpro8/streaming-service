@@ -1,18 +1,24 @@
 # ruff: noqa
 
-from datetime import date
 from typing import List
+from uuid import UUID, uuid4
+from datetime import date
 from decimal import Decimal
 
 from sqlalchemy import String, DECIMAL, ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
 from src.models.base import Base
 
 
 class SeriesORM(Base):
     __tablename__ = "series"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(512))
     director: Mapped[str] = mapped_column(String(255))
@@ -31,8 +37,12 @@ class SeriesORM(Base):
 
 class SeasonORM(Base):
     __tablename__ = "seasons"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    series_id: Mapped[int] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    series_id: Mapped[UUID] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(255))
     season_number: Mapped[int]
 
@@ -47,9 +57,13 @@ class SeasonORM(Base):
 
 class EpisodeORM(Base):
     __tablename__ = "episodes"
-    id: Mapped[int] = mapped_column(primary_key=True)
-    series_id: Mapped[int] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
-    season_id: Mapped[int] = mapped_column(ForeignKey("seasons.id"))
+    id: Mapped[UUID] = mapped_column(
+        PG_UUID(as_uuid=True),
+        primary_key=True,
+        default=uuid4,
+    )
+    series_id: Mapped[UUID] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
+    season_id: Mapped[UUID] = mapped_column(ForeignKey("seasons.id"))
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
     duration: Mapped[int]

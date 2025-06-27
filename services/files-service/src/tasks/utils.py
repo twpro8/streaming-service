@@ -1,60 +1,40 @@
-import logging
-import subprocess
-from typing import List
-from pathlib import Path
-
-from src.core.enums import Qualities
+from src.factories.file_adapter_factories import FileAdapterFactory
+from src.video.transcoder import BITRATE_SETTINGS, HlsTranscoder
 
 
-log = logging.getLogger(__name__)
+async def update_master_playlist_from_s3(s3_key: str, input_path: str):
+    storage = FileAdapterFactory.s3_adapter_sync_factory()
 
+    files = await storage.get_files_list(f"{s3_key}/")
 
-BITRATE_SETTINGS = {
-    "360p": {"bitrate": "800k", "maxrate": "856k", "bufsize": "1200k"},
-    "480p": {"bitrate": "1000k", "maxrate": "1070k", "bufsize": "1500k"},
-    "720p": {"bitrate": "2800k", "maxrate": "2996k", "bufsize": "4200k"},
-    "1080p": {"bitrate": "5000k", "maxrate": "5350k", "bufsize": "7500k"},
-}
+    index_files = [f for f in files if f["Key"].endswith("index.m3u8")]
 
+    lines = ["#EXTM3U", "#EXT-X-VERSION:3"]
 
-def transcode_to_hls(input_path: str, output_dir: Path, qualities: List[Qualities]):
-    for quality in qualities:
-        height = quality.rstrip("p")
-        output_quality_dir = output_dir / quality
-        output_quality_dir.mkdir(parents=True, exist_ok=True)
+    for obj in sorted(index_files, key=lambda o: o["Key"]):
+        key = obj["Key"]
+        quality = key.split("/")[-2]
 
-        output_playlist = f"{output_quality_dir}/index.m3u8"
-        output_segment = f"{output_quality_dir}/segment_%03d.ts"
+        settings = BITRATE_SETTINGS.get(quality)
 
-        settings = BITRATE_SETTINGS.get(
-            quality,
-            {
-                "bitrate": "1400k",
-                "maxrate": "1498k",
-                "bufsize": "2100k",
-            },
+        target_height = int(quality.rstrip("p"))
+
+        original_width, original_height = HlsTranscoder.get_video_resolution(input_path)
+        width, height = HlsTranscoder.calculate_scaled_resolution(
+            original_width, original_height, target_height
         )
 
-        cmd = [
-            "ffmpeg",
-            "-i", input_path,
-            "-vf", f"scale=-2:{height}",
-            "-ar", "48000",
-            "-c:v", "libx264",
-            "-profile:v", "main",
-            "-crf", "20",
-            "-g", "48",
-            "-keyint_min", "48",
-            "-sc_threshold", "0",
-            "-b:v", settings["bitrate"],
-            "-maxrate", settings["maxrate"],
-            "-bufsize", settings["bufsize"],
-            "-c:a", "aac",
-            "-b:a", "128k",
-            "-hls_time", "4",
-            "-hls_playlist_type", "vod",
-            "-hls_segment_filename", output_segment,
-            output_playlist
-        ]
+        lines.append(
+            f"#EXT-X-STREAM-INF:BANDWIDTH={bitrate_to_int(settings['bitrate'])},"
+            f"AVERAGE-BANDWIDTH={bitrate_to_int(settings['bitrate'])},"
+            f"RESOLUTION={width}x{height},"
+            f'CODECS="avc1.4d401f,mp4a.40.2"'
+        )
+        lines.append(f"{quality}/index.m3u8")
 
-        subprocess.run(cmd)
+    master_text = "\n".join(lines)
+    await storage.upload_file(f"{s3_key}/master.m3u8", master_text.encode("utf-8"))
+
+
+def bitrate_to_int(bitrate_str: str) -> int:
+    return int(bitrate_str.rstrip("k")) * 1000

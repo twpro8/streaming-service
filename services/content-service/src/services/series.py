@@ -1,4 +1,4 @@
-from typing import List
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -11,21 +11,22 @@ class SeriesService(BaseService):
         await self.db.commit()
         return series
 
-    async def get_series(self, series_ids: List[int | None] = None):
-        if series_ids is not None:
-            series = await self.db.series.get_objects_by_ids(series_ids)
-            return series
+    async def get_series(self):
         series = await self.db.series.get_filtered()
         return series
 
-    async def update_entire_series(self, series_id: int, series_data: BaseModel):
+    async def get_one_series(self, series_id: UUID):
+        series = await self.db.series.get_one(id=series_id)
+        return series
+
+    async def update_entire_series(self, series_id: UUID, series_data: BaseModel):
         await self.db.series.update(id=series_id, data=series_data)
         await self.db.commit()
 
-    async def partly_update_series(self, series_id: int, series_data: BaseModel):
+    async def partly_update_series(self, series_id: UUID, series_data: BaseModel):
         await self.db.series.update(id=series_id, data=series_data, exclude_unset=True)
         await self.db.commit()
 
-    async def delete_series(self, series_id: int):
+    async def delete_series(self, series_id: UUID):
         await self.db.series.delete(id=series_id)
         await self.db.commit()

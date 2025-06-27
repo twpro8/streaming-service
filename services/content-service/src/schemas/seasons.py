@@ -1,5 +1,7 @@
+from uuid import UUID
+
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import IDInt, TitleStr
+from src.schemas.pydantic_types import TitleStr
 
 
 class SeasonAddRequestDTO(BaseSchema):
@@ -8,7 +10,7 @@ class SeasonAddRequestDTO(BaseSchema):
 
 
 class SeasonAddDTO(SeasonAddRequestDTO):
-    series_id: IDInt
+    series_id: UUID
 
 
 class SeasonPatchRequestDTO(BaseSchema):
@@ -17,4 +19,4 @@ class SeasonPatchRequestDTO(BaseSchema):
 
 
 class SeasonDTO(SeasonAddDTO):
-    id: IDInt
+    id: UUID

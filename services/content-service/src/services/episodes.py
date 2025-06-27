@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from src.schemas.episodes import (
     EpisodeDeleteRequestDTO,
     EpisodePatchRequestDTO,
@@ -22,10 +24,10 @@ class EpisodeService(BaseService):
 
     async def get_episodes(
         self,
-        series_id: int,
+        series_id: UUID,
+        season_id: UUID | None,
         page: int,
         per_page: int,
-        season_id: int | None,
         episode_title: str | None,
         episode_number: int | None,
     ):
@@ -46,7 +48,7 @@ class EpisodeService(BaseService):
         )
         return episodes
 
-    async def get_episode_by_id(self, episode_id: int):
+    async def get_episode_by_id(self, episode_id: UUID):
         """
         Get episode by ID.
         """
@@ -74,7 +76,7 @@ class EpisodeService(BaseService):
         await self.db.commit()
         return new_episode
 
-    async def update_episode(self, episode_id: int, data: EpisodePatchRequestDTO):
+    async def update_episode(self, episode_id: UUID, data: EpisodePatchRequestDTO):
         """
         Update episode by ID.
         """
@@ -94,7 +96,7 @@ class EpisodeService(BaseService):
             raise UniqueFileIDException
         await self.db.commit()
 
-    async def delete_episode(self, episode_id: int, data: EpisodeDeleteRequestDTO):
+    async def delete_episode(self, episode_id: UUID, data: EpisodeDeleteRequestDTO):
         """
         Delete episode by ID.
         """

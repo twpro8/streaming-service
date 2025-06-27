@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from datetime import date
 
 from src.schemas.base import BaseSchema
@@ -15,7 +17,7 @@ class FilmAddDTO(BaseSchema):
 
 
 class FilmDTO(FilmAddDTO):
-    id: IDInt
+    id: UUID
     rating: RatingDecimal
 
 

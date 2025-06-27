@@ -1,9 +1,18 @@
 from enum import Enum
 
 
+class VideoType(str, Enum):
+    film = "film"
+    episode = "episode"
+
+    def __str__(self):
+        return self.value
+
+
 class ContentType(str, Enum):
-    films = "films"
-    series = "series"
+    film = "film"
+    episode = "episode"
+    image = "image"
 
     def __str__(self):
         return self.value

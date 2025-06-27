@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     log.info("RabbitMQ: Connection closed")
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="Content Service")
 app.add_middleware(MetricsMiddleware)
 app.include_router(master_router)
 

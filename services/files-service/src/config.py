@@ -1,4 +1,4 @@
-from typing import Literal
+from typing import Literal, List
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -29,6 +29,9 @@ class Settings(BaseSettings):
 
     REDIS_HOST: str
     REDIS_PORT: int
+
+    INPUT_VIDEO_MIMO: List[str]
+    IMAGE_MIMO: List[str]
 
     @property
     def REDIS_URL(self):  # noqa
