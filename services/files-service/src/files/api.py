@@ -4,6 +4,11 @@ from uuid import UUID
 from fastapi import APIRouter, UploadFile, File, Query
 
 from src.core.enums import Qualities
+from src.exceptions import (
+    InvalidContentTypeException,
+    InvalidVideoTypeHTTPException,
+    InvalidImageTypeHTTPException,
+)
 from src.files.dependencies import FileServiceDep
 
 
@@ -17,17 +22,25 @@ async def upload_video(
     qualities: List[Qualities] = Query(default=[Qualities.CD]),
     file: UploadFile = File(...),
 ):
-    await file_service.upload_video(content_id=content_id, qualities=qualities, file=file)
+    try:
+        await file_service.upload_video(
+            content_id=content_id,
+            qualities=qualities,
+            file=file,
+        )
+    except InvalidContentTypeException:
+        raise InvalidVideoTypeHTTPException
     return {"status": "ok"}
 
 
 @router.post("/images/{content_id}")
 async def upload_image(
-    file_service: FileServiceDep,
-    content_id: UUID,
-    file: UploadFile = File(...)
+    file_service: FileServiceDep, content_id: UUID, file: UploadFile = File(...)
 ):
-    await file_service.upload_image(content_id=content_id, file=file)
+    try:
+        await file_service.upload_image(content_id=content_id, file=file)
+    except InvalidContentTypeException:
+        raise InvalidImageTypeHTTPException
     return {"status": "ok"}
 
 

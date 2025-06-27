@@ -21,7 +21,6 @@ def process_video_and_upload_to_s3(
     s3_key: str,
     qualities: List[Qualities],
 ):
-
     storage = FileAdapterFactory.s3_adapter_sync_factory()
 
     with TemporaryDirectory() as tmp:
@@ -36,7 +35,7 @@ def process_video_and_upload_to_s3(
                 continue
 
             # delete old files for exact resolution if any
-            asyncio.run(storage.delete_many(f"{s3_key}/{quality_dir.name}"))
+            asyncio.run(storage.delete_dir(f"{s3_key}/{quality_dir.name}"))
 
             for file in quality_dir.iterdir():
                 if file.is_file():
@@ -54,7 +53,6 @@ def upload_file_to_s3(
     input_file_path: str,
     s3_key: str,
 ):
-
     storage = FileAdapterFactory.s3_adapter_sync_factory()
 
     with open(input_file_path, "rb") as f:

@@ -3,7 +3,7 @@ from enum import Enum
 
 class ContentType(str, Enum):
     films = "films"
-    series = "series"
+    episodes = "episodes"
 
     def __str__(self):
         return self.value

@@ -23,3 +23,17 @@ class MasterHTTPException(HTTPException):
 class ObjectNotFoundException(MasterException):
     status_code = 404
     detail = "Object not found"
+
+
+class InvalidContentTypeException(MasterException):
+    detail = "Invalid content type"
+
+
+class InvalidVideoTypeHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Video must have mp4 or avi format"
+
+
+class InvalidImageTypeHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Image must have jpg or png format"
