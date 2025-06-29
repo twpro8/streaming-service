@@ -6,7 +6,7 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from fastapi import FastAPI
 import uvicorn
 
-from src.core.router import master_router
+from src.api import master_router
 from src.container import redis_manager
 
 

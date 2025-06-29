@@ -2,7 +2,7 @@ from src.config import settings
 from src.adapters.s3_adapter import S3Adapter
 
 
-class FileAdapterFactory:
+class StorageAdapterFactory:
     @staticmethod
     async def s3_adapter_factory() -> S3Adapter:
         return S3Adapter(

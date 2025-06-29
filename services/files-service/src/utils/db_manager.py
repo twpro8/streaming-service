@@ -1,4 +1,5 @@
-from src.files.repository import FileRepository
+from src.repositories.videos import VideoRepository
+from src.repositories.images import ImageRepository
 
 
 class DBManager:
@@ -7,7 +8,8 @@ class DBManager:
 
     async def __aenter__(self):
         self.session = self.session_factory()
-        self.files = FileRepository(self.session)
+        self.videos = VideoRepository(self.session)
+        self.images = ImageRepository(self.session)
         return self
 
     async def __aexit__(self, *args):

@@ -2,7 +2,7 @@ import logging
 import subprocess
 from typing import List, Tuple
 from pathlib import Path
-from src.core.enums import Qualities
+from src.enums import Qualities
 
 
 log = logging.getLogger(__name__)
@@ -42,24 +42,41 @@ class HlsTranscoder:
 
             cmd = [
                 "ffmpeg",
-                "-i", self.input_path,
-                "-vf", f"scale={width}:{height}",
-                "-ar", "48000",
-                "-c:v", "libx264",
-                "-profile:v", "main",
-                "-crf", "20",
-                "-g", "48",
-                "-keyint_min", "48",
-                "-sc_threshold", "0",
-                "-b:v", settings["bitrate"],
-                "-maxrate", settings["maxrate"],
-                "-bufsize", settings["bufsize"],
-                "-c:a", "aac",
-                "-b:a", "128k",
-                "-hls_time", "4",
-                "-hls_playlist_type", "vod",
-                "-hls_segment_filename", output_segment,
-                output_playlist
+                "-i",
+                self.input_path,
+                "-vf",
+                f"scale={width}:{height}",
+                "-ar",
+                "48000",
+                "-c:v",
+                "libx264",
+                "-profile:v",
+                "main",
+                "-crf",
+                "20",
+                "-g",
+                "48",
+                "-keyint_min",
+                "48",
+                "-sc_threshold",
+                "0",
+                "-b:v",
+                settings["bitrate"],
+                "-maxrate",
+                settings["maxrate"],
+                "-bufsize",
+                settings["bufsize"],
+                "-c:a",
+                "aac",
+                "-b:a",
+                "128k",
+                "-hls_time",
+                "4",
+                "-hls_playlist_type",
+                "vod",
+                "-hls_segment_filename",
+                output_segment,
+                output_playlist,
             ]
 
             subprocess.run(cmd, check=True)
@@ -68,11 +85,15 @@ class HlsTranscoder:
     def get_video_resolution(input_path: str) -> Tuple[int, int]:
         cmd = [
             "ffprobe",
-            "-v", "error",
-            "-select_streams", "v:0",
-            "-show_entries", "stream=width,height",
-            "-of", "csv=s=x:p=0",
-            input_path
+            "-v",
+            "error",
+            "-select_streams",
+            "v:0",
+            "-show_entries",
+            "stream=width,height",
+            "-of",
+            "csv=s=x:p=0",
+            input_path,
         ]
         result = subprocess.run(cmd, capture_output=True, text=True, check=True)
         width, height = map(int, result.stdout.strip().split("x"))

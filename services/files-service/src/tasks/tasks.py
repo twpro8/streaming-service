@@ -5,11 +5,11 @@ import asyncio
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
-from src.factories.file_adapter_factories import FileAdapterFactory
-from src.core.enums import Qualities
+from src.factories.storage_adapter_factories import StorageAdapterFactory
+from src.enums import Qualities
 from src.tasks.celery_app import celery_instance
 from src.tasks.utils import update_master_playlist_from_s3
-from src.video.transcoder import HlsTranscoder
+from src.utils.transcoder import HlsTranscoder
 
 
 log = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ def process_video_and_upload_to_s3(
     s3_key: str,
     qualities: List[Qualities],
 ):
-    storage = FileAdapterFactory.s3_adapter_sync_factory()
+    storage = StorageAdapterFactory.s3_adapter_sync_factory()
 
     with TemporaryDirectory() as tmp:
         temp_dir = Path(tmp)
@@ -53,7 +53,7 @@ def upload_file_to_s3(
     input_file_path: str,
     s3_key: str,
 ):
-    storage = FileAdapterFactory.s3_adapter_sync_factory()
+    storage = StorageAdapterFactory.s3_adapter_sync_factory()
 
     with open(input_file_path, "rb") as f:
         data = f.read()
