@@ -2,45 +2,54 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from src.applications.films import FilmAppService
+from src.exceptions import FilmNotFoundException, FilmNotFoundHTTPException
 from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
-from src.api.dependencies import DBDep, AdminDep
+from src.api.dependencies import DBDep, AdminDep, PaginationDep
+from src.services.films import FilmService
 
 
 router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep):
-    films = await FilmAppService(db).get_films()
+async def get_films(db: DBDep, pagination: PaginationDep):
+    films = await FilmService(db).get_films(pagination)
     return {"status": "ok", "data": films}
 
 
 @router.get("/{film_id}")
 async def get_film(db: DBDep, film_id: UUID):
-    film = await FilmAppService(db).get_film(film_id=film_id)
+    try:
+        film = await FilmService(db).get_film(film_id=film_id)
+    except FilmNotFoundException:
+        raise FilmNotFoundHTTPException
     return {"status": "ok", "data": film}
 
 
-@router.post("/", dependencies=[AdminDep])
+@router.post("", dependencies=[AdminDep])
 async def add_film(db: DBDep, film_data: FilmAddDTO):
-    film = await FilmAppService(db).add_film(film_data)
+    film = await FilmService(db).add_film(film_data)
     return {"status": "ok", "data": film}
 
 
 @router.put("/{film_id}", dependencies=[AdminDep])
-async def update_entire_film(db: DBDep, film_id: UUID, film_data: FilmAddDTO):
-    await FilmAppService(db).update_entire_film(film_id, film_data)
+async def replace_film(db: DBDep, film_id: UUID, film_data: FilmAddDTO):
+    try:
+        await FilmService(db).replace_film(film_id, film_data)
+    except FilmNotFoundException:
+        raise FilmNotFoundHTTPException
     return {"status": "ok"}
 
 
 @router.patch("/{film_id}", dependencies=[AdminDep])
-async def partly_update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
-    await FilmAppService(db).partly_update_film(film_id, film_data)
+async def update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
+    try:
+        await FilmService(db).update_film(film_id, film_data)
+    except FilmNotFoundException:
+        raise FilmNotFoundHTTPException
     return {"status": "ok"}
 
 
-@router.delete("/{film_id}", dependencies=[AdminDep])
+@router.delete("/{film_id}", status_code=204, dependencies=[AdminDep])
 async def delete_film(db: DBDep, film_id: UUID):
-    await FilmAppService(db).remove_film(film_id)
-    return {"status": "ok"}
+    await FilmService(db).remove_film(film_id)

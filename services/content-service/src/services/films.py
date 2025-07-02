@@ -3,15 +3,19 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from src.services.base import BaseService
+from src.exceptions import ObjectNotFoundException, FilmNotFoundException
 
 
 class FilmService(BaseService):
-    async def get_films(self):
-        films = await self.db.films.get_filtered()
+    async def get_films(self, pagination):
+        films = await self.db.films.get_filtered(page=pagination.page, per_page=pagination.per_page)
         return films
 
     async def get_film(self, film_id: UUID):
-        film = await self.db.films.get_one(id=film_id)
+        try:
+            film = await self.db.films.get_one(id=film_id)
+        except ObjectNotFoundException:
+            raise FilmNotFoundException
         return film
 
     async def add_film(self, film_data: BaseModel):
@@ -19,11 +23,17 @@ class FilmService(BaseService):
         await self.db.commit()
         return film
 
-    async def update_entire_film(self, film_id: UUID, film_data: BaseModel):
+    async def replace_film(self, film_id: UUID, film_data: BaseModel):
+        if not await self.check_film_exists(id=film_id):
+            raise FilmNotFoundException
+
         await self.db.films.update(id=film_id, data=film_data)
         await self.db.commit()
 
-    async def partly_update_film(self, film_id: UUID, film_data: BaseModel):
+    async def update_film(self, film_id: UUID, film_data: BaseModel):
+        if not await self.check_film_exists(id=film_id):
+            raise FilmNotFoundException
+
         await self.db.films.update(id=film_id, data=film_data, exclude_unset=True)
         await self.db.commit()
 
