@@ -16,7 +16,7 @@ router = APIRouter(prefix="/series", tags=["Series"])
 
 @router.get("")
 async def get_series(db: DBDep, pagination: PaginationDep):
-    series = await SeriesService(db).get_series(pagination)
+    series = await SeriesService(db).get_series(page=pagination.page, per_page=pagination.per_page)
     return {"status": "ok", "data": series}
 
 

@@ -12,10 +12,8 @@ class SeriesService(BaseService):
         await self.db.commit()
         return series
 
-    async def get_series(self, pagination):
-        series = await self.db.series.get_filtered(
-            page=pagination.page, per_page=pagination.per_page
-        )
+    async def get_series(self, page: int, per_page: int):
+        series = await self.db.series.get_filtered(page=page, per_page=per_page)
         return series
 
     async def get_one_series(self, series_id: UUID):

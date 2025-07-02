@@ -7,8 +7,8 @@ from src.exceptions import ObjectNotFoundException, FilmNotFoundException
 
 
 class FilmService(BaseService):
-    async def get_films(self, pagination):
-        films = await self.db.films.get_filtered(page=pagination.page, per_page=pagination.per_page)
+    async def get_films(self, page: int, per_page: int):
+        films = await self.db.films.get_filtered(page=page, per_page=per_page)
         return films
 
     async def get_film(self, film_id: UUID):

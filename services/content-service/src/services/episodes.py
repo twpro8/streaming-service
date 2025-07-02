@@ -10,7 +10,6 @@ from src.exceptions import (
     EpisodeNotFoundException,
     SeriesNotFoundException,
     SeasonNotFoundException,
-    EpisodeDoesNotExistException,
     UniqueEpisodePerSeasonException,
     UniqueSeasonPerSeriesException,
     UniqueFileIDException,
@@ -100,13 +99,9 @@ class EpisodeService(BaseService):
         """
         Delete episode by ID.
         """
-        if not await self.check_series_exists(id=data.series_id):
-            raise SeriesNotFoundException
-        if not await self.check_season_exists(id=data.season_id):
-            raise SeasonNotFoundException
-        if not await self.check_episode_exists(id=episode_id):
-            raise EpisodeDoesNotExistException
         await self.db.episodes.delete(
-            id=episode_id, series_id=data.series_id, season_id=data.season_id
+            id=episode_id,
+            series_id=data.series_id,
+            season_id=data.season_id,
         )
         await self.db.commit()

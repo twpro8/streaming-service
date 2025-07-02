@@ -11,9 +11,11 @@ from src.services.base import BaseService
 
 
 class SeasonService(BaseService):
-    async def get_seasons(self, series_id: UUID, pagination):
+    async def get_seasons(self, series_id: UUID, page: int, per_page: int):
         seasons = await self.db.seasons.get_filtered(
-            series_id=series_id, page=pagination.page, per_page=pagination.per_page
+            series_id=series_id,
+            page=page,
+            per_page=per_page,
         )
         return seasons
 

@@ -13,7 +13,7 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 @router.get("")
 async def get_films(db: DBDep, pagination: PaginationDep):
-    films = await FilmService(db).get_films(pagination)
+    films = await FilmService(db).get_films(page=pagination.page, per_page=pagination.per_page)
     return {"status": "ok", "data": films}
 
 

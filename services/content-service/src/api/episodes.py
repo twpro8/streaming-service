@@ -47,6 +47,5 @@ async def update_episode(db: DBDep, episode_id: UUID, episode_data: EpisodePatch
 
 
 @router.delete("/{episode_id}", dependencies=[AdminDep], status_code=204)
-@handle_episode_exceptions
 async def delete_episode(db: DBDep, episode_id: UUID, episode_data: EpisodeDeleteRequestDTO):
     await EpisodeService(db).delete_episode(episode_id=episode_id, data=episode_data)
