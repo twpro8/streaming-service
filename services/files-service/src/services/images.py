@@ -4,13 +4,30 @@ from fastapi import UploadFile
 
 from src.config import settings
 from src.enums import ContentType
-from src.exceptions import InvalidContentTypeException
+from src.exceptions import (
+    InvalidContentTypeException,
+    ObjectNotFoundException,
+    ImageNotFoundException,
+)
 from src.schemas.files import FileAddDTO
 from src.services.base import BaseService
 from src.services.utils import sanitize_filename
 
 
 class ImageService(BaseService):
+    async def get_images_info_list(self, pagination):
+        images_info = await self.db.images.get_filtered(
+            page=pagination.page, per_page=pagination.per_page
+        )
+        return images_info
+
+    async def get_image_info(self, uuid: UUID):
+        try:
+            image_info = await self.db.images.get_one(content_id=uuid)
+        except ObjectNotFoundException:
+            raise ImageNotFoundException
+        return image_info
+
     async def upload_image(self, content_id: UUID, content_type: ContentType, file: UploadFile):
         if file.content_type not in settings.IMAGE_MIMO:
             raise InvalidContentTypeException

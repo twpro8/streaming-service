@@ -12,6 +12,7 @@ dependencies = [
     "celery>=5.5.2",
     "fastapi>=0.115.12",
     "pydantic-settings>=2.9.1",
+    "pyjwt>=2.10.1",
     "python-multipart>=0.0.20",
     "redis>=6.1.0",
     "ruff>=0.11.9",

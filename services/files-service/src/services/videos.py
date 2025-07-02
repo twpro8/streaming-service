@@ -5,7 +5,11 @@ from fastapi import UploadFile
 
 from src.config import settings
 from src.enums import Qualities, ContentType
-from src.exceptions import InvalidContentTypeException
+from src.exceptions import (
+    InvalidContentTypeException,
+    ObjectNotFoundException,
+    VideoNotFoundException,
+)
 from src.schemas.files import FileAddDTO
 from src.services.base import BaseService
 from src.tasks.tasks import process_video_and_upload_to_s3
@@ -13,6 +17,16 @@ from src.services.utils import save_to_temp_file, sanitize_filename
 
 
 class VideoService(BaseService):
+    async def get_videos_info_list(self, pagination):
+        return await self.db.videos.get_filtered(page=pagination.page, per_page=pagination.per_page)
+
+    async def get_video_info(self, uuid: UUID):
+        try:
+            video_info = await self.db.videos.get_one(content_id=uuid)
+        except ObjectNotFoundException:
+            raise VideoNotFoundException
+        return video_info
+
     async def upload_video(
         self,
         content_id: UUID,

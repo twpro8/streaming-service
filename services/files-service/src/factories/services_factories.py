@@ -5,6 +5,7 @@ from fastapi import Depends
 from src.factories.db_manager_factories import DBManagerFactory
 from src.factories.storage_adapter_factories import StorageAdapterFactory
 from src.interfaces.storage import AbstractStorage
+from src.services.auth import AuthService
 from src.services.images import ImageService
 from src.services.videos import VideoService
 from src.utils.db_manager import DBManager
@@ -26,3 +27,9 @@ class ImageServiceFactory:
         storage: Annotated[AbstractStorage, Depends(StorageAdapterFactory.s3_adapter_factory)],
     ) -> ImageService:
         return ImageService(db=db, storage=storage)
+
+
+class AuthServiceFactory:
+    @staticmethod
+    async def auth_service_factory() -> AuthService:
+        return AuthService()

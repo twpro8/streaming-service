@@ -7,11 +7,28 @@ from src.enums import Qualities, ContentType
 from src.exceptions import (
     InvalidContentTypeException,
     InvalidVideoTypeHTTPException,
+    VideoNotFoundException,
+    VideoNotFoundHTTPException,
 )
-from src.api.dependencies import VideoServiceDep
+from src.api.dependencies import VideoServiceDep, PaginationDep
 
 
 router = APIRouter(prefix="/videos", tags=["Videos"])
+
+
+@router.get("")
+async def get_videos_info_list(video_service: VideoServiceDep, pagination: PaginationDep):
+    video_info_list = await video_service.get_videos_info_list(pagination)
+    return {"status": "ok", "data": video_info_list}
+
+
+@router.get("/{content_id}")
+async def get_video_info(video_service: VideoServiceDep, content_id: UUID):
+    try:
+        video_info = await video_service.get_video_info(content_id)
+    except VideoNotFoundException:
+        raise VideoNotFoundHTTPException
+    return {"status": "ok", "data": video_info}
 
 
 @router.post("/{content_id}")
