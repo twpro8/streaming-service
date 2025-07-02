@@ -11,7 +11,7 @@ from src.exceptions import (
 from src.schemas.comments import CommentAddRequestDTO
 from src.schemas.pydantic_types import ContentType
 from src.services.comments import CommentService
-from src.views.dependencies import DBDep, UserDep
+from src.api.dependencies import DBDep, UserDep
 
 
 router = APIRouter(tags=["Comments"])

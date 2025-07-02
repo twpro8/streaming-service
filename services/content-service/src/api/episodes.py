@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from src.services.episodes import EpisodeService
 from src.utils.decorators import handle_episode_exceptions
-from src.views.dependencies import AdminDep, DBDep, PaginationDep
+from src.api.dependencies import AdminDep, DBDep, PaginationDep
 from src.schemas.episodes import EpisodeAddDTO, EpisodePatchRequestDTO, EpisodeDeleteRequestDTO
 
 

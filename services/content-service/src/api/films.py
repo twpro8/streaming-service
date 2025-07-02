@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from src.applications.films import FilmAppService
 from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
-from src.views.dependencies import DBDep, AdminDep
+from src.api.dependencies import DBDep, AdminDep
 
 
 router = APIRouter(prefix="/films", tags=["Films"])

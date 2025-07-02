@@ -4,7 +4,7 @@ from fastapi import APIRouter
 
 from src.schemas.seasons import SeasonAddRequestDTO, SeasonPatchRequestDTO
 from src.services.seasons import SeasonService
-from src.views.dependencies import DBDep, AdminDep
+from src.api.dependencies import DBDep, AdminDep
 
 
 router = APIRouter(prefix="/series", tags=["Seasons"])

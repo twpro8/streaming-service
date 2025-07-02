@@ -8,7 +8,7 @@ from src.schemas.series import (
     SeriesPutRequestDTO,
 )
 from src.services.series import SeriesService
-from src.views.dependencies import DBDep, AdminDep
+from src.api.dependencies import DBDep, AdminDep
 
 
 router = APIRouter(prefix="/series", tags=["Series"])
