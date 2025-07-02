@@ -3,6 +3,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from src.services.base import BaseService
+from src.exceptions import ObjectNotFoundException, SeriesNotFoundException
 
 
 class SeriesService(BaseService):
@@ -11,19 +12,30 @@ class SeriesService(BaseService):
         await self.db.commit()
         return series
 
-    async def get_series(self):
-        series = await self.db.series.get_filtered()
+    async def get_series(self, pagination):
+        series = await self.db.series.get_filtered(
+            page=pagination.page, per_page=pagination.per_page
+        )
         return series
 
     async def get_one_series(self, series_id: UUID):
-        series = await self.db.series.get_one(id=series_id)
+        try:
+            series = await self.db.series.get_one(id=series_id)
+        except ObjectNotFoundException:
+            raise SeriesNotFoundException
         return series
 
-    async def update_entire_series(self, series_id: UUID, series_data: BaseModel):
+    async def replace_series(self, series_id: UUID, series_data: BaseModel):
+        if not await self.check_series_exists(id=series_id):
+            raise SeriesNotFoundException
+
         await self.db.series.update(id=series_id, data=series_data)
         await self.db.commit()
 
-    async def partly_update_series(self, series_id: UUID, series_data: BaseModel):
+    async def update_series(self, series_id: UUID, series_data: BaseModel):
+        if not await self.check_series_exists(id=series_id):
+            raise SeriesNotFoundException
+
         await self.db.series.update(id=series_id, data=series_data, exclude_unset=True)
         await self.db.commit()
 

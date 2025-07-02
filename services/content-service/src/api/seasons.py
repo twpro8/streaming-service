@@ -2,23 +2,36 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
+from src.exceptions import (
+    SeasonNotFoundException,
+    SeasonAlreadyExistsException,
+    SeriesNotFoundException,
+    SeriesNotFoundHTTPException,
+    SeasonAlreadyExistsHTTPException,
+    SeasonNotFoundHTTPException,
+)
 from src.schemas.seasons import SeasonAddRequestDTO, SeasonPatchRequestDTO
 from src.services.seasons import SeasonService
-from src.api.dependencies import DBDep, AdminDep
+from src.api.dependencies import DBDep, AdminDep, PaginationDep
 
 
 router = APIRouter(prefix="/series", tags=["Seasons"])
 
 
 @router.get("/{series_id}/seasons")
-async def get_seasons(db: DBDep, series_id: UUID):
-    data = await SeasonService(db).get_seasons(series_id=series_id)
+async def get_seasons(db: DBDep, series_id: UUID, pagination: PaginationDep):
+    data = await SeasonService(db).get_seasons(series_id=series_id, pagination=pagination)
     return {"status": "ok", "data": data}
 
 
 @router.post("/{series_id}/seasons", dependencies=[AdminDep])
 async def add_season(db: DBDep, series_id: UUID, season_data: SeasonAddRequestDTO):
-    data = await SeasonService(db).add_season(series_id=series_id, season_data=season_data)
+    try:
+        data = await SeasonService(db).add_season(series_id=series_id, season_data=season_data)
+    except SeriesNotFoundException:
+        raise SeriesNotFoundHTTPException
+    except SeasonAlreadyExistsException:
+        raise SeasonAlreadyExistsHTTPException
     return {"status": "ok", "data": data}
 
 
@@ -26,11 +39,16 @@ async def add_season(db: DBDep, series_id: UUID, season_data: SeasonAddRequestDT
 async def update_season(
     db: DBDep, series_id: UUID, season_id: UUID, season_data: SeasonPatchRequestDTO
 ):
-    await SeasonService(db).update_season(
-        series_id=series_id,
-        season_id=season_id,
-        season_data=season_data,
-    )
+    try:
+        await SeasonService(db).update_season(
+            series_id=series_id,
+            season_id=season_id,
+            season_data=season_data,
+        )
+    except SeriesNotFoundException:
+        raise SeriesNotFoundHTTPException
+    except SeasonNotFoundException:
+        raise SeasonNotFoundHTTPException
     return {"status": "ok"}
 
 

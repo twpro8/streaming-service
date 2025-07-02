@@ -40,6 +40,10 @@ class NoContentHTTPException(MasterHTTPException):
     detail = "No content"
 
 
+class ForeignKeyViolationException(MasterException):
+    detail = "Foreign key violation"
+
+
 # JWT Exceptions
 class JWTTokenException(MasterException): ...
 
@@ -174,6 +178,14 @@ class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
 class UniqueFileIDHTTPException(UniqueViolationHTTPException):
     status_code = 409
     detail = "Unique file id already exists"
+
+
+class SeasonAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Season already exists"
+
+
+class SeasonAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Season already exists"
 
 
 # Comments

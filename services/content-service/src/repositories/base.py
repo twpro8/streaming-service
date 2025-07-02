@@ -1,11 +1,20 @@
+import logging
 from typing import Type, List
 
+from asyncpg import UniqueViolationError, ForeignKeyViolationError
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from src.exceptions import ObjectNotFoundException
+from src.exceptions import (
+    ObjectNotFoundException,
+    ObjectAlreadyExistsException,
+    ForeignKeyViolationException,
+)
 from src.repositories.mappers.base import DataMapper
+
+
+log = logging.getLogger(__name__)
 
 
 class BaseRepository:
@@ -48,7 +57,16 @@ class BaseRepository:
 
     async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        res = await self.session.execute(stmt)
+        try:
+            res = await self.session.execute(stmt)
+        except IntegrityError as exc:
+            if isinstance(exc.orig.__cause__, UniqueViolationError):
+                raise ObjectAlreadyExistsException from exc
+            elif isinstance(exc.orig.__cause__, ForeignKeyViolationError):
+                raise ForeignKeyViolationException from exc
+            else:
+                log.exception(f"Unknown error: failed to add data to DB, input data: {data}")
+                raise exc
         model = res.scalars().one()
         return self.mapper.map_to_domain_entity(model)
 
