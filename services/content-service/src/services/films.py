@@ -1,3 +1,5 @@
+from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -7,8 +9,32 @@ from src.exceptions import ObjectNotFoundException, FilmNotFoundException
 
 
 class FilmService(BaseService):
-    async def get_films(self, page: int, per_page: int):
-        films = await self.db.films.get_filtered(page=page, per_page=per_page)
+    async def get_films(
+            self, page: int,
+            per_page: int,
+            title: str | None,
+            description: str | None,
+            director: str | None,
+            release_year: date | None,
+            release_year_ge: date | None,
+            release_year_le: date | None,
+            rating: Decimal | None,
+            rating_ge: Decimal | None,
+            rating_le: Decimal | None,
+    ):
+        films = await self.db.films.get_filtered_films(
+            page=page,
+            per_page=per_page,
+            title=title,
+            description=description,
+            director=director,
+            release_year=release_year,
+            release_year_ge=release_year_ge,
+            release_year_le=release_year_le,
+            rating=rating,
+            rating_ge=rating_ge,
+            rating_le=rating_le,
+        )
         return films
 
     async def get_film(self, film_id: UUID):

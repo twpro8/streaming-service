@@ -1,4 +1,5 @@
 from decimal import Decimal
+from uuid import UUID
 
 from sqlalchemy import select, update
 
@@ -15,7 +16,11 @@ class RatingRepository(BaseRepository):
     mapper = RatingDataMapper
 
     async def add_or_update_rating(
-        self, user_id: int, content_id: int, content_type: ContentType, value: Decimal
+        self,
+        user_id: int,
+        content_id: UUID,
+        content_type: ContentType,
+        value: Decimal,
     ):
         """
         Adds or updates a user's rating for a specific content (film or series) and updates the corresponding
@@ -36,11 +41,7 @@ class RatingRepository(BaseRepository):
         delta_count = 1
 
         # Checking an existing rating.
-        rating = await self.get_one_or_none(
-            user_id=user_id,
-            content_id=content_id,
-            content_type=content_type,
-        )
+        rating = await self.get_one_or_none(user_id=user_id, content_id=content_id)
 
         if rating:
             if rating.rating == value:  # Checking if the average rating has changed.
@@ -51,16 +52,16 @@ class RatingRepository(BaseRepository):
         else:
             self.session.add(
                 RatingORM(
-                    user_id=user_id, content_id=content_id, content_type=content_type, rating=value
+                    user_id=user_id,
+                    content_id=content_id,
+                    rating=value,
                 )
             )
 
         await self.session.flush()
 
         # Updating aggregates
-        agg_query = select(RatingAggregateORM).filter_by(
-            content_id=content_id, content_type=content_type
-        )
+        agg_query = select(RatingAggregateORM).filter_by(content_id=content_id)
         agg_res = await self.session.execute(agg_query)
         aggregate = agg_res.scalars().one_or_none()
 
@@ -72,7 +73,6 @@ class RatingRepository(BaseRepository):
             self.session.add(
                 RatingAggregateORM(
                     content_id=content_id,
-                    content_type=content_type,
                     rating_sum=value,
                     rating_count=1,
                     rating_avg=value,

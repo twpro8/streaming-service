@@ -1,6 +1,8 @@
+from datetime import date
+from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from src.exceptions import FilmNotFoundException, FilmNotFoundHTTPException
 from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
@@ -12,8 +14,32 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep, pagination: PaginationDep):
-    films = await FilmService(db).get_films(page=pagination.page, per_page=pagination.per_page)
+async def get_films(
+        db: DBDep,
+        pagination: PaginationDep,
+        title: str | None = Query(None),
+        description: str | None = Query(None),
+        director: str | None = Query(None),
+        release_year: date | None = Query(None),
+        release_year_ge: date | None = Query(None),
+        release_year_le: date | None = Query(None),
+        rating: Decimal | None = Query(None, ge=0, le=10),
+        rating_ge: Decimal | None = Query(None, ge=0, le=10),
+        rating_le: Decimal | None = Query(None, ge=0, le=10),
+):
+    films = await FilmService(db).get_films(
+        page=pagination.page,
+        per_page=pagination.per_page,
+        title=title,
+        description=description,
+        director=director,
+        release_year=release_year,
+        release_year_ge=release_year_ge,
+        release_year_le=release_year_le,
+        rating=rating,
+        rating_ge=rating_ge,
+        rating_le=rating_le,
+    )
     return {"status": "ok", "data": films}
 
 
