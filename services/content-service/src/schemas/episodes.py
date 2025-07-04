@@ -13,7 +13,7 @@ class EpisodeDTO(BaseSchema):
     title: TitleStr
     episode_number: int = Field(ge=1, le=9999, title="Episode Number")
     duration: DurationInt
-    file_id: IDInt | None
+    file_id: IDInt | None = None
 
 
 class EpisodeAddDTO(BaseSchema):
@@ -22,16 +22,16 @@ class EpisodeAddDTO(BaseSchema):
     title: TitleStr
     episode_number: int = Field(ge=1, le=9999, title="Episode Number")
     duration: DurationInt
-    file_id: IDInt | None
+    file_id: IDInt | None = None
 
 
 class EpisodePatchRequestDTO(BaseSchema):
-    series_id: UUID | None
-    season_id: UUID | None
-    title: TitleStr | None
-    episode_number: int = Field(ge=1, le=9999, title="Episode Number")
-    duration: DurationInt | None
-    file_id: IDInt | None
+    series_id: UUID | None = None
+    season_id: UUID | None = None
+    title: TitleStr | None = None
+    episode_number: int = Field(None, ge=1, le=9999, title="Episode Number")
+    duration: DurationInt | None = None
+    file_id: IDInt | None = None
 
 
 class EpisodeDeleteRequestDTO(BaseSchema):

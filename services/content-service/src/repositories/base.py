@@ -52,7 +52,9 @@ class BaseRepository:
         if title is not None:
             query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
         if description is not None:
-            query = query.filter(func.lower(self.model.description).contains(description.strip().lower()))
+            query = query.filter(
+                func.lower(self.model.description).contains(description.strip().lower())
+            )
         if director is not None:
             query = query.filter(func.lower(self.model.director).contains(director.strip().lower()))
         if release_year is not None:

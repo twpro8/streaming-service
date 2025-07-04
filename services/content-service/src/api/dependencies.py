@@ -1,3 +1,5 @@
+from datetime import date
+from decimal import Decimal
 from typing import Annotated
 
 from fastapi import Depends, Request, Query
@@ -55,3 +57,18 @@ class PaginationParams(BaseModel):
 
 
 PaginationDep = Annotated[PaginationParams, Depends()]
+
+
+class CommonContentParams(PaginationParams):
+    title: str | None = Query(None)
+    description: str | None = Query(None)
+    director: str | None = Query(None)
+    release_year: date | None = Query(None)
+    release_year_ge: date | None = Query(None)
+    release_year_le: date | None = Query(None)
+    rating: Decimal | None = Query(None, ge=0, le=10)
+    rating_ge: Decimal | None = Query(None, ge=0, le=10)
+    rating_le: Decimal | None = Query(None, ge=0, le=10)
+
+
+ContentParamsDep = Annotated[CommonContentParams, Depends()]

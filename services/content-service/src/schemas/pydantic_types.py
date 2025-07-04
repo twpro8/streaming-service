@@ -11,10 +11,10 @@ from pydantic import Field, condecimal
 TitleStr = Annotated[
     str,
     Field(
-        min_length=5,
+        min_length=3,
         max_length=255,
         title="Title",
-        description="Title string from 5 to 255 characters",
+        description="Title string from 3 to 255 characters",
         examples=["John's Journey"],
     ),
 ]

@@ -10,17 +10,18 @@ from src.exceptions import ObjectNotFoundException, FilmNotFoundException
 
 class FilmService(BaseService):
     async def get_films(
-            self, page: int,
-            per_page: int,
-            title: str | None,
-            description: str | None,
-            director: str | None,
-            release_year: date | None,
-            release_year_ge: date | None,
-            release_year_le: date | None,
-            rating: Decimal | None,
-            rating_ge: Decimal | None,
-            rating_le: Decimal | None,
+        self,
+        page: int,
+        per_page: int,
+        title: str | None,
+        description: str | None,
+        director: str | None,
+        release_year: date | None,
+        release_year_ge: date | None,
+        release_year_le: date | None,
+        rating: Decimal | None,
+        rating_ge: Decimal | None,
+        rating_le: Decimal | None,
     ):
         films = await self.db.films.get_filtered_films_or_series(
             page=page,

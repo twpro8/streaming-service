@@ -35,7 +35,10 @@ class SeasonService(BaseService):
         return season
 
     async def update_season(
-        self, season_data: SeasonPatchRequestDTO, series_id: UUID, season_id: UUID
+        self,
+        season_data: SeasonPatchRequestDTO,
+        series_id: UUID,
+        season_id: UUID,
     ):
         if not await self.check_series_exists(id=series_id):
             raise SeriesNotFoundException

@@ -1,8 +1,6 @@
-from datetime import date
-from decimal import Decimal
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter
 
 from src.exceptions import SeriesNotFoundException, SeriesNotFoundHTTPException
 from src.schemas.series import (
@@ -11,38 +9,15 @@ from src.schemas.series import (
     SeriesPutRequestDTO,
 )
 from src.services.series import SeriesService
-from src.api.dependencies import DBDep, AdminDep, PaginationDep
+from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
+
 
 router = APIRouter(prefix="/series", tags=["Series"])
 
 
 @router.get("")
-async def get_series(
-    db: DBDep,
-    pagination: PaginationDep,
-    title: str | None = Query(None),
-    description: str | None = Query(None),
-    director: str | None = Query(None),
-    release_year: date | None = Query(None),
-    release_year_ge: date | None = Query(None),
-    release_year_le: date | None = Query(None),
-    rating: Decimal | None = Query(None, ge=0, le=10),
-    rating_ge: Decimal | None = Query(None, ge=0, le=10),
-    rating_le: Decimal | None = Query(None, ge=0, le=10),
-):
-    series = await SeriesService(db).get_series(
-        page=pagination.page,
-        per_page=pagination.per_page,
-        title=title,
-        description=description,
-        director=director,
-        release_year=release_year,
-        release_year_ge=release_year_ge,
-        release_year_le=release_year_le,
-        rating=rating,
-        rating_ge=rating_ge,
-        rating_le=rating_le,
-    )
+async def get_series(db: DBDep, common_params: ContentParamsDep):
+    series = await SeriesService(db).get_series(**common_params.model_dump())
     return {"status": "ok", "data": series}
 
 

@@ -13,6 +13,8 @@ from src.exceptions import (
     UniqueEpisodePerSeasonException,
     UniqueSeasonPerSeriesException,
     UniqueFileIDException,
+    ObjectAlreadyExistsException,
+    EpisodeAlreadyExistsException,
 )
 
 
@@ -72,6 +74,8 @@ class EpisodeService(BaseService):
             raise UniqueSeasonPerSeriesException
         except UniqueFileIDException:
             raise UniqueFileIDException
+        except ObjectAlreadyExistsException:
+            raise EpisodeAlreadyExistsException
         await self.db.commit()
         return new_episode
 

@@ -15,7 +15,8 @@ class SeriesService(BaseService):
         return series
 
     async def get_series(
-        self, page: int,
+        self,
+        page: int,
         per_page: int,
         title: str | None,
         description: str | None,
