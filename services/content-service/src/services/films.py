@@ -22,7 +22,7 @@ class FilmService(BaseService):
             rating_ge: Decimal | None,
             rating_le: Decimal | None,
     ):
-        films = await self.db.films.get_filtered_films(
+        films = await self.db.films.get_filtered_films_or_series(
             page=page,
             per_page=per_page,
             title=title,

@@ -20,12 +20,12 @@ class SeriesDTO(SeriesAddRequestDTO):
 
 
 class SeriesPatchRequestDTO(BaseSchema):
-    title: TitleStr | None
-    description: DescriptionStr | None
-    director: str | None
-    release_year: date | None
-    rating: RatingDecimal | None
-    cover_id: int | None
+    title: TitleStr | None = None
+    description: DescriptionStr | None = None
+    director: str | None = None
+    release_year: date | None = None
+    rating: RatingDecimal | None = None
+    cover_id: int | None = None
 
 
 class SeriesPutRequestDTO(SeriesAddRequestDTO):
