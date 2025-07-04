@@ -35,5 +35,5 @@ class EpisodePatchRequestDTO(BaseSchema):
 
 
 class EpisodeDeleteRequestDTO(BaseSchema):
-    series_id: UUID
+    episode_id: UUID
     season_id: UUID

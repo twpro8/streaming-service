@@ -99,13 +99,12 @@ class EpisodeService(BaseService):
             raise UniqueFileIDException
         await self.db.commit()
 
-    async def delete_episode(self, episode_id: UUID, data: EpisodeDeleteRequestDTO):
+    async def delete_episode(self, data: EpisodeDeleteRequestDTO):
         """
         Delete episode by ID.
         """
         await self.db.episodes.delete(
-            id=episode_id,
-            series_id=data.series_id,
+            id=data.episode_id,
             season_id=data.season_id,
         )
         await self.db.commit()

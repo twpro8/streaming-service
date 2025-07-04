@@ -46,6 +46,6 @@ async def update_episode(db: DBDep, episode_id: UUID, episode_data: EpisodePatch
     return {"status": "ok"}
 
 
-@router.delete("/{episode_id}", dependencies=[AdminDep], status_code=204)
-async def delete_episode(db: DBDep, episode_id: UUID, episode_data: EpisodeDeleteRequestDTO):
-    await EpisodeService(db).delete_episode(episode_id=episode_id, data=episode_data)
+@router.delete("", dependencies=[AdminDep], status_code=204)
+async def delete_episode(db: DBDep, episode_data: EpisodeDeleteRequestDTO):
+    await EpisodeService(db).delete_episode(data=episode_data)
