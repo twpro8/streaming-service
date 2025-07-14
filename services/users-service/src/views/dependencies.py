@@ -5,7 +5,6 @@ from fastapi import Depends, Request, HTTPException, Query
 
 from src.db import DBManager, session_maker
 from src.services.auth import AuthService
-from src.grpc.manager import GRPCClientManager
 
 
 def get_db_manager():
@@ -46,6 +45,3 @@ PaginationDep = Annotated[PaginationParams, Depends()]
 async def get_grpc_manager():
     async with GRPCClientManager() as grpc_manager:
         yield grpc_manager
-
-
-gRpcDep = Annotated[GRPCClientManager, Depends(get_grpc_manager)]
