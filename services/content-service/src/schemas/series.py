@@ -1,6 +1,7 @@
 from uuid import UUID
-
 from datetime import date
+
+from pydantic import AnyUrl
 
 from src.schemas.base import BaseSchema
 from src.schemas.pydantic_types import TitleStr, RatingDecimal, DescriptionStr
@@ -12,7 +13,7 @@ class SeriesAddRequestDTO(BaseSchema):
     director: str
     release_year: date
     rating: RatingDecimal
-    cover_id: int | None = None
+    cover_url: AnyUrl | None = None
 
 
 class SeriesDTO(SeriesAddRequestDTO):
@@ -25,7 +26,7 @@ class SeriesPatchRequestDTO(BaseSchema):
     director: str | None = None
     release_year: date | None = None
     rating: RatingDecimal | None = None
-    cover_id: int | None = None
+    cover_url: AnyUrl | None = None
 
 
 class SeriesPutRequestDTO(SeriesAddRequestDTO):

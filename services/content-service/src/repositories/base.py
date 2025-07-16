@@ -14,6 +14,7 @@ from src.exceptions import (
     ForeignKeyViolationException,
 )
 from src.repositories.mappers.base import DataMapper
+from src.repositories.utils import normalize_for_insert
 
 
 log = logging.getLogger(__name__)
@@ -99,7 +100,9 @@ class BaseRepository:
         return self.mapper.map_to_domain_entity(model)
 
     async def add(self, data: BaseModel):
-        stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
+        data = normalize_for_insert(data.model_dump())
+
+        stmt = insert(self.model).values(**data).returning(self.model)
         try:
             res = await self.session.execute(stmt)
         except IntegrityError as exc:

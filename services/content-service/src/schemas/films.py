@@ -1,9 +1,10 @@
 from uuid import UUID
-
 from datetime import date
 
+from pydantic import AnyUrl
+
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import IDInt, TitleStr, DurationInt, RatingDecimal, DescriptionStr
+from src.schemas.pydantic_types import TitleStr, DurationInt, RatingDecimal, DescriptionStr
 
 
 class FilmAddDTO(BaseSchema):
@@ -12,8 +13,8 @@ class FilmAddDTO(BaseSchema):
     director: str
     release_year: date
     duration: DurationInt
-    file_id: IDInt
-    cover_id: IDInt
+    video_url: AnyUrl | None = None
+    cover_url: AnyUrl | None = None
 
 
 class FilmDTO(FilmAddDTO):
@@ -27,5 +28,5 @@ class FilmPatchRequestDTO(BaseSchema):
     director: str | None = None
     release_year: date | None = None
     duration: DurationInt | None = None
-    file_id: IDInt | None = None
-    cover_id: IDInt | None = None
+    video_url: AnyUrl | None = None
+    cover_url: AnyUrl | None = None
