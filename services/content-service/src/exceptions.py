@@ -4,7 +4,8 @@ from fastapi.exceptions import HTTPException
 class MasterException(Exception):
     detail = "Unexpected error"
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, detail: str = None, *args, **kwargs):
+        self.detail = detail or self.__class__.detail
         super().__init__(self.detail, *args, **kwargs)
 
 
@@ -16,7 +17,6 @@ class MasterHTTPException(HTTPException):
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
-# Base Exceptions
 class ObjectNotFoundException(MasterException):
     detail = "Object not found"
 
@@ -35,16 +35,10 @@ class ObjectAlreadyExistsHTTPException(MasterHTTPException):
     detail = "Object already exists"
 
 
-class NoContentHTTPException(MasterHTTPException):
-    status_code = 204
-    detail = "No content"
-
-
 class ForeignKeyViolationException(MasterException):
     detail = "Foreign key violation"
 
 
-# JWT Exceptions
 class JWTTokenException(MasterException): ...
 
 
@@ -74,19 +68,16 @@ class NoTokenHTTPException(JWTTokenHTTPException):
     detail = "No token"
 
 
-# Permissions
 class PermissionDeniedHTTPException(MasterHTTPException):
     status_code = 403
     detail = "You do not have permission to access this resource"
 
 
-# Content
 class FilmNotFoundException(ObjectNotFoundException):
     detail = "Film not found"
 
 
 class FilmNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
     detail = "Film not found"
 
 
@@ -94,8 +85,15 @@ class SeriesNotFoundException(ObjectNotFoundException):
     detail = "Series not found"
 
 
+class FilmAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Film already exists"
+
+
+class FilmAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Film with the provided data already exists"
+
+
 class SeriesNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
     detail = "Series not found"
 
 
@@ -108,12 +106,10 @@ class ContentNotFoundException(ObjectNotFoundException):
 
 
 class ContentNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
     detail = "Film or TV Series not found"
 
 
 class EpisodeNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
     detail = "Episode not found"
 
 
@@ -122,13 +118,7 @@ class SeasonNotFoundException(ObjectNotFoundException):
 
 
 class SeasonNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
     detail = "Season not found"
-
-
-class EpisodeDoesNotExistHTTPException(ObjectNotFoundHTTPException):
-    status_code = 204
-    detail = "Episode does not exist"
 
 
 class EpisodeDoesNotExistException(ObjectNotFoundException):
@@ -140,7 +130,6 @@ class EpisodeAlreadyExistsException(ObjectAlreadyExistsException):
 
 
 class EpisodeAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    status_code = 409
     detail = "Episode with the provided data already exists."
 
 
@@ -151,6 +140,22 @@ class UniqueViolationException(MasterException):
 class UniqueViolationHTTPException(MasterHTTPException):
     status_code = 409
     detail = "Unique violation error"
+
+
+class UniqueCoverURLException(UniqueViolationException):
+    detail = "Cover URL unique violation error"
+
+
+class UniqueVideoURLException(UniqueViolationException):
+    detail = "Cover URL unique violation error"
+
+
+class UniqueCoverURLHTTPException(UniqueViolationHTTPException):
+    detail = "Cover URL is already in use"
+
+
+class UniqueVideoURLHTTPException(UniqueViolationHTTPException):
+    detail = "Video URL is already in use"
 
 
 class UniqueEpisodePerSeasonException(UniqueViolationException):
@@ -166,17 +171,14 @@ class UniqueFileIDException(UniqueViolationException):
 
 
 class UniqueEpisodePerSeasonHTTPException(UniqueViolationHTTPException):
-    status_code = 409
     detail = "Unique episode per season already exists"
 
 
 class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
-    status_code = 409
     detail = "Unique episode per season already exists"
 
 
 class UniqueFileIDHTTPException(UniqueViolationHTTPException):
-    status_code = 409
     detail = "Unique file id already exists"
 
 
@@ -188,6 +190,5 @@ class SeasonAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Season already exists"
 
 
-# Comments
 class CommentNotFoundException(ObjectNotFoundException):
     detail = "Comment not found"

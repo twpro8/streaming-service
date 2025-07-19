@@ -101,7 +101,6 @@ class BaseRepository:
 
     async def add(self, data: BaseModel):
         data = normalize_for_insert(data.model_dump())
-
         stmt = insert(self.model).values(**data).returning(self.model)
         try:
             res = await self.session.execute(stmt)
@@ -111,7 +110,7 @@ class BaseRepository:
             elif isinstance(exc.orig.__cause__, ForeignKeyViolationError):
                 raise ForeignKeyViolationException from exc
             else:
-                log.exception(f"Unknown error: failed to add data to DB, input data: {data}")
+                log.exception(f"Unknown error: failed to add data to database, input data: {data}")
                 raise exc
         model = res.scalars().one()
         return self.mapper.map_to_domain_entity(model)

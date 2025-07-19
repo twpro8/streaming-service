@@ -13,13 +13,13 @@ class FilmAddDTO(BaseSchema):
     director: str
     release_year: date
     duration: DurationInt
-    video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
 
 
 class FilmDTO(FilmAddDTO):
     id: UUID
     rating: RatingDecimal
+    video_url: AnyUrl | None = None
 
 
 class FilmPatchRequestDTO(BaseSchema):
@@ -30,3 +30,7 @@ class FilmPatchRequestDTO(BaseSchema):
     duration: DurationInt | None = None
     video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
+
+
+class FilmPutRequestDTO(FilmAddDTO):
+    video_url: AnyUrl | None = None

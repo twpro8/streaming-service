@@ -29,8 +29,8 @@ class FilmORM(Base):
         default=Decimal("0.0"),
     )
     duration: Mapped[int]
-    video_url: Mapped[str | None]
-    cover_url: Mapped[str | None]
+    video_url: Mapped[str | None] = mapped_column(unique=True)
+    cover_url: Mapped[str | None] = mapped_column(unique=True)
 
     # Relationships
     comments: Mapped[List["CommentORM"]] = relationship(back_populates="film")

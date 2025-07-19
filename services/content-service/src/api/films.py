@@ -2,10 +2,19 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from src.exceptions import FilmNotFoundException, FilmNotFoundHTTPException
-from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
+from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO, FilmPutRequestDTO
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
 from src.services.films import FilmService
+from src.exceptions import (
+    FilmNotFoundException,
+    FilmNotFoundHTTPException,
+    FilmAlreadyExistsException,
+    FilmAlreadyExistsHTTPException,
+    UniqueCoverURLException,
+    UniqueVideoURLException,
+    UniqueCoverURLHTTPException,
+    UniqueVideoURLHTTPException,
+)
 
 
 router = APIRouter(prefix="/films", tags=["Films"])
@@ -28,16 +37,23 @@ async def get_film(db: DBDep, film_id: UUID):
 
 @router.post("", dependencies=[AdminDep])
 async def add_film(db: DBDep, film_data: FilmAddDTO):
-    film = await FilmService(db).add_film(film_data)
+    try:
+        film = await FilmService(db).add_film(film_data)
+    except FilmAlreadyExistsException:
+        raise FilmAlreadyExistsHTTPException
     return {"status": "ok", "data": film}
 
 
 @router.put("/{film_id}", dependencies=[AdminDep])
-async def replace_film(db: DBDep, film_id: UUID, film_data: FilmAddDTO):
+async def replace_film(db: DBDep, film_id: UUID, film_data: FilmPutRequestDTO):
     try:
         await FilmService(db).replace_film(film_id, film_data)
     except FilmNotFoundException:
         raise FilmNotFoundHTTPException
+    except UniqueCoverURLException:
+        raise UniqueCoverURLHTTPException
+    except UniqueVideoURLException:
+        raise UniqueVideoURLHTTPException
     return {"status": "ok"}
 
 
@@ -47,6 +63,10 @@ async def update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
         await FilmService(db).update_film(film_id, film_data)
     except FilmNotFoundException:
         raise FilmNotFoundHTTPException
+    except UniqueCoverURLException:
+        raise UniqueCoverURLHTTPException
+    except UniqueVideoURLException:
+        raise UniqueVideoURLHTTPException
     return {"status": "ok"}
 
 

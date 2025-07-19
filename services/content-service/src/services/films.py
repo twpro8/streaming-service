@@ -5,7 +5,14 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from src.services.base import BaseService
-from src.exceptions import ObjectNotFoundException, FilmNotFoundException
+from src.exceptions import (
+    ObjectNotFoundException,
+    FilmNotFoundException,
+    ObjectAlreadyExistsException,
+    FilmAlreadyExistsException,
+    UniqueCoverURLException,
+    UniqueVideoURLException,
+)
 
 
 class FilmService(BaseService):
@@ -46,22 +53,35 @@ class FilmService(BaseService):
         return film
 
     async def add_film(self, film_data: BaseModel):
-        film = await self.db.films.add(film_data)
+        try:
+            film = await self.db.films.add(film_data)
+        except ObjectAlreadyExistsException:
+            raise FilmAlreadyExistsException
         await self.db.commit()
         return film
 
     async def replace_film(self, film_id: UUID, film_data: BaseModel):
         if not await self.check_film_exists(id=film_id):
             raise FilmNotFoundException
-
-        await self.db.films.update(id=film_id, data=film_data)
+        try:
+            await self.db.films.update(id=film_id, data=film_data)
+        except UniqueCoverURLException:
+            raise UniqueCoverURLException
+        except UniqueVideoURLException:
+            raise UniqueVideoURLException
         await self.db.commit()
 
     async def update_film(self, film_id: UUID, film_data: BaseModel):
         if not await self.check_film_exists(id=film_id):
             raise FilmNotFoundException
-
-        await self.db.films.update(id=film_id, data=film_data, exclude_unset=True)
+        try:
+            await self.db.films.update(id=film_id, data=film_data, exclude_unset=True)
+        except ObjectAlreadyExistsException:
+            raise FilmAlreadyExistsException
+        except UniqueCoverURLException:
+            raise UniqueCoverURLException
+        except UniqueVideoURLException:
+            raise UniqueVideoURLException
         await self.db.commit()
 
     async def remove_film(self, film_id: UUID):

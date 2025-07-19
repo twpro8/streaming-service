@@ -3,8 +3,6 @@ from uuid import UUID
 from fastapi import APIRouter
 
 from src.exceptions import (
-    CommentNotFoundException,
-    NoContentHTTPException,
     ContentNotFoundHTTPException,
     ContentNotFoundException,
 )
@@ -39,8 +37,5 @@ async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
 
 @router.delete("/comments/{comment_id}", status_code=204)
 async def delete_comment(db: DBDep, user_id: UserDep, comment_id: UUID):
-    try:
-        await CommentService(db).remove_comment(comment_id=comment_id, user_id=user_id)
-    except CommentNotFoundException:
-        raise NoContentHTTPException
+    await CommentService(db).remove_comment(comment_id=comment_id, user_id=user_id)
     return {"status": "ok"}
