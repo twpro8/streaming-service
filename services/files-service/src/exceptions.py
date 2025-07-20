@@ -29,8 +29,34 @@ class ObjectNotFoundHTTPException(MasterHTTPException):
     detail = "Object not found"
 
 
+class ObjectAlreadyExistsException(MasterException):
+    detail = "Object already exists"
+
+
+class ObjectAlreadyExistsHTTPException(MasterHTTPException):
+    status_code = 409
+    detail = "Object already exists"
+
+
+class VideoAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Video already exists"
+
+
+class VideoAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Video already exists"
+
+
 class InvalidContentTypeException(MasterException):
     detail = "Invalid content type"
+
+
+class NoExtensionException(MasterException):
+    detail = "Filename must contain an extension"
+
+
+class NoExtensionHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Filename must contain an extension"
 
 
 class InvalidVideoTypeHTTPException(MasterHTTPException):

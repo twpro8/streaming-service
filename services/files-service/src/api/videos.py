@@ -9,6 +9,10 @@ from src.exceptions import (
     InvalidVideoTypeHTTPException,
     VideoNotFoundException,
     VideoNotFoundHTTPException,
+    NoExtensionException,
+    NoExtensionHTTPException,
+    VideoAlreadyExistsException,
+    VideoAlreadyExistsHTTPException,
 )
 from src.api.dependencies import VideoServiceDep, PaginationDep
 
@@ -40,7 +44,7 @@ async def upload_video(
     file: UploadFile = File(...),
 ):
     try:
-        await video_service.upload_video(
+        await video_service.handle_video_upload(
             content_id=content_id,
             content_type=content_type,
             qualities=qualities,
@@ -48,6 +52,10 @@ async def upload_video(
         )
     except InvalidContentTypeException:
         raise InvalidVideoTypeHTTPException
+    except NoExtensionException:
+        raise NoExtensionHTTPException
+    except VideoAlreadyExistsException:
+        raise VideoAlreadyExistsHTTPException
     return {"status": "ok"}
 
 

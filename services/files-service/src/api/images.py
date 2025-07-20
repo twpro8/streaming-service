@@ -38,7 +38,7 @@ async def upload_image(
     file: UploadFile = File(...),
 ):
     try:
-        await image_service.upload_image(
+        await image_service.handle_image_upload(
             content_id=content_id,
             content_type=content_type,
             file=file,

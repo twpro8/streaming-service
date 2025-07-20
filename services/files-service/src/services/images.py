@@ -28,7 +28,9 @@ class ImageService(BaseService):
             raise ImageNotFoundException
         return image_info
 
-    async def upload_image(self, content_id: UUID, content_type: ContentType, file: UploadFile):
+    async def handle_image_upload(
+        self, content_id: UUID, content_type: ContentType, file: UploadFile
+    ):
         if file.content_type not in settings.IMAGE_MIMO:
             raise InvalidContentTypeException
 

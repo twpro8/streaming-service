@@ -2,9 +2,9 @@ from typing import Type
 
 from pydantic import BaseModel
 from sqlalchemy import select, insert, update, delete
-from sqlalchemy.exc import NoResultFound
+from sqlalchemy.exc import NoResultFound, IntegrityError
 
-from src.exceptions import ObjectNotFoundException
+from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException
 from src.repositories.mappers.base import DataMapper
 
 
@@ -42,7 +42,10 @@ class BaseRepository:
 
     async def add(self, data: BaseModel):
         stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-        res = await self.session.execute(stmt)
+        try:
+            res = await self.session.execute(stmt)
+        except IntegrityError as exc:
+            raise ObjectAlreadyExistsException from exc
         model = res.scalars().one()
         return self.mapper.map_to_domain_entity(model)
 
