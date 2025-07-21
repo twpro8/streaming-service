@@ -2,10 +2,10 @@ from contextlib import asynccontextmanager
 from typing import List
 
 from aiobotocore.session import get_session
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, BotoCoreError
 
 from src.interfaces.storage import AbstractStorage
-from src.exceptions import ObjectNotFoundException
+from src.exceptions import ObjectNotFoundException, UploadFailureException
 
 
 class S3Adapter(AbstractStorage):
@@ -29,16 +29,18 @@ class S3Adapter(AbstractStorage):
         async with self.session.create_client("s3", **self.config) as client:
             yield client
 
-    async def upload_file(self, key: str, data: bytes) -> bool:
-        async with self._get_client() as client:
-            resp = await client.put_object(
-                Bucket=self.bucket_name,
-                Key=key,
-                Body=data,
-            )
-            status_code = resp.get("ResponseMetadata", {}).get("HTTPStatusCode")
-
-        return True if status_code == 200 else False
+    async def upload_file(self, key: str, data: bytes):
+        try:
+            async with self._get_client() as client:
+                resp = await client.put_object(
+                    Bucket=self.bucket_name,
+                    Key=key,
+                    Body=data,
+                )
+                if resp.get("ResponseMetadata", {}).get("HTTPStatusCode") != 200:
+                    raise UploadFailureException
+        except (ClientError, BotoCoreError) as exc:
+            raise UploadFailureException from exc
 
     async def get_file(self, key: str) -> bytes:
         """

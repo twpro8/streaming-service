@@ -12,6 +12,8 @@ from src.exceptions import (
     ObjectAlreadyExistsException,
     VideoAlreadyExistsException,
     ExtensionTooLongException,
+    UploadFailureException,
+    VideoUploadFailedException,
 )
 from src.schemas.files import FileAddDTO
 from src.services.base import BaseService
@@ -44,19 +46,19 @@ class VideoService(BaseService):
     ):
         try:
             validate_video_mime_type(file.content_type)
-        except InvalidContentTypeException:
-            raise InvalidContentTypeException
-        try:
             file.filename = sanitize_filename(file.filename)
-        except NoExtensionException:
-            raise NoExtensionException
-        except ExtensionTooLongException:
-            raise ExtensionTooLongException
+        except (
+            InvalidContentTypeException,
+            NoExtensionException,
+            ExtensionTooLongException,
+        ):
+            raise
 
         storage_base_key = get_video_storage_base_key(content_id)
         original_file_key = get_original_file_key(storage_base_key, file.filename)
 
         file_data = await file.read()
+        file_size = file.size or len(file_data)
 
         try:
             await self.db.videos.add(
@@ -65,17 +67,21 @@ class VideoService(BaseService):
                     filename=file.filename,
                     storage_path=storage_base_key,
                     mime_type=file.content_type,
-                    size_in_bytes=file.size,
+                    size_in_bytes=file_size,
                     content_type=content_type,
                 )
             )
         except ObjectAlreadyExistsException:
             raise VideoAlreadyExistsException
 
-        await self.storage.upload_file(
-            key=original_file_key,
-            data=file_data,
-        )
+        try:
+            await self.storage.upload_file(
+                key=original_file_key,
+                data=file_data,
+            )
+        except UploadFailureException:
+            raise VideoUploadFailedException
+
         await self.db.commit()
 
         process_video.delay(

@@ -6,6 +6,7 @@ import asyncio
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
+from src.exceptions import UploadFailureException
 from src.factories.storage_adapter_factories import StorageAdapterFactory
 from src.enums import Qualities
 from src.tasks.celery_app import celery_instance
@@ -23,7 +24,6 @@ def process_video(
     storage_dst_key: str,
     qualities: List[Qualities],
 ):
-
     video = asyncio.run(storage.get_file(storage_src_key))
     log.info(f"Downloaded video {storage_src_key}")
 
@@ -50,7 +50,7 @@ def process_video(
             for file in quality_dir.iterdir():
                 if file.is_file():
                     key = f"{storage_dst_key}/{quality_dir.name}/{file.name}"
-                    upload_file_to_s3(input_file_path=str(file), s3_key=key)
+                    upload_file_to_storage(input_file_path=str(file), s3_key=key)
 
         asyncio.run(
             update_master_playlist_from_s3(
@@ -63,18 +63,18 @@ def process_video(
 
 
 @celery_instance.task
-def upload_file_to_s3(
+def upload_file_to_storage(
     input_file_path: str,
     s3_key: str,
 ):
-
     with open(input_file_path, "rb") as f:
         data = f.read()
 
-    success = asyncio.run(storage.upload_file(s3_key, data))
-    if success:
+    try:
+        asyncio.run(storage.upload_file(s3_key, data))
         log.info(f"Uploaded {s3_key}")
-    else:
+    except UploadFailureException as exc:
         log.error(f"Failed to upload {s3_key}")
+        raise exc
 
     os.remove(input_file_path)

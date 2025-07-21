@@ -46,6 +46,23 @@ class VideoAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Video already exists"
 
 
+class UploadFailureException(MasterException):
+    detail = "Failed to upload file"
+
+
+class VideoUploadFailedException(UploadFailureException):
+    detail = "Failed to upload video file"
+
+
+class VideoUploadFailedHTTPException(MasterHTTPException):
+    status_code = 503
+    detail = "Video upload service is temporarily unavailable"
+
+
+class VideoFileTooLargeException(MasterException):
+    detail = "Video file too large"
+
+
 class InvalidContentTypeException(MasterException):
     detail = "Invalid content type"
 
