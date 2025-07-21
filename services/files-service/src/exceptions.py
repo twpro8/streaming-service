@@ -54,6 +54,15 @@ class NoExtensionException(MasterException):
     detail = "Filename must contain an extension"
 
 
+class ExtensionTooLongException(MasterException):
+    detail = "Extension too long"
+
+
+class ExtensionTooLongHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Extension too long"
+
+
 class NoExtensionHTTPException(MasterHTTPException):
     status_code = 422
     detail = "Filename must contain an extension"

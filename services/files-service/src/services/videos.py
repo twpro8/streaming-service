@@ -11,11 +11,17 @@ from src.exceptions import (
     NoExtensionException,
     ObjectAlreadyExistsException,
     VideoAlreadyExistsException,
+    ExtensionTooLongException,
 )
 from src.schemas.files import FileAddDTO
 from src.services.base import BaseService
 from src.tasks.tasks import process_video
-from src.services.utils import sanitize_filename, validate_mime_type
+from src.services.utils import (
+    sanitize_filename,
+    validate_video_mime_type,
+    get_video_storage_base_key,
+    get_original_file_key,
+)
 
 
 class VideoService(BaseService):
@@ -37,23 +43,26 @@ class VideoService(BaseService):
         file: UploadFile,
     ):
         try:
-            validate_mime_type(file.content_type)
+            validate_video_mime_type(file.content_type)
         except InvalidContentTypeException:
             raise InvalidContentTypeException
         try:
-            original_filename = sanitize_filename(file.filename)
+            file.filename = sanitize_filename(file.filename)
         except NoExtensionException:
             raise NoExtensionException
+        except ExtensionTooLongException:
+            raise ExtensionTooLongException
 
-        storage_base_key = f"videos/{content_id}"
-        original_file_key = f"{storage_base_key}/original.{file.filename.split('.')[-1]}"
+        storage_base_key = get_video_storage_base_key(content_id)
+        original_file_key = get_original_file_key(storage_base_key, file.filename)
 
         file_data = await file.read()
+
         try:
             await self.db.videos.add(
                 FileAddDTO(
                     content_id=content_id,
-                    filename=original_filename,
+                    filename=file.filename,
                     storage_path=storage_base_key,
                     mime_type=file.content_type,
                     size_in_bytes=file.size,

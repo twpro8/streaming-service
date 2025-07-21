@@ -13,6 +13,8 @@ from src.exceptions import (
     NoExtensionHTTPException,
     VideoAlreadyExistsException,
     VideoAlreadyExistsHTTPException,
+    ExtensionTooLongException,
+    ExtensionTooLongHTTPException,
 )
 from src.api.dependencies import VideoServiceDep, PaginationDep
 
@@ -54,6 +56,8 @@ async def upload_video(
         raise InvalidVideoTypeHTTPException
     except NoExtensionException:
         raise NoExtensionHTTPException
+    except ExtensionTooLongException:
+        raise ExtensionTooLongHTTPException
     except VideoAlreadyExistsException:
         raise VideoAlreadyExistsHTTPException
     return {"status": "ok"}

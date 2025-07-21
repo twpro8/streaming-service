@@ -14,6 +14,7 @@ from src.utils.transcoder import HlsTranscoder
 
 
 log = logging.getLogger(__name__)
+storage = StorageAdapterFactory.s3_adapter_sync_factory()
 
 
 @celery_instance.task
@@ -22,9 +23,10 @@ def process_video(
     storage_dst_key: str,
     qualities: List[Qualities],
 ):
-    storage = StorageAdapterFactory.s3_adapter_sync_factory()
 
     video = asyncio.run(storage.get_file(storage_src_key))
+    log.info(f"Downloaded video {storage_src_key}")
+
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         temp_file.write(video)
         input_file_path = temp_file.name
@@ -51,7 +53,10 @@ def process_video(
                     upload_file_to_s3(input_file_path=str(file), s3_key=key)
 
         asyncio.run(
-            update_master_playlist_from_s3(s3_key=storage_dst_key, input_path=input_file_path)
+            update_master_playlist_from_s3(
+                s3_key=storage_dst_key,
+                input_path=input_file_path,
+            ),
         )
 
     os.remove(input_file_path)
@@ -62,7 +67,6 @@ def upload_file_to_s3(
     input_file_path: str,
     s3_key: str,
 ):
-    storage = StorageAdapterFactory.s3_adapter_sync_factory()
 
     with open(input_file_path, "rb") as f:
         data = f.read()
