@@ -1,8 +1,10 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, UploadFile, File, Query
+from fastapi import APIRouter, Query
+from fastapi.requests import Request
 
+from src.config import settings
 from src.enums import Qualities, ContentType
 from src.exceptions import (
     InvalidContentTypeException,
@@ -17,6 +19,8 @@ from src.exceptions import (
     ExtensionTooLongHTTPException,
     VideoUploadFailedException,
     VideoUploadFailedHTTPException,
+    VideoFileTooLargeException,
+    VideoFileTooLargeHTTPException,
 )
 from src.api.dependencies import VideoServiceDep, PaginationDep
 
@@ -42,17 +46,17 @@ async def get_video_info(video_service: VideoServiceDep, content_id: UUID):
 @router.post("/{content_id}")
 async def upload_video(
     video_service: VideoServiceDep,
+    request: Request,
     content_id: UUID,
     content_type: ContentType,
     qualities: List[Qualities] = Query(default=[Qualities.CD]),
-    file: UploadFile = File(...),
 ):
     try:
-        await video_service.handle_video_upload(
+        filename = await video_service.handle_video_upload(
+            request=request,
             content_id=content_id,
             content_type=content_type,
             qualities=qualities,
-            file=file,
         )
     except InvalidContentTypeException:
         raise InvalidVideoTypeHTTPException
@@ -64,10 +68,17 @@ async def upload_video(
         raise VideoAlreadyExistsHTTPException
     except VideoUploadFailedException:
         raise VideoUploadFailedHTTPException
-    return {"status": "ok"}
+    except VideoFileTooLargeException:
+        raise VideoFileTooLargeHTTPException(
+            detail=f"Video file size limit exceeded {settings.MAX_FILE_SIZE} bytes",
+        )
+    return {
+        "status": "ok",
+        "data": {"filename": filename},
+    }
 
 
-@router.delete("/files/{content_id}", status_code=204)
+@router.delete("/{content_id}", status_code=204)
 async def delete_video(
     video_service: VideoServiceDep,
     content_id: UUID,

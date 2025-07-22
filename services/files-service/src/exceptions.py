@@ -16,7 +16,8 @@ class MasterHTTPException(HTTPException):
     status_code = 418
     detail = "I'm a teapot"
 
-    def __init__(self):
+    def __init__(self, detail: str = None):
+        self.detail = detail or self.detail
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
@@ -59,8 +60,17 @@ class VideoUploadFailedHTTPException(MasterHTTPException):
     detail = "Video upload service is temporarily unavailable"
 
 
+class FileTooLargeException(MasterException):
+    detail = "File size limit exceeded"
+
+
 class VideoFileTooLargeException(MasterException):
     detail = "Video file too large"
+
+
+class VideoFileTooLargeHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Video file size limit exceeded"
 
 
 class InvalidContentTypeException(MasterException):

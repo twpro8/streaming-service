@@ -4,8 +4,18 @@ from typing import List
 from aiobotocore.session import get_session
 from botocore.exceptions import ClientError, BotoCoreError
 
+from src.config import settings
 from src.interfaces.storage import AbstractStorage
-from src.exceptions import ObjectNotFoundException, UploadFailureException
+from src.exceptions import (
+    ObjectNotFoundException,
+    UploadFailureException,
+    FileTooLargeException,
+)
+
+
+MAX_SIZE = settings.MAX_FILE_SIZE
+CHUNK_SIZE = 8 * 1024 * 1024  # 8 MB
+MIN_PART_SIZE = 5 * 1024 * 1024  # 5 MB
 
 
 class S3Adapter(AbstractStorage):
@@ -28,6 +38,61 @@ class S3Adapter(AbstractStorage):
     async def _get_client(self):
         async with self.session.create_client("s3", **self.config) as client:
             yield client
+
+    async def upload_streaming_file(self, stream, key: str, max_file_size: int = MAX_SIZE):
+        async with self._get_client() as client:
+            response = await client.create_multipart_upload(Bucket=self.bucket_name, Key=key)
+            upload_id = response["UploadId"]
+            parts = []
+            part_number = 1
+            buffer = bytearray()
+            total_uploaded = 0
+            try:
+                async for chunk in stream:
+                    buffer.extend(chunk)
+                    total_uploaded += len(chunk)
+                    if total_uploaded > max_file_size:
+                        await client.abort_multipart_upload(
+                            Bucket=self.bucket_name,
+                            Key=key,
+                            UploadId=upload_id,
+                        )
+                        raise FileTooLargeException(
+                            f"Uploaded file exceeds the allowed size limit: {max_file_size}"
+                        )
+                    if len(buffer) >= CHUNK_SIZE:
+                        part = await self._upload_part(client, key, upload_id, part_number, buffer)
+                        parts.append(part)
+                        part_number += 1
+                        buffer.clear()
+                if buffer:
+                    part = await self._upload_part(client, key, upload_id, part_number, buffer)
+                    parts.append(part)
+                await client.complete_multipart_upload(
+                    Bucket=self.bucket_name,
+                    Key=key,
+                    UploadId=upload_id,
+                    MultipartUpload={"Parts": parts},
+                )
+            except (ClientError, BotoCoreError) as exc:
+                await client.abort_multipart_upload(
+                    Bucket=self.bucket_name,
+                    Key=key,
+                    UploadId=upload_id,
+                )
+                raise UploadFailureException from exc
+
+        return total_uploaded
+
+    async def _upload_part(self, client, key, upload_id, part_number, data: bytes):
+        resp = await client.upload_part(
+            Bucket=self.bucket_name,
+            Key=key,
+            UploadId=upload_id,
+            PartNumber=part_number,
+            Body=data,
+        )
+        return {"ETag": resp["ETag"], "PartNumber": part_number}
 
     async def upload_file(self, key: str, data: bytes):
         try:

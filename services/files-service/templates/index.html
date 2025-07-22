@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Video Uploader</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #eef1f5;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: #fff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+    }
+
+    #dropZone {
+      border: 2px dashed #aaa;
+      padding: 30px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      background-color: #f9fafb;
+      color: #888;
+      transition: border-color 0.3s;
+      cursor: pointer;
+    }
+
+    #dropZone.dragover {
+      border-color: #4CAF50;
+      color: #4CAF50;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    .btn {
+      background-color: #4CAF50;
+      color: white;
+      padding: 10px 16px;
+      font-size: 15px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .btn:hover {
+      background-color: #45a049;
+    }
+
+    #fileList {
+      margin: 10px 0;
+      font-size: 14px;
+      text-align: left;
+      color: #333;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .file-entry {
+      margin-bottom: 8px;
+    }
+
+    .file-entry progress {
+      width: 100%;
+      height: 10px;
+      margin-top: 5px;
+    }
+
+    #response {
+      margin-top: 15px;
+      white-space: pre-wrap;
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-radius: 6px;
+      font-family: monospace;
+      font-size: 13px;
+      text-align: left;
+    }
+
+    select, input[type="text"] {
+      padding: 8px;
+      width: 100%;
+      margin-bottom: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <p>Upload Video</p>
+
+    <input type="text" id="contentId" placeholder="Enter content_id (UUID)">
+
+    <select id="contentType">
+      <option value="film">film</option>
+      <option value="series">series</option>
+    </select>
+
+    <select id="qualities" multiple>
+      <option value="360p">360p</option>
+      <option value="480p">480p</option>
+      <option value="720p">720p</option>
+      <option value="1080p">1080p</option>
+    </select>
+
+    <div id="dropZone">Drag & Drop files here</div>
+    <input type="file" id="fileInput" multiple>
+    <button class="btn" onclick="fileInput.click()">+ Add Files</button>
+    <button class="btn" onclick="startUpload()">Upload</button>
+
+    <div id="fileList"></div>
+    <div id="response"></div>
+  </div>
+
+  <script>
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+    const fileListDiv = document.getElementById("fileList");
+    const response = document.getElementById("response");
+    const contentIdInput = document.getElementById("contentId");
+    const contentTypeSelect = document.getElementById("contentType");
+    const qualitiesSelect = document.getElementById("qualities");
+
+    let selectedFiles = [];
+
+    dropZone.addEventListener("click", () => fileInput.click());
+    dropZone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      addFiles(Array.from(e.dataTransfer.files));
+    });
+    fileInput.addEventListener("change", () => {
+      addFiles(Array.from(fileInput.files));
+    });
+
+    function addFiles(files) {
+      for (const file of files) {
+        if (!selectedFiles.includes(file)) {
+          selectedFiles.push(file);
+        }
+      }
+      renderFileList();
+    }
+
+    function renderFileList() {
+      fileListDiv.innerHTML = "";
+      response.innerHTML = "";
+      selectedFiles.forEach((file, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "file-entry";
+        const label = document.createElement("div");
+        label.textContent = `📄 ${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+        const progress = document.createElement("progress");
+        progress.max = 100;
+        progress.value = 0;
+        progress.id = `progress-${index}`;
+        wrapper.appendChild(label);
+        wrapper.appendChild(progress);
+        fileListDiv.appendChild(wrapper);
+      });
+    }
+
+    function startUpload() {
+      const contentId = contentIdInput.value.trim();
+      const contentType = contentTypeSelect.value;
+      const qualities = Array.from(qualitiesSelect.selectedOptions).map(o => o.value);
+
+      if (!contentId) {
+        alert("Please enter content_id (UUID)");
+        return;
+      }
+
+      if (selectedFiles.length === 0) {
+        response.innerHTML = "No files selected.";
+        return;
+      }
+
+      response.innerHTML = "";
+
+      selectedFiles.forEach((file, index) => {
+        const xhr = new XMLHttpRequest();
+        const params = new URLSearchParams({
+          content_type: contentType,
+        });
+        qualities.forEach(q => params.append("qualities", q));
+
+        xhr.open("POST", `/videos/${contentId}?${params.toString()}`, true);
+        xhr.setRequestHeader("filename", encodeURIComponent(file.name));
+
+        xhr.upload.onprogress = function (e) {
+          if (e.lengthComputable) {
+            const percent = (e.loaded / e.total) * 100;
+            document.getElementById(`progress-${index}`).value = percent;
+          }
+        };
+
+        xhr.onload = function () {
+          try {
+            const json = JSON.parse(xhr.responseText);
+            response.innerHTML += JSON.stringify(json, null, 2) + "\n";
+          } catch (e) {
+            response.innerHTML += `Error parsing response:\n${xhr.responseText}\n`;
+          }
+        };
+
+        xhr.onerror = function () {
+          response.innerHTML += `File upload error: ${file.name}\n`;
+        };
+
+        xhr.send(file);
+      });
+    }
+  </script>
+</body>
+</html>

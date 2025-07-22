@@ -38,9 +38,9 @@ def validate_video_mime_type(mime_type: str) -> None:
         raise InvalidContentTypeException
 
 
-def get_video_storage_base_key(content_id: UUID):
+def get_base_video_storage_key(content_id: UUID):
     return f"videos/{content_id}"
 
 
-def get_original_file_key(storage_base_key: str, filename: str) -> str:
+def get_original_file_storage_key(storage_base_key: str, filename: str) -> str:
     return f"{storage_base_key}/original/{filename}"

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, AsyncGenerator
 
 
 class AbstractStorage(ABC):
@@ -10,7 +10,14 @@ class AbstractStorage(ABC):
     async def get_files_list(self, folder_path: str) -> List[dict]: ...
 
     @abstractmethod
-    async def upload_file(self, key: str, data: bytes) -> bool: ...
+    async def upload_file(self, key: str, data: bytes): ...
+
+    @abstractmethod
+    async def upload_streaming_file(
+        self,
+        stream: AsyncGenerator[bytes, None],
+        key: str,
+    ): ...
 
     @abstractmethod
     async def delete_file(self, key: str): ...

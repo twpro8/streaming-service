@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     INPUT_VIDEO_MIMO: List[str]
     IMAGE_MIMO: List[str]
 
+    MAX_FILE_SIZE: int
+
     @property
     def REDIS_URL(self):  # noqa
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
