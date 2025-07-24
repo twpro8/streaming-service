@@ -35,7 +35,7 @@ async def get_film(db: DBDep, film_id: UUID):
     return {"status": "ok", "data": film}
 
 
-@router.post("", dependencies=[AdminDep])
+@router.post("", dependencies=[AdminDep], status_code=201)
 async def add_film(db: DBDep, film_data: FilmAddDTO):
     try:
         film = await FilmService(db).add_film(film_data)
