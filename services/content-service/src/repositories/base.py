@@ -120,11 +120,8 @@ class BaseRepository:
         await self.session.execute(stmt)
 
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
-        stmt = (
-            update(self.model)
-            .values(**data.model_dump(exclude_unset=exclude_unset))
-            .filter_by(**filter_by)
-        )
+        data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))
+        stmt = update(self.model).values(**data).filter_by(**filter_by)
         await self.session.execute(stmt)
 
     async def delete(self, **filter_by) -> None:

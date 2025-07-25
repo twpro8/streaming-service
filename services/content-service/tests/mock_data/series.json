@@ -1,0 +1,37 @@
+[
+  {
+    "title": "Breaking Bad",
+    "description": "A high school chemistry teacher turns to a life of crime after being diagnosed with cancer.",
+    "director": "Vince Gilligan",
+    "release_year": "2008-01-20",
+    "cover_url": null
+  },
+  {
+    "title": "Stranger Things",
+    "description": "A group of young friends witnesses supernatural forces and secret experiments in their town.",
+    "director": "The Duffer Brothers",
+    "release_year": "2016-07-15",
+    "cover_url": null
+  },
+  {
+    "title": "Chernobyl",
+    "description": "A dramatization of the true story of the Chernobyl nuclear disaster.",
+    "director": "Johan Renck",
+    "release_year": "2019-05-06",
+    "cover_url": null
+  },
+  {
+    "title": "The Office",
+    "description": "A mockumentary on a group of typical office workers, where the workday consists of ego clashes and inappropriate behavior.",
+    "director": "Greg Daniels",
+    "release_year": "2005-03-24",
+    "cover_url": null
+  },
+  {
+    "title": "Dark",
+    "description": "A family saga with a supernatural twist, set in a German town where the disappearance of two children exposes the secrets of four families.",
+    "director": "Baran bo Odar",
+    "release_year": "2017-12-01",
+    "cover_url": null
+  }
+]

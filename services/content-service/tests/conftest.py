@@ -12,6 +12,7 @@ from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
 from src.schemas.films import FilmAddDTO
+from src.schemas.series import SeriesAddRequestDTO
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -40,10 +41,12 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    films_data = [FilmAddDTO.model_validate(film) for film in read_json("films")]
+    films_data = [FilmAddDTO.model_validate(f) for f in read_json("films")]
+    series_data = [SeriesAddRequestDTO.model_validate(s) for s in read_json("series")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.films.add_bulk(films_data)
+        await db_.series.add_bulk(series_data)
         await db_.commit()
 
 

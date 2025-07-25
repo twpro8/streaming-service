@@ -54,7 +54,7 @@ RatingDecimal = Annotated[
 DescriptionStr = Annotated[
     str,
     Field(
-        min_length=10,
+        min_length=3,
         max_length=2000,
         title="Description",
         description="Detailed description of the content",

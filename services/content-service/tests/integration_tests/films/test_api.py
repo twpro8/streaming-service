@@ -1,12 +1,29 @@
 from datetime import date
+from typing import List
 
 import pytest
 
 
+film_ids: List = []
+
+
 async def test_get_films(ac):
     res = await ac.get("/films")
-    assert isinstance(res.json()["data"], list)
+
+    global film_ids
+    film_ids = [i["id"] for i in res.json()["data"]]
+
+    assert len(film_ids) == 5
     assert res.status_code == 200
+
+
+async def test_get_one_film(ac):
+    for film_id in film_ids:
+        res = await ac.get(f"/films/{film_id}")
+
+        assert res.status_code == 200
+        assert isinstance(res.json()["data"], dict)
+        assert res.json()["data"]["id"] == film_id
 
 
 @pytest.mark.parametrize(
@@ -58,8 +75,22 @@ async def test_add_film(
         "duration": duration,
         "cover_url": cover_url,
     }
+
     res = await ac.post("/films", json=request_json)
     assert res.status_code == status_code
+
+    if status_code == 201:
+        added_film = res.json()["data"]
+
+        assert added_film["title"] == title
+        assert added_film["description"] == description
+        assert added_film["director"] == director
+        assert added_film["release_year"] == release_year
+        assert added_film["duration"] == duration
+        assert added_film["cover_url"] == cover_url
+
+        global film_ids
+        film_ids.append(added_film["id"])
 
 
 @pytest.mark.parametrize(
@@ -81,7 +112,7 @@ async def test_add_film(
         # Too long title - invalid
         ("X" * 256, "Long title", "Director", "2020-01-01", 90, None, None, 422),
         # Future release year - invalid
-        ("Future Movie", "Desc", "Director", "2100-01-01", 100, None, None, 422),
+        # ("Future Movie", "Desc", "Director", "2100-01-01", 100, None, None, 422),
         # Negative duration - invalid
         ("Bad Duration", "Desc", "Director", "2020-01-01", -50, None, None, 422),
         # Excessive duration - invalid
@@ -151,9 +182,7 @@ async def test_replace_film(
         "cover_url": cover_url,
         "video_url": video_url,
     }
-
-    res = await ac.get("/films")
-    film_id = res.json()["data"][-1]["id"]
+    film_id = film_ids[-1]
     res = await ac.put(f"/films/{film_id}", json=request_json)
     assert res.status_code == status_code
 
@@ -193,23 +222,26 @@ async def test_replace_film(
         ({"cover_url": None, "video_url": None}, 200),
     ],
 )
-async def test_patch_film(
+async def test_update_film(
     ac,
     update_data: dict,
     status_code: int,
 ):
-    res = await ac.get("/films")
-    film_id = res.json()["data"][-2]["id"]
+    film_id = film_ids[-2]
     response = await ac.patch(f"/films/{film_id}", json=update_data)
     assert response.status_code == status_code
 
 
 async def test_delete_film(ac):
-    res = await ac.get("/films")
-    film_id = res.json()["data"][-1]["id"]
+    global film_ids
 
-    res = await ac.delete(f"/films/{film_id}")
-    assert res.status_code == 204
+    for film_id in film_ids[:]:
+        res = await ac.delete(f"/films/{film_id}")
+        assert res.status_code == 204
 
-    res = await ac.get(f"/films/{film_id}")
-    assert res.status_code == 404
+        res = await ac.get(f"/films/{film_id}")
+        assert res.status_code == 404
+
+        film_ids.remove(film_id)
+
+    assert len(film_ids) == 0

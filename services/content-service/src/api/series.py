@@ -30,7 +30,7 @@ async def get_one_series(db: DBDep, series_id: UUID):
     return {"status": "ok", "data": series}
 
 
-@router.post("", dependencies=[AdminDep])
+@router.post("", dependencies=[AdminDep], status_code=201)
 async def add_new_series(db: DBDep, data: SeriesAddRequestDTO):
     series = await SeriesService(db).add_series(data)
     return {"status": "ok", "data": series}
