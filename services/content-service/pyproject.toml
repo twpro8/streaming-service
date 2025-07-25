@@ -5,18 +5,22 @@ description = ""
 readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
-    "aio-pika>=9.5.5",
     "alembic>=1.15.2",
     "asyncpg>=0.30.0",
     "black>=25.1.0",
     "fastapi[all]>=0.115.12",
+    "faststream[rabbit]>=0.5.44",
     "grpcio>=1.71.0",
     "grpcio-tools>=1.71.0",
     "prometheus-client>=0.21.1",
     "pyjwt>=2.10.1",
+    "pytest>=8.4.1",
+    "pytest-asyncio>=1.1.0",
+    "pytest-dotenv>=0.5.2",
     "ruff>=0.11.2",
     "sqlalchemy>=2.0.40",
 ]
 
 [tool.ruff]
 line-length = 100
+exclude = ["alembic"]

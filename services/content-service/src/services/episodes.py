@@ -10,10 +10,11 @@ from src.exceptions import (
     EpisodeNotFoundException,
     SeriesNotFoundException,
     SeasonNotFoundException,
-    EpisodeDoesNotExistException,
     UniqueEpisodePerSeasonException,
     UniqueSeasonPerSeriesException,
     UniqueFileIDException,
+    ObjectAlreadyExistsException,
+    EpisodeAlreadyExistsException,
 )
 
 
@@ -34,9 +35,9 @@ class EpisodeService(BaseService):
         """
         Get episodes by series ID. And optional by season ID.
         """
-        if not await self.check_series_exists(series_id):
+        if not await self.check_series_exists(id=series_id):
             raise SeriesNotFoundException
-        if season_id and not await self.check_season_exists(season_id):
+        if season_id and not await self.check_season_exists(id=season_id):
             raise SeasonNotFoundException
         episodes = await self.db.episodes.get_episodes(
             series_id=series_id,
@@ -61,9 +62,9 @@ class EpisodeService(BaseService):
         """
         Add new episode.
         """
-        if not await self.check_series_exists(data.series_id):
+        if not await self.check_series_exists(id=data.series_id):
             raise SeriesNotFoundException
-        if not await self.check_season_exists(data.season_id):
+        if not await self.check_season_exists(id=data.season_id):
             raise SeasonNotFoundException
         try:
             new_episode = await self.db.episodes.add_episode(data)
@@ -73,6 +74,8 @@ class EpisodeService(BaseService):
             raise UniqueSeasonPerSeriesException
         except UniqueFileIDException:
             raise UniqueFileIDException
+        except ObjectAlreadyExistsException:
+            raise EpisodeAlreadyExistsException
         await self.db.commit()
         return new_episode
 
@@ -80,11 +83,11 @@ class EpisodeService(BaseService):
         """
         Update episode by ID.
         """
-        if not await self.check_episode_exists(episode_id):
+        if not await self.check_episode_exists(id=episode_id):
             raise EpisodeNotFoundException
-        if data.series_id and not await self.check_series_exists(data.series_id):
+        if data.series_id and not await self.check_series_exists(id=data.series_id):
             raise SeriesNotFoundException
-        if data.season_id and not await self.check_season_exists(data.season_id):
+        if data.season_id and not await self.check_season_exists(id=data.season_id):
             raise SeasonNotFoundException
         try:
             await self.db.episodes.update_episode(episode_id=episode_id, episode_data=data)
@@ -96,17 +99,12 @@ class EpisodeService(BaseService):
             raise UniqueFileIDException
         await self.db.commit()
 
-    async def delete_episode(self, episode_id: UUID, data: EpisodeDeleteRequestDTO):
+    async def delete_episode(self, data: EpisodeDeleteRequestDTO):
         """
         Delete episode by ID.
         """
-        if not await self.check_series_exists(data.series_id):
-            raise SeriesNotFoundException
-        if not await self.check_season_exists(data.season_id):
-            raise SeasonNotFoundException
-        if not await self.check_episode_exists(episode_id):
-            raise EpisodeDoesNotExistException
         await self.db.episodes.delete(
-            id=episode_id, series_id=data.series_id, season_id=data.season_id
+            id=data.episode_id,
+            season_id=data.season_id,
         )
         await self.db.commit()

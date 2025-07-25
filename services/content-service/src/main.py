@@ -10,7 +10,7 @@ from fastapi import FastAPI
 
 from src import rabbitmq_manager
 from src.middleware import MetricsMiddleware
-from src.views import master_router
+from src.api import master_router
 from src.log_config import configure_logging
 
 

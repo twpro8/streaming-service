@@ -28,7 +28,7 @@ class SeriesORM(Base):
         CheckConstraint("rating >= 0 AND rating <= 10"),
         default=Decimal("0.0"),
     )
-    cover_id: Mapped[int | None]
+    cover_url: Mapped[str | None] = mapped_column(unique=True)
 
     # Relationships
     seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="series")
@@ -67,7 +67,7 @@ class EpisodeORM(Base):
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
     duration: Mapped[int]
-    file_id: Mapped[int | None] = mapped_column(unique=True)
+    video_url: Mapped[int | None] = mapped_column(unique=True)
 
     # Relationships
     series: Mapped["SeriesORM"] = relationship()

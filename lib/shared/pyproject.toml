@@ -1,0 +1,12 @@
+[project]
+name = "shared"
+version = "0.1.0"
+description = "Shared library"
+authors = [{ name = "John Davis", email = "twpro8@gmail.com" }]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

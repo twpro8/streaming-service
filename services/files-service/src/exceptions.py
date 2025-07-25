@@ -16,7 +16,8 @@ class MasterHTTPException(HTTPException):
     status_code = 418
     detail = "I'm a teapot"
 
-    def __init__(self):
+    def __init__(self, detail: str = None):
+        self.detail = detail or self.detail
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
@@ -24,8 +25,74 @@ class ObjectNotFoundException(MasterException):
     detail = "Object not found"
 
 
+class ObjectNotFoundHTTPException(MasterHTTPException):
+    status_code = 404
+    detail = "Object not found"
+
+
+class ObjectAlreadyExistsException(MasterException):
+    detail = "Object already exists"
+
+
+class ObjectAlreadyExistsHTTPException(MasterHTTPException):
+    status_code = 409
+    detail = "Object already exists"
+
+
+class VideoAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Video already exists"
+
+
+class VideoAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Video already exists"
+
+
+class UploadFailureException(MasterException):
+    detail = "Failed to upload file"
+
+
+class VideoUploadFailedException(UploadFailureException):
+    detail = "Failed to upload video file"
+
+
+class VideoUploadFailedHTTPException(MasterHTTPException):
+    status_code = 503
+    detail = "Video upload service is temporarily unavailable"
+
+
+class FileTooLargeException(MasterException):
+    detail = "File size limit exceeded"
+
+
+class VideoFileTooLargeException(MasterException):
+    detail = "Video file too large"
+
+
+class VideoFileTooLargeHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Video file size limit exceeded"
+
+
 class InvalidContentTypeException(MasterException):
     detail = "Invalid content type"
+
+
+class NoExtensionException(MasterException):
+    detail = "Filename must contain an extension"
+
+
+class ExtensionTooLongException(MasterException):
+    detail = "Extension too long"
+
+
+class ExtensionTooLongHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Extension too long"
+
+
+class NoExtensionHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Filename must contain an extension"
 
 
 class InvalidVideoTypeHTTPException(MasterHTTPException):
@@ -36,3 +103,57 @@ class InvalidVideoTypeHTTPException(MasterHTTPException):
 class InvalidImageTypeHTTPException(MasterHTTPException):
     status_code = 422
     detail = "Image must have jpg or png format"
+
+
+# JWT Exceptions
+class JWTTokenException(MasterException): ...
+
+
+class SignatureExpiredException(JWTTokenException):
+    detail = "Signature has expired: JWT"
+
+
+class InvalidCredentialsException(JWTTokenException):
+    detail = "Could not validate credentials: JWT"
+
+
+class JWTTokenHTTPException(MasterHTTPException): ...
+
+
+class SignatureExpiredHTTPException(JWTTokenHTTPException):
+    status_code = 401
+    detail = "Signature has expired: JWT"
+
+
+class InvalidCredentialsHTTPException(JWTTokenHTTPException):
+    status_code = 401
+    detail = "Could not validate credentials: JWT"
+
+
+class NoTokenHTTPException(MasterHTTPException):
+    status_code = 401
+    detail = "No access token"
+
+
+# Permissions
+class PermissionDeniedHTTPException(MasterHTTPException):
+    status_code = 403
+    detail = "You do not have permission to access this resource"
+
+
+# Images exceptions
+class ImageNotFoundException(ObjectNotFoundException):
+    detail = "Image not found"
+
+
+class ImageNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Image does not exist"
+
+
+# Videos exceptions
+class VideoNotFoundException(ObjectNotFoundException):
+    detail = "Video not found"
+
+
+class VideoNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Video does not exist"

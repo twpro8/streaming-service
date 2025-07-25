@@ -9,8 +9,6 @@ from src.exceptions import (
     SeasonNotFoundHTTPException,
     EpisodeNotFoundHTTPException,
     EpisodeAlreadyExistsHTTPException,
-    EpisodeDoesNotExistException,
-    EpisodeDoesNotExistHTTPException,
     UniqueEpisodePerSeasonException,
     UniqueEpisodePerSeasonHTTPException,
     UniqueSeasonPerSeriesException,
@@ -33,8 +31,6 @@ def handle_episode_exceptions(func):
             raise EpisodeNotFoundHTTPException
         except EpisodeAlreadyExistsException:
             raise EpisodeAlreadyExistsHTTPException
-        except EpisodeDoesNotExistException:
-            raise EpisodeDoesNotExistHTTPException
         except UniqueEpisodePerSeasonException:
             raise UniqueEpisodePerSeasonHTTPException
         except UniqueSeasonPerSeriesException:
