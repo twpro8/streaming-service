@@ -5,6 +5,7 @@ from src.exceptions import (
     ObjectAlreadyExistsException,
     SeasonAlreadyExistsException,
     SeriesNotFoundException,
+    UniqueSeasonNumberException,
 )
 from src.schemas.seasons import SeasonAddRequestDTO, SeasonPatchRequestDTO, SeasonAddDTO
 from src.services.base import BaseService
@@ -18,6 +19,15 @@ class SeasonService(BaseService):
             per_page=per_page,
         )
         return seasons
+
+    async def get_season(self, series_id: UUID, season_id: UUID):
+        if not await self.check_series_exists(id=series_id):
+            raise SeriesNotFoundException
+
+        season = await self.db.seasons.get_one_or_none(id=season_id, series_id=series_id)
+        if not season:
+            raise SeasonNotFoundException
+        return season
 
     async def add_season(self, series_id: UUID, season_data: SeasonAddRequestDTO):
         if not await self.check_series_exists(id=series_id):
@@ -45,12 +55,15 @@ class SeasonService(BaseService):
         if not await self.check_season_exists(id=season_id):
             raise SeasonNotFoundException
 
-        await self.db.seasons.update(
-            data=season_data,
-            exclude_unset=True,
-            id=season_id,
-            series_id=series_id,
-        )
+        try:
+            await self.db.seasons.update(
+                data=season_data,
+                exclude_unset=True,
+                id=season_id,
+                series_id=series_id,
+            )
+        except ObjectAlreadyExistsException:
+            raise UniqueSeasonNumberException
         await self.db.commit()
 
     async def delete_season(self, series_id: UUID, season_id: UUID):

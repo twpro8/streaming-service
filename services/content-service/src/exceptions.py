@@ -142,6 +142,19 @@ class UniqueViolationHTTPException(MasterHTTPException):
     detail = "Unique violation error"
 
 
+class UniqueSeasonNumberException(MasterException):
+    detail = "Unique season number error"
+
+
+class UniqueSeasonNumberHTTPException(MasterHTTPException):
+    detail = "Season with the provided number already exists"
+
+
+class AtLeastOneFieldRequiredException(MasterHTTPException):
+    status_code = 422
+    detail = "At least one field must be provided"
+
+
 class UniqueCoverURLException(UniqueViolationException):
     detail = "Cover URL unique violation error"
 

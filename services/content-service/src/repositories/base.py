@@ -122,7 +122,17 @@ class BaseRepository:
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))
         stmt = update(self.model).values(**data).filter_by(**filter_by)
-        await self.session.execute(stmt)
+        try:
+            await self.session.execute(stmt)
+        except IntegrityError as exc:
+            cause = getattr(exc.orig, "__cause__", None)
+            if isinstance(cause, UniqueViolationError):
+                raise ObjectAlreadyExistsException from exc
+            else:
+                log.exception(
+                    f"Unknown error: failed to update data in database, input data: {data}"
+                )
+                raise exc
 
     async def delete(self, **filter_by) -> None:
         stmt = delete(self.model).filter_by(**filter_by)

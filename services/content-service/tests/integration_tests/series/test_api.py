@@ -1,27 +1,10 @@
 from typing import List
+from uuid import UUID
 
 import pytest
 
 
-series_ids: List = []
-
-
-async def test_get_series(ac):
-    res = await ac.get("/series")
-
-    global series_ids
-    series_ids = [i["id"] for i in res.json()["data"]]
-
-    assert len(series_ids) == 5
-    assert res.status_code == 200
-
-
-async def test_get_one_series(ac):
-    for series_id in series_ids:
-        res = await ac.get(f"/series/{series_id}")
-        assert res.status_code == 200
-        assert isinstance(res.json()["data"], dict)
-        assert res.json()["data"]["id"] == series_id
+series_ids: List[UUID] = []
 
 
 @pytest.mark.parametrize(
@@ -39,15 +22,15 @@ async def test_get_one_series(ac):
         # Empty title — should fail
         ("", "Some description", "Director", "2020-01-01", None, 422),
         # Too long title — should fail
-        ("T" * 300, "Desc", "Dir", "2020-01-01", None, 422),
+        ("T" * 300, "Description", "Director", "2020-01-01", None, 422),
         # Future release_year — should fail
-        # ("Future Series", "Desc", "Dir", "2100-01-01", None, 422),
+        # ("Future Series", "Description", "Director", "2100-01-01", None, 422),
         # Invalid cover_url — should fail
-        ("Bad URL", "Desc", "Dir", "2020-01-01", "not-a-url", 422),
+        ("Bad URL", "Description", "Director", "2020-01-01", "not-a-url", 422),
         # Empty director — should fail
-        ("Valid Title", "Desc", "", "2020-01-01", None, 422),
+        ("Valid Title", "Description", "", "2020-01-01", None, 422),
         # Valid with no cover_url — should succeed
-        ("No Cover", "No cover provided", "Dir", "2020-01-01", None, 201),
+        ("No Cover", "No cover provided", "Director", "2020-01-01", None, 201),
         # Valid with full data — should succeed
         (
             "Full Set",
@@ -58,7 +41,7 @@ async def test_get_one_series(ac):
             201,
         ),
         # release_year invalid format — should fail (if date parsing is strict)
-        ("Bad Date", "Date issue", "Dir", "20-01-01", None, 422),
+        ("Bad Date", "Date issue", "Director", "20-01-01", None, 422),
     ],
 )
 async def test_add_series(
@@ -91,6 +74,53 @@ async def test_add_series(
 
         global series_ids
         series_ids.append(added_series["id"])
+
+
+@pytest.mark.parametrize(
+    "params, expected_count",
+    [
+        # get all
+        ({"page": 1, "per_page": 30}, 8),
+        # Title filters
+        ({"title": "Breaking Bad"}, 1),
+        ({"title": "Unknown Title"}, 0),
+        # Description filters
+        ({"description": "supernatural"}, 2),  # "Stranger Things" and "Dark"
+        ({"description": "Complete info"}, 1),
+        # Director filters
+        ({"director": "D. Creator"}, 1),
+        ({"director": "Baran bo Odar"}, 1),
+        ({"director": "Someone Not Present"}, 0),
+        # release_year exact
+        ({"release_year": "2015-05-05"}, 1),
+        ({"release_year": "2020-01-01"}, 1),
+        # release_year_ge
+        ({"release_year_ge": "2018-01-01"}, 3),  # Chernobyl, Dark, Neon Skies
+        # release_year_le
+        ({"release_year_le": "2010-01-01"}, 2),  # Breaking Bad, The Office
+        # Pagination: page=1, page_size=5 → first 5
+        ({"page": 1, "per_page": 5}, 5),
+        # Pagination: page=2, page_size=5 → remaining 3
+        ({"page": 2, "per_page": 5}, 3),
+    ],
+)
+async def test_get_series(ac, params, expected_count):
+    res = await ac.get("/series", params=params)
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+async def test_get_one_series(ac, get_series_ids):
+    for series_id in series_ids + get_series_ids:
+        res = await ac.get(f"/series/{series_id}")
+        data = res.json()["data"]
+
+        assert res.status_code == 200
+        assert isinstance(data, dict)
+        assert data["id"] == series_id
 
 
 @pytest.mark.parametrize(
@@ -190,8 +220,6 @@ async def test_replace_series(
             },
             200,
         ),
-        # Nullify optional cover_url
-        ({"cover_url": None}, 200),
         # Empty title — should fail
         ({"title": ""}, 422),
         # Empty description — should fail
@@ -213,9 +241,9 @@ async def test_update_series(
     update_data: dict,
     status_code: int,
 ):
-    series_id = series_ids[-2]
-    response = await ac.patch(f"/series/{series_id}", json=update_data)
-    assert response.status_code == status_code
+    series_id = series_ids[0]
+    res = await ac.patch(f"/series/{series_id}", json=update_data)
+    assert res.status_code == status_code
 
 
 async def test_delete_series(ac):

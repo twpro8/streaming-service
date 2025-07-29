@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import AnyUrl, Field
 
-from src.schemas.base import BaseSchema
+from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.pydantic_types import TitleStr, DurationInt, RatingDecimal, DescriptionStr
 
 
@@ -22,7 +22,7 @@ class FilmDTO(FilmAddDTO):
     video_url: AnyUrl | None = None
 
 
-class FilmPatchRequestDTO(BaseSchema):
+class FilmPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
     director: str | None = Field(default=None, min_length=3, max_length=255)

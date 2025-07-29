@@ -3,7 +3,7 @@ from datetime import date
 
 from pydantic import AnyUrl, Field
 
-from src.schemas.base import BaseSchema
+from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.pydantic_types import TitleStr, RatingDecimal, DescriptionStr
 
 
@@ -19,7 +19,7 @@ class SeriesDTO(SeriesAddRequestDTO):
     id: UUID
 
 
-class SeriesPatchRequestDTO(BaseSchema):
+class SeriesPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
     director: str | None = Field(default=None, min_length=3, max_length=255)

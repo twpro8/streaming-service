@@ -56,6 +56,18 @@ async def ac() -> AsyncGenerator[AsyncClient, Any]:
         yield ac
 
 
+@pytest.fixture(scope="session")
+async def get_films_ids(ac):
+    res = await ac.get("/films")
+    return [i["id"] for i in res.json()["data"]]
+
+
+@pytest.fixture(scope="session")
+async def get_series_ids(ac):
+    res = await ac.get("/series")
+    return [i["id"] for i in res.json()["data"]]
+
+
 def read_json(file_name: str) -> dict:
     path = f"tests/mock_data/{file_name}.json"
     with open(path, encoding="utf-8") as file_in:

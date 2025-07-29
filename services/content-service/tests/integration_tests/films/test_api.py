@@ -1,29 +1,11 @@
 from datetime import date
 from typing import List
+from uuid import UUID
 
 import pytest
 
 
-film_ids: List = []
-
-
-async def test_get_films(ac):
-    res = await ac.get("/films")
-
-    global film_ids
-    film_ids = [i["id"] for i in res.json()["data"]]
-
-    assert len(film_ids) == 5
-    assert res.status_code == 200
-
-
-async def test_get_one_film(ac):
-    for film_id in film_ids:
-        res = await ac.get(f"/films/{film_id}")
-
-        assert res.status_code == 200
-        assert isinstance(res.json()["data"], dict)
-        assert res.json()["data"]["id"] == film_id
+films_ids: List[UUID] = []
 
 
 @pytest.mark.parametrize(
@@ -39,14 +21,23 @@ async def test_get_one_film(ac):
             "https://example.com/inception.jpg",
             201,
         ),
+        (
+            "Rookie",
+            "Twisted story",
+            "John Nolan",
+            "1999-09-09",
+            148,
+            None,
+            201,
+        ),
         # Empty title - should fail validation
         ("", "Some description", "Director Name", "2020-01-01", 100, None, 422),
         # Very long title - should fail validation
-        ("T" * 300, "Desc", "Director", "2020-01-01", 90, None, 422),
+        ("T" * 300, "Description", "Director", "2020-01-01", 90, None, 422),
         # release_year in the future - should fail validation
-        # ("Future Film", "Desc", "Dir", "2100-01-01", 90, None, 422),
+        # ("Future Film", "Description", "Director", "2100-01-01", 90, None, 422),
         # Negative duration - should fail validation
-        ("Film", "Desc", "Director", "2020-01-01", -10, None, 422),
+        ("Film", "Description", "Director", "2020-01-01", -10, None, 422),
         # Excessively long duration - should fail validation
         ("Long Film", "Description", "Director", "2020-01-01", 10000, None, 422),
         # Invalid cover_url format - should fail validation
@@ -54,7 +45,7 @@ async def test_get_one_film(ac):
         # Empty director - should fail validation
         ("Film", "Description", "", "2020-01-01", 90, None, 422),
         # All optional fields None (cover_url) - should succeed
-        ("Film", "Description", "Dir", "2020-01-01", 90, None, 201),
+        ("Film", "Description", "Director", "2020-01-01", 90, None, 201),
     ],
 )
 async def test_add_film(
@@ -89,8 +80,67 @@ async def test_add_film(
         assert added_film["duration"] == duration
         assert added_film["cover_url"] == cover_url
 
-        global film_ids
-        film_ids.append(added_film["id"])
+        global films_ids
+        films_ids.append(added_film["id"])
+
+
+@pytest.mark.parametrize(
+    "params, expected_count",
+    [
+        # No filters — should return all 8
+        ({"page": 1, "per_page": 30}, 8),
+        # Exact title match
+        ({"title": "Inception", "page": 1, "per_page": 30}, 1),
+        ({"title": "The Hidden Forest", "page": 1, "per_page": 30}, 1),
+        # Director filter
+        ({"director": "Christopher Nolan", "page": 1, "per_page": 30}, 1),
+        ({"director": "Clara Syntax", "page": 1, "per_page": 30}, 1),
+        ({"director": "Nonexistent", "page": 1, "per_page": 30}, 0),
+        # Description filter
+        ({"description": "thriller", "page": 1, "per_page": 30}, 1),  # Only "Inception"
+        ({"description": "lost tribe", "page": 1, "per_page": 30}, 1),  # Only "The Hidden Forest"
+        # Exact release_year
+        ({"release_year": "2025-02-14", "page": 1, "per_page": 30}, 1),  # "Love in Beta"
+        ({"release_year": "1999-09-09", "page": 1, "per_page": 30}, 1),  # "Rookie"
+        ({"release_year": "2018-06-10", "page": 1, "per_page": 30}, 1),  # "The Hidden Forest"
+        # release_year_ge
+        (
+            {"release_year_ge": "2025-01-01", "page": 1, "per_page": 30},
+            2,
+        ),  # "Love in Beta" + "Desert Frequency"
+        # release_year_le
+        ({"release_year_le": "2000-01-01", "page": 1, "per_page": 30}, 1),  # "Rookie"
+        # release_year range
+        (
+            {
+                "release_year_ge": "2020-01-01",
+                "release_year_le": "2025-12-31",
+                "page": 1,
+                "per_page": 30,
+            },
+            4,
+        ),
+        # No match
+        ({"title": "NotExists", "page": 1, "per_page": 30}, 0),
+    ],
+)
+async def test_get_films(ac, params, expected_count):
+    res = await ac.get("/films", params=params)
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+async def test_get_one_film(ac, get_films_ids):
+    for film_id in films_ids + get_films_ids:
+        res = await ac.get(f"/films/{film_id}")
+        data = res.json()["data"]
+
+        assert res.status_code == 200
+        assert isinstance(data, dict)
+        assert data["id"] == film_id
 
 
 @pytest.mark.parametrize(
@@ -182,7 +232,7 @@ async def test_replace_film(
         "cover_url": cover_url,
         "video_url": video_url,
     }
-    film_id = film_ids[-1]
+    film_id = films_ids[-1]
     res = await ac.put(f"/films/{film_id}", json=request_json)
     assert res.status_code == status_code
 
@@ -218,8 +268,6 @@ async def test_replace_film(
         ({"title": ""}, 422),
         # Empty director — should fail
         ({"director": ""}, 422),
-        # Nullify optional fields
-        ({"cover_url": None, "video_url": None}, 200),
     ],
 )
 async def test_update_film(
@@ -227,21 +275,21 @@ async def test_update_film(
     update_data: dict,
     status_code: int,
 ):
-    film_id = film_ids[-2]
-    response = await ac.patch(f"/films/{film_id}", json=update_data)
-    assert response.status_code == status_code
+    film_id = films_ids[0]
+    res = await ac.patch(f"/films/{film_id}", json=update_data)
+    assert res.status_code == status_code
 
 
 async def test_delete_film(ac):
-    global film_ids
+    global films_ids
 
-    for film_id in film_ids[:]:
+    for film_id in films_ids[:]:
         res = await ac.delete(f"/films/{film_id}")
         assert res.status_code == 204
 
         res = await ac.get(f"/films/{film_id}")
         assert res.status_code == 404
 
-        film_ids.remove(film_id)
+        films_ids.remove(film_id)
 
-    assert len(film_ids) == 0
+    assert len(films_ids) == 0
