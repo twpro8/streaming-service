@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from src.exceptions import (
     SeasonNotFoundException,
@@ -12,16 +12,16 @@ from src.exceptions import (
     UniqueSeasonNumberException,
     UniqueSeasonNumberHTTPException,
 )
-from src.schemas.seasons import SeasonAddRequestDTO, SeasonPatchRequestDTO
+from src.schemas.seasons import SeasonAddDTO, SeasonPatchRequestDTO
 from src.services.seasons import SeasonService
 from src.api.dependencies import DBDep, AdminDep, PaginationDep
 
 
-router = APIRouter(prefix="/series", tags=["Seasons"])
+router = APIRouter(prefix="/seasons", tags=["Seasons"])
 
 
-@router.get("/{series_id}/seasons")
-async def get_seasons(db: DBDep, series_id: UUID, pagination: PaginationDep):
+@router.get("")
+async def get_seasons(db: DBDep, pagination: PaginationDep, series_id: UUID = Query()):
     data = await SeasonService(db).get_seasons(
         series_id=series_id,
         page=pagination.page,
@@ -30,21 +30,19 @@ async def get_seasons(db: DBDep, series_id: UUID, pagination: PaginationDep):
     return {"status": "ok", "data": data}
 
 
-@router.get("/{series_id}/seasons/{season_id}")
-async def get_season(db: DBDep, series_id: UUID, season_id: UUID):
+@router.get("/{season_id}")
+async def get_season(db: DBDep, season_id: UUID):
     try:
-        data = await SeasonService(db).get_season(series_id=series_id, season_id=season_id)
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
+        data = await SeasonService(db).get_season(season_id=season_id)
     except SeasonNotFoundException:
         raise SeasonNotFoundHTTPException
     return {"status": "ok", "data": data}
 
 
-@router.post("/{series_id}/seasons", dependencies=[AdminDep], status_code=201)
-async def add_season(db: DBDep, series_id: UUID, season_data: SeasonAddRequestDTO):
+@router.post("", dependencies=[AdminDep], status_code=201)
+async def add_season(db: DBDep, season_data: SeasonAddDTO):
     try:
-        data = await SeasonService(db).add_season(series_id=series_id, season_data=season_data)
+        data = await SeasonService(db).add_season(season_data=season_data)
     except SeriesNotFoundException:
         raise SeriesNotFoundHTTPException
     except SeasonAlreadyExistsException:
@@ -52,18 +50,10 @@ async def add_season(db: DBDep, series_id: UUID, season_data: SeasonAddRequestDT
     return {"status": "ok", "data": data}
 
 
-@router.patch("/{series_id}/seasons/{season_id}", dependencies=[AdminDep])
-async def update_season(
-    db: DBDep, series_id: UUID, season_id: UUID, season_data: SeasonPatchRequestDTO
-):
+@router.patch("/{season_id}", dependencies=[AdminDep])
+async def update_season(db: DBDep, season_id: UUID, season_data: SeasonPatchRequestDTO):
     try:
-        await SeasonService(db).update_season(
-            series_id=series_id,
-            season_id=season_id,
-            season_data=season_data,
-        )
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
+        await SeasonService(db).update_season(season_id=season_id, season_data=season_data)
     except SeasonNotFoundException:
         raise SeasonNotFoundHTTPException
     except UniqueSeasonNumberException:
@@ -71,6 +61,6 @@ async def update_season(
     return {"status": "ok"}
 
 
-@router.delete("/{series_id}/seasons/{season_id}", dependencies=[AdminDep], status_code=204)
-async def delete_season(db: DBDep, series_id: UUID, season_id: UUID):
-    await SeasonService(db).delete_season(series_id=series_id, season_id=season_id)
+@router.delete("/{season_id}", dependencies=[AdminDep], status_code=204)
+async def delete_season(db: DBDep, season_id: UUID):
+    await SeasonService(db).delete_season(season_id=season_id)

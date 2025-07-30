@@ -6,13 +6,10 @@ from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.pydantic_types import TitleStr
 
 
-class SeasonAddRequestDTO(BaseSchema):
+class SeasonAddDTO(BaseSchema):
+    series_id: UUID
     title: TitleStr
     season_number: int = Field(default=1, ge=1, le=500, title="Season Number")
-
-
-class SeasonAddDTO(SeasonAddRequestDTO):
-    series_id: UUID
 
 
 class SeasonPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):

@@ -42,11 +42,12 @@ async def test_add_season(
 ):
     for series_id in get_series_ids:
         request_json = {
+            "series_id": series_id,
             "title": title,
             "season_number": season_number,
         }
 
-        res = await ac.post(f"/series/{series_id}/seasons", json=request_json)
+        res = await ac.post("/seasons", json=request_json)
         assert res.status_code == status_code
 
         if res.status_code == 201:
@@ -57,8 +58,8 @@ async def test_add_season(
 async def test_get_seasons(ac, get_series_ids):
     for series_id in get_series_ids:
         res = await ac.get(
-            f"/series/{series_id}/seasons",
-            params={"page": 1, "per_page": 30},
+            "/seasons",
+            params={"series_id": series_id, "page": 1, "per_page": 30},
         )
         data = res.json()["data"]
 
@@ -88,9 +89,9 @@ async def test_get_seasons(ac, get_series_ids):
     ],
 )
 async def test_update_season(ac, patch_data, expected_status):
-    for series_id, season_ids in series_seasons_data.items():
+    for season_ids in series_seasons_data.values():
         res = await ac.patch(
-            f"/series/{series_id}/seasons/{season_ids[-1]}",
+            f"/seasons/{season_ids[-1]}",
             json=patch_data,
         )
         assert res.status_code == expected_status
@@ -102,14 +103,12 @@ async def test_update_season(ac, patch_data, expected_status):
 async def test_delete_season(ac):
     for series_id, season_ids in series_seasons_data.items():
         for season_id in season_ids:
-            res = await ac.delete(
-                f"/series/{series_id}/seasons/{season_id}",
-            )
+            res = await ac.delete(f"/seasons/{season_id}")
             assert res.status_code == 204
 
-            res = await ac.get(f"/series/{series_id}/seasons/{season_id}")
+            res = await ac.get(f"/seasons/{season_id}")
             assert res.status_code == 404
 
-        res = await ac.get(f"/series/{series_id}/seasons")
+        res = await ac.get("/seasons", params={"series_id": series_id})
         assert res.status_code == 200
         assert len(res.json()["data"]) == 0
