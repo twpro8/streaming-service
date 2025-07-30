@@ -26,14 +26,7 @@ class EpisodeAddDTO(BaseSchema):
 
 
 class EpisodePatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
-    series_id: UUID | None = None
-    season_id: UUID | None = None
     title: TitleStr | None = None
     episode_number: int = Field(None, ge=1, le=9999, title="Episode Number")
     duration: DurationInt | None = None
     video_url: AnyUrl | None = None
-
-
-class EpisodeDeleteRequestDTO(BaseSchema):
-    episode_id: UUID
-    season_id: UUID

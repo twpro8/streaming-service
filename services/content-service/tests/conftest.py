@@ -68,6 +68,20 @@ async def get_series_ids(ac):
     return [i["id"] for i in res.json()["data"]]
 
 
+@pytest.fixture(scope="session")
+async def get_series_and_season_ids(ac, get_series_ids):
+    series_id = get_series_ids[0]
+    req_json = {
+        "series_id": series_id,
+        "title": "Seventy Seven",
+        "season_number": 77,
+    }
+    res = await ac.post(f"/seasons", json=req_json)
+    assert res.status_code == 201
+    season_id = res.json()["data"]["id"]
+    return series_id, season_id
+
+
 def read_json(file_name: str) -> dict:
     path = f"tests/mock_data/{file_name}.json"
     with open(path, encoding="utf-8") as file_in:

@@ -67,7 +67,7 @@ class EpisodeORM(Base):
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
     duration: Mapped[int]
-    video_url: Mapped[int | None] = mapped_column(unique=True)
+    video_url: Mapped[str | None] = mapped_column(unique=True)
 
     # Relationships
     series: Mapped["SeriesORM"] = relationship()

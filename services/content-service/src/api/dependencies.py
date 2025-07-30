@@ -1,12 +1,14 @@
 from datetime import date
 from decimal import Decimal
 from typing import Annotated
+from uuid import UUID
 
 from fastapi import Depends, Request, Query
 from pydantic import BaseModel
 
 from src.db import DBManager, session_maker
 from src.exceptions import NoTokenHTTPException, PermissionDeniedHTTPException
+from src.schemas.base import AtLeastOneFieldRequired
 from src.services.auth import AuthService
 
 
@@ -72,3 +74,13 @@ class CommonContentParams(PaginationParams):
 
 
 ContentParamsDep = Annotated[CommonContentParams, Depends()]
+
+
+class EpisodesParams(PaginationParams, AtLeastOneFieldRequired):
+    title: str | None = Query(None)
+    series_id: UUID | None = Query(None)
+    season_id: UUID | None = Query(None)
+    episode_number: str | None = Query(None, ge=1, le=9999)
+
+
+EpisodesParamsDep = Annotated[EpisodesParams, Depends()]

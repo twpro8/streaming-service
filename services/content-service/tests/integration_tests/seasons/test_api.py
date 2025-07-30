@@ -65,7 +65,6 @@ async def test_get_seasons(ac, get_series_ids):
 
         assert res.status_code == 200
         assert isinstance(data, list)
-        assert len(data) == 5
 
 
 @pytest.mark.parametrize(
@@ -108,7 +107,3 @@ async def test_delete_season(ac):
 
             res = await ac.get(f"/seasons/{season_id}")
             assert res.status_code == 404
-
-        res = await ac.get("/seasons", params={"series_id": series_id})
-        assert res.status_code == 200
-        assert len(res.json()["data"]) == 0

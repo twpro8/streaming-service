@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from src.schemas.episodes import (
-    EpisodeDeleteRequestDTO,
     EpisodePatchRequestDTO,
     EpisodeAddDTO,
 )
@@ -45,11 +44,11 @@ class EpisodeService(BaseService):
             episode_title=episode_title,
             episode_number=episode_number,
             limit=per_page,
-            offset=(page - 1) * per_page,
+            offset=per_page * (page - 1),
         )
         return episodes
 
-    async def get_episode_by_id(self, episode_id: UUID):
+    async def get_episode(self, episode_id: UUID):
         """
         Get episode by ID.
         """
@@ -85,10 +84,6 @@ class EpisodeService(BaseService):
         """
         if not await self.check_episode_exists(id=episode_id):
             raise EpisodeNotFoundException
-        if data.series_id and not await self.check_series_exists(id=data.series_id):
-            raise SeriesNotFoundException
-        if data.season_id and not await self.check_season_exists(id=data.season_id):
-            raise SeasonNotFoundException
         try:
             await self.db.episodes.update_episode(episode_id=episode_id, episode_data=data)
         except UniqueEpisodePerSeasonException:
@@ -99,12 +94,9 @@ class EpisodeService(BaseService):
             raise UniqueFileIDException
         await self.db.commit()
 
-    async def delete_episode(self, data: EpisodeDeleteRequestDTO):
+    async def delete_episode(self, episode_id: UUID):
         """
         Delete episode by ID.
         """
-        await self.db.episodes.delete(
-            id=data.episode_id,
-            season_id=data.season_id,
-        )
+        await self.db.episodes.delete(id=episode_id)
         await self.db.commit()
