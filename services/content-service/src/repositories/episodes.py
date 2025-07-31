@@ -1,17 +1,23 @@
+import logging
+
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select, func, update, insert
 from sqlalchemy.exc import IntegrityError
 from asyncpg.exceptions import UniqueViolationError
 
 from src.exceptions import (
     UniqueEpisodePerSeasonException,
     UniqueSeasonPerSeriesException,
-    UniqueFileIDException,
+    UniqueFileURLException,
 )
 from src.repositories.base import BaseRepository
 from src.models.series import EpisodeORM
+from src.repositories.utils import normalize_for_insert
 from src.schemas.episodes import EpisodeDTO
 from src.repositories.mappers.mappers import EpisodeDataMapper
+
+
+log = logging.getLogger(__name__)
 
 
 class EpisodeRepository(BaseRepository):
@@ -21,14 +27,16 @@ class EpisodeRepository(BaseRepository):
 
     async def get_episodes(
         self,
-        series_id: int,
+        series_id: int | None,
         season_id: int | None,
         episode_title: str | None,
         episode_number: int | None,
-        offset: int,
         limit: int,
+        offset: int,
     ):
-        query = select(EpisodeORM).filter_by(series_id=series_id)
+        query = select(EpisodeORM)
+        if series_id is not None:
+            query = query.filter_by(series_id=series_id)
         if season_id is not None:
             query = query.filter_by(season_id=season_id)
         if episode_title is not None:
@@ -42,31 +50,44 @@ class EpisodeRepository(BaseRepository):
         episodes = res.scalars().all()
         return [EpisodeDataMapper.map_to_domain_entity(ep) for ep in episodes]
 
-    async def add_episode(self, episode_data: BaseModel):
+    async def add(self, data: BaseModel):
+        data = normalize_for_insert(data.model_dump())
+        stmt = insert(self.model).values(**data).returning(self.model)
         try:
-            episode = await self.add(data=episode_data)
-        except IntegrityError as e:
-            if isinstance(e.orig.__cause__, UniqueViolationError):
-                match getattr(e.orig.__cause__, "constraint_name", None):
+            res = await self.session.execute(stmt)
+        except IntegrityError as exc:
+            if isinstance(exc.orig.__cause__, UniqueViolationError):
+                cause = getattr(exc.orig, "__cause__", None)
+                constraint = getattr(cause, "constraint_name", None)
+                match constraint:
                     case "unique_episode_per_season":
                         raise UniqueEpisodePerSeasonException
                     case "unique_season_per_series":
                         raise UniqueSeasonPerSeriesException
-                    case "episodes_file_id_key":
-                        raise UniqueFileIDException
+                    case "episodes_video_url_key":
+                        raise UniqueFileURLException
+                raise
             raise
-        return episode
+        model = res.scalars().one()
+        return self.mapper.map_to_domain_entity(model)
 
-    async def update_episode(self, episode_id: int, episode_data: EpisodeDTO):
+    async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
+        data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))
+        stmt = update(self.model).values(**data).filter_by(**filter_by)
         try:
-            await self.update(id=episode_id, data=episode_data)
-        except IntegrityError as e:
-            if isinstance(e.orig.__cause__, UniqueViolationError):
-                match getattr(e.orig.__cause__, "constraint_name", None):
+            await self.session.execute(stmt)
+        except IntegrityError as exc:
+            cause = getattr(exc.orig, "__cause__", None)
+            constraint = getattr(cause, "constraint_name", None)
+            if isinstance(cause, UniqueViolationError):
+                match constraint:
                     case "unique_episode_per_season":
-                        raise UniqueEpisodePerSeasonException
-                    case "unique_season_per_series":
-                        raise UniqueSeasonPerSeriesException
-                    case "episodes_file_id_key":
-                        raise UniqueFileIDException
-            raise
+                        raise UniqueEpisodePerSeasonException from exc
+                    case "episodes_video_url_key":
+                        raise UniqueFileURLException from exc
+                raise
+            else:
+                log.exception(
+                    f"Unknown error: failed to update data in database, input data: {data}"
+                )
+                raise

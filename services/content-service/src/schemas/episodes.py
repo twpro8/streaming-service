@@ -27,6 +27,6 @@ class EpisodeAddDTO(BaseSchema):
 
 class EpisodePatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     title: TitleStr | None = None
-    episode_number: int = Field(None, ge=1, le=9999, title="Episode Number")
+    episode_number: int | None = Field(None, ge=1, le=9999, title="Episode Number")
     duration: DurationInt | None = None
     video_url: AnyUrl | None = None

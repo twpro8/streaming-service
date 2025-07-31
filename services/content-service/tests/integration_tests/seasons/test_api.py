@@ -14,13 +14,13 @@ def add_season(series_id: str, season_id: str):
     "title, season_number, status_code",
     [
         # Valid data
-        ("Season One", 1, 201),
-        ("Season Two", 2, 201),
+        ("Season One", 111, 201),
+        ("Season Two", 222, 201),
         ("Final Season", 10, 201),
         ("Mini Season", 500, 201),
-        ("Low Bound", 3, 201),
+        ("Low Bound", 333, 201),
         # Existing season nimber
-        ("Low Bound", 3, 409),
+        ("Low Bound", 111, 409),
         # Invalid: season_number too high
         ("Too Many", 501, 422),
         # Invalid: season_number zero

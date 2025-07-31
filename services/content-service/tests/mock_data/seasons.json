@@ -1,0 +1,62 @@
+[
+  {
+    "id": "d5ed6e69-5d07-474f-81e4-86627a576d45",
+    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "title": "Series 1 Season 1",
+    "season_number": 1
+  },
+  {
+    "id": "81c29ee1-db3e-4d81-a257-d05e29773deb",
+    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "title": "Series 1 Season 2",
+    "season_number": 2
+  },
+  {
+    "id": "abb704d5-da18-4d6a-942e-58f1b6172109",
+    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "title": "Series 2 Season 1",
+    "season_number": 1
+  },
+  {
+    "id": "99edd9cc-cd08-4a9d-8809-93b86ab06d28",
+    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "title": "Series 2 Season 2",
+    "season_number": 2
+  },
+  {
+    "id": "00200739-4730-42ac-8a5a-bad5112558ee",
+    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "title": "Series 3 Season 1",
+    "season_number": 1
+  },
+  {
+    "id": "839e3c16-f646-4d3e-a23a-28767330e753",
+    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "title": "Series 3 Season 2",
+    "season_number": 2
+  },
+  {
+    "id": "e6220848-9b53-4c62-bd58-96f07e3cf15a",
+    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "title": "Series 4 Season 1",
+    "season_number": 1
+  },
+  {
+    "id": "1ed127d0-d7f6-4bd3-936b-7c47c6acee01",
+    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "title": "Series 4 Season 2",
+    "season_number": 2
+  },
+  {
+    "id": "a1970665-0eb4-4375-a569-6c6ed71ba58c",
+    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "title": "Series 5 Season 1",
+    "season_number": 1
+  },
+  {
+    "id": "5fb8260f-3c43-436b-a264-ca37aa931a9c",
+    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "title": "Series 5 Season 2",
+    "season_number": 2
+  }
+]

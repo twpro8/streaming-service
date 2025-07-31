@@ -179,8 +179,8 @@ class UniqueSeasonPerSeriesException(UniqueViolationException):
     detail = "Unique episode per season already exists"
 
 
-class UniqueFileIDException(UniqueViolationException):
-    detail = "Unique file id already exists"
+class UniqueFileURLException(UniqueViolationException):
+    detail = "Unique file URL already exists"
 
 
 class UniqueEpisodePerSeasonHTTPException(UniqueViolationHTTPException):
@@ -191,8 +191,8 @@ class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
     detail = "Unique episode per season already exists"
 
 
-class UniqueFileIDHTTPException(UniqueViolationHTTPException):
-    detail = "Unique file id already exists"
+class UniqueFileURLHTTPException(UniqueViolationHTTPException):
+    detail = "Unique file URL already exists"
 
 
 class SeasonAlreadyExistsException(ObjectAlreadyExistsException):

@@ -11,8 +11,10 @@ from src.db import null_pool_engine, null_pool_session_maker, DBManager
 from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
-from src.schemas.films import FilmAddDTO
-from src.schemas.series import SeriesAddRequestDTO
+from src.schemas.episodes import EpisodeDTO
+from src.schemas.films import FilmDTO
+from src.schemas.seasons import SeasonDTO
+from src.schemas.series import SeriesDTO
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -41,12 +43,16 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    films_data = [FilmAddDTO.model_validate(f) for f in read_json("films")]
-    series_data = [SeriesAddRequestDTO.model_validate(s) for s in read_json("series")]
+    films_data = [FilmDTO.model_validate(f) for f in read_json("films")]
+    series_data = [SeriesDTO.model_validate(s) for s in read_json("series")]
+    seasons_data = [SeasonDTO.model_validate(s) for s in read_json("seasons")]
+    episodes_data = [EpisodeDTO.model_validate(e) for e in read_json("episodes")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.films.add_bulk(films_data)
         await db_.series.add_bulk(series_data)
+        await db_.seasons.add_bulk(seasons_data)
+        await db_.episodes.add_bulk(episodes_data)
         await db_.commit()
 
 
@@ -68,21 +74,11 @@ async def get_series_ids(ac):
     return [i["id"] for i in res.json()["data"]]
 
 
-@pytest.fixture(scope="session")
-async def get_series_and_season_ids(ac, get_series_ids):
-    series_id = get_series_ids[0]
-    req_json = {
-        "series_id": series_id,
-        "title": "Seventy Seven",
-        "season_number": 77,
-    }
-    res = await ac.post(f"/seasons", json=req_json)
-    assert res.status_code == 201
-    season_id = res.json()["data"]["id"]
-    return series_id, season_id
+def pretty_print(obj):
+    print(json.dumps(obj, indent=4, ensure_ascii=False))
 
 
-def read_json(file_name: str) -> dict:
+def read_json(file_name: str) -> list[dict]:
     path = f"tests/mock_data/{file_name}.json"
     with open(path, encoding="utf-8") as file_in:
         return json.load(file_in)

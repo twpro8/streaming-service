@@ -10,10 +10,7 @@ from src.exceptions import (
     SeriesNotFoundException,
     SeasonNotFoundException,
     UniqueEpisodePerSeasonException,
-    UniqueSeasonPerSeriesException,
-    UniqueFileIDException,
-    ObjectAlreadyExistsException,
-    EpisodeAlreadyExistsException,
+    UniqueFileURLException,
 )
 
 
@@ -24,24 +21,20 @@ class EpisodeService(BaseService):
 
     async def get_episodes(
         self,
-        series_id: UUID,
+        series_id: UUID | None,
         season_id: UUID | None,
+        title: str | None,
+        episode_number: int | None,
         page: int,
         per_page: int,
-        episode_title: str | None,
-        episode_number: int | None,
     ):
         """
         Get episodes by series ID. And optional by season ID.
         """
-        if not await self.check_series_exists(id=series_id):
-            raise SeriesNotFoundException
-        if season_id and not await self.check_season_exists(id=season_id):
-            raise SeasonNotFoundException
         episodes = await self.db.episodes.get_episodes(
             series_id=series_id,
             season_id=season_id,
-            episode_title=episode_title,
+            episode_title=title,
             episode_number=episode_number,
             limit=per_page,
             offset=per_page * (page - 1),
@@ -66,15 +59,11 @@ class EpisodeService(BaseService):
         if not await self.check_season_exists(id=data.season_id):
             raise SeasonNotFoundException
         try:
-            new_episode = await self.db.episodes.add_episode(data)
+            new_episode = await self.db.episodes.add(data)
         except UniqueEpisodePerSeasonException:
             raise UniqueEpisodePerSeasonException
-        except UniqueSeasonPerSeriesException:
-            raise UniqueSeasonPerSeriesException
-        except UniqueFileIDException:
-            raise UniqueFileIDException
-        except ObjectAlreadyExistsException:
-            raise EpisodeAlreadyExistsException
+        except UniqueFileURLException:
+            raise UniqueFileURLException
         await self.db.commit()
         return new_episode
 
@@ -85,13 +74,9 @@ class EpisodeService(BaseService):
         if not await self.check_episode_exists(id=episode_id):
             raise EpisodeNotFoundException
         try:
-            await self.db.episodes.update_episode(episode_id=episode_id, episode_data=data)
+            await self.db.episodes.update(id=episode_id, data=data, exclude_unset=True)
         except UniqueEpisodePerSeasonException:
             raise UniqueEpisodePerSeasonException
-        except UniqueSeasonPerSeriesException:
-            raise UniqueSeasonPerSeriesException
-        except UniqueFileIDException:
-            raise UniqueFileIDException
         await self.db.commit()
 
     async def delete_episode(self, episode_id: UUID):
