@@ -4,13 +4,13 @@ from fastapi import APIRouter, Query
 
 from src.exceptions import (
     SeasonNotFoundException,
-    SeasonAlreadyExistsException,
     SeriesNotFoundException,
     SeriesNotFoundHTTPException,
-    SeasonAlreadyExistsHTTPException,
     SeasonNotFoundHTTPException,
     UniqueSeasonNumberException,
     UniqueSeasonNumberHTTPException,
+    UniqueSeasonPerSeriesException,
+    UniqueSeasonPerSeriesHTTPException,
 )
 from src.schemas.seasons import SeasonAddDTO, SeasonPatchRequestDTO
 from src.services.seasons import SeasonService
@@ -45,8 +45,8 @@ async def add_season(db: DBDep, season_data: SeasonAddDTO):
         data = await SeasonService(db).add_season(season_data=season_data)
     except SeriesNotFoundException:
         raise SeriesNotFoundHTTPException
-    except SeasonAlreadyExistsException:
-        raise SeasonAlreadyExistsHTTPException
+    except UniqueSeasonPerSeriesException:
+        raise UniqueSeasonPerSeriesHTTPException
     return {"status": "ok", "data": data}
 
 

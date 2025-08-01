@@ -107,6 +107,16 @@ async def test_get_films(ac, params, target_length):
         ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, 1, 422),
         # All optional fields None (cover_url) - should succeed
         ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, None, 201),
+        # Conflict
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "2020-01-01",
+            140,
+            "https://example.com/valid_url.jpg",
+            409,
+        ),
     ],
 )
 async def test_add_film(

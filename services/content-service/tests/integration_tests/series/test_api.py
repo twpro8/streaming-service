@@ -1,10 +1,65 @@
-from typing import List
-from uuid import UUID
-
 import pytest
 
 
-series_ids: List[UUID] = []
+series_ids = []
+
+
+@pytest.mark.parametrize(
+    "params, expected_count",
+    [
+        ({"page": 1, "per_page": 30}, 5),
+        ({"page": 1, "per_page": 2}, 2),
+        ({"page": 2, "per_page": 2}, 2),
+        ({"page": 3, "per_page": 2}, 1),
+        # Exact title match
+        ({"title": "Bad"}, 1),
+        ({"title": "Things"}, 1),
+        # Director filter
+        ({"director": "Johan Renck"}, 1),
+        ({"director": "The Duffer"}, 1),
+        ({"director": "Guy"}, 0),
+        # Description filter
+        ({"description": "the"}, 4),
+        ({"description": "diagnosed with cancer"}, 1),
+        ({"description": "story of the chernobyl"}, 1),
+        # Exact release_year
+        ({"release_year": "2000-01-01"}, 1),
+        ({"release_year": "2003-01-01"}, 1),
+        ({"release_year": "2004-01-01"}, 1),
+        # release_year_ge
+        ({"release_year_ge": "1899-01-01"}, 5),
+        # release_year_le
+        ({"release_year_le": "2005-01-01"}, 5),
+        # release_year range
+        (
+            {
+                "release_year_ge": "2002-01-01",
+                "release_year_le": "2004-01-01",
+            },
+            3,
+        ),
+        # Rating
+        ({"rating": "0.0"}, 5),
+        ({"rating_ge": "1.0"}, 0),
+        ({"rating_le": "5"}, 5),
+        # No match
+        ({"title": "NotExists"}, 0),
+        ({"title": "The Hidden Sparrow"}, 0),
+        ({"description": "About life exp"}, 0),
+        ({"director": "Some guy"}, 0),
+        ({"release_year": "1999-01-01"}, 0),
+        ({"release_year_ge": "2005-01-01"}, 0),
+        ({"release_year_le": "1999-01-01"}, 0),
+        # AND CASES FOR GENRES
+    ],
+)
+async def test_get_series(ac, params, expected_count):
+    res = await ac.get("/series", params=params)
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
 
 
 @pytest.mark.parametrize(
@@ -12,36 +67,50 @@ series_ids: List[UUID] = []
     [
         # Valid data
         (
-            "Neon Skies",
-            "Sci-fi series set in a neon city",
-            "Ava Bright",
-            "2022-04-12",
-            "https://example.com/neon.jpg",
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "2005-01-01",
+            "https://example.com/valid_url.jpg",
             201,
         ),
-        # Empty title — should fail
-        ("", "Some description", "Director", "2020-01-01", None, 422),
-        # Too long title — should fail
-        ("T" * 300, "Description", "Director", "2020-01-01", None, 422),
-        # Future release_year — should fail
-        # ("Future Series", "Description", "Director", "2100-01-01", None, 422),
-        # Invalid cover_url — should fail
-        ("Bad URL", "Description", "Director", "2020-01-01", "not-a-url", 422),
-        # Empty director — should fail
-        ("Valid Title", "Description", "", "2020-01-01", None, 422),
-        # Valid with no cover_url — should succeed
-        ("No Cover", "No cover provided", "Director", "2020-01-01", None, 201),
-        # Valid with full data — should succeed
         (
-            "Full Set",
-            "Complete info",
-            "D. Creator",
-            "2015-05-05",
-            "https://example.com/cover.jpg",
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1999-09-09",
+            None,
             201,
         ),
-        # release_year invalid format — should fail (if date parsing is strict)
-        ("Bad Date", "Date issue", "Director", "20-01-01", None, 422),
+        # Invalid title
+        ("", "Valid Description", "Valid Director", "2006-01-01", None, 422),
+        ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", None, 422),
+        # Invalid description
+        ("Valid Title", "", "Valid Director", "2020-01-01", None, 422),
+        ("Valid Title", "D" * 256, "Valid Director", "2020-01-01", None, 422),
+        # Invalid director
+        ("Valid Title", "Valid Description", "", "2020-01-01", None, 422),
+        ("Valid Title", "Valid Description", "D" * 50, "2020-01-01", None, 422),
+        # Invalid release year
+        ("Valid Title", "Valid Description", "Valid Director", "10-01-01", None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "some-garbage-here", None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", 1, None, 422),
+        ("Valid Title", "Description", "Director", "2100-01-01", None, 422),
+        ("Valid Title", "Description", "Director", "999-01-01", None, 422),
+        # Invalid cover url
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", "not-a-url", 422),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 1, 422),
+        # All optional fields None (cover_url) - should succeed
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", None, 201),
+        # Conflict
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "2020-01-01",
+            "https://example.com/valid_url.jpg",
+            409,
+        ),
     ],
 )
 async def test_add_series(
@@ -72,190 +141,90 @@ async def test_add_series(
         assert added_series["release_year"] == release_year
         assert added_series["cover_url"] == cover_url
 
-        global series_ids
         series_ids.append(added_series["id"])
 
 
 @pytest.mark.parametrize(
-    "params, expected_count",
+    "update_data, status_code, series_id",
     [
-        # get all
-        ({"page": 1, "per_page": 30}, 8),
-        # Title filters
-        ({"title": "Breaking Bad"}, 1),
-        ({"title": "Unknown Title"}, 0),
-        # Description filters
-        ({"description": "supernatural"}, 2),  # "Stranger Things" and "Dark"
-        ({"description": "Complete info"}, 1),
-        # Director filters
-        ({"director": "D. Creator"}, 1),
-        ({"director": "Baran bo Odar"}, 1),
-        ({"director": "Someone Not Present"}, 0),
-        # release_year exact
-        ({"release_year": "2015-05-05"}, 1),
-        ({"release_year": "2020-01-01"}, 1),
-        # release_year_ge
-        ({"release_year_ge": "2018-01-01"}, 3),  # Chernobyl, Dark, Neon Skies
-        # release_year_le
-        ({"release_year_le": "2010-01-01"}, 2),  # Breaking Bad, The Office
-        # Pagination: page=1, page_size=5 → first 5
-        ({"page": 1, "per_page": 5}, 5),
-        # Pagination: page=2, page_size=5 → remaining 3
-        ({"page": 2, "per_page": 5}, 3),
-    ],
-)
-async def test_get_series(ac, params, expected_count):
-    res = await ac.get("/series", params=params)
-    data = res.json()["data"]
-
-    assert res.status_code == 200
-    assert isinstance(data, list)
-    assert len(data) == expected_count
-
-
-async def test_get_one_series(ac, get_series_ids):
-    for series_id in series_ids + get_series_ids:
-        res = await ac.get(f"/series/{series_id}")
-        data = res.json()["data"]
-
-        assert res.status_code == 200
-        assert isinstance(data, dict)
-        assert data["id"] == series_id
-
-
-@pytest.mark.parametrize(
-    "title, description, director, release_year, cover_url, status_code",
-    [
-        # Valid replacement — all fields correct
+        # Update title
+        ({"title": "Title Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"title": "Title Updated"}, 200, None),
+        # Invalid title
+        ({"title": ""}, 422, None),
+        ({"title": "T" * 256}, 422, None),
+        # Update description
+        ({"description": "Description Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"description": "Description Updated"}, 200, None),
+        # Invalid description
+        ({"description": ""}, 422, None),
+        ({"description": "D" * 256}, 422, None),
+        # Update director
+        ({"director": "Director Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"director": "Director Updated"}, 200, None),
+        # Invalid director
+        ({"director": ""}, 422, None),
+        ({"director": "D" * 50}, 422, None),
+        # Update release year
+        ({"release_year": "2021-01-01"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"release_year": "2021-01-01"}, 200, None),
+        # Invalid release year
+        ({"release_year": "10-01-01"}, 422, None),
+        ({"release_year": ""}, 422, None),
+        ({"release_year": 1}, 422, None),
+        ({"release_year": "2100-01-01"}, 422, None),  # future year
+        ({"release_year": "999-01-01"}, 422, None),  # too old
+        # Update cover_url
         (
-            "Dark Horizons",
-            "A noir crime drama",
-            "Noah Lane",
-            "2018-10-05",
-            "https://example.com/dark.jpg",
+            {"cover_url": "https://example.com/updated.jpg"},
             200,
+            "bf7264e9-6e93-424a-a1f5-943b55f1e102",
         ),
-        # Empty title — should fail
-        ("", "Description here", "Some Director", "2019-01-01", None, 422),
-        # Empty description — should fail
-        ("Title", "", "Director", "2019-01-01", None, 422),
-        # Empty director — should fail
-        ("Title", "Desc", "", "2019-01-01", None, 422),
-        # Valid with no cover_url
-        ("No Image", "Minimal setup", "Creator", "2017-06-12", None, 200),
-        # Future release_year — should fail
-        # ("Time Traveler", "Too early", "Dir", "2099-01-01", None, 422),
-        # Bad date format — should fail
-        ("Bad Date", "Wrong date format", "Dir", "20-01-01", None, 422),
-        # Invalid cover_url
-        ("Bad URL", "Bad link", "Dir", "2020-01-01", "not-a-url", 422),
-        # Valid with all fields filled
-        (
-            "The Climb",
-            "Drama about mountaineering",
-            "Sophie Hill",
-            "2021-09-09",
-            "https://example.com/climb.jpg",
-            200,
-        ),
-        # Title too long
-        ("T" * 300, "Normal desc", "Dir", "2020-01-01", None, 422),
-        # Realistic modern show
-        (
-            "Urban Pulse",
-            "A gritty urban story",
-            "J. Smith",
-            "2023-03-03",
-            "https://example.com/pulse.jpg",
-            200,
-        ),
-        # All fields empty — should fail
-        ("", "", "", "", "", 422),
-        # Missing cover_url with bad type (int instead of str or None)
-        ("Title", "Desc", "Dir", "2020-01-01", 12345, 422),
-        # Valid old show
-        ("Classic Tales", "Old but gold", "Veteran Dir", "1990-05-20", None, 200),
-    ],
-)
-async def test_replace_series(
-    ac,
-    title,
-    description,
-    director,
-    release_year,
-    cover_url,
-    status_code,
-):
-    series_id = series_ids[-1]
-    request_json = {
-        "title": title,
-        "description": description,
-        "director": director,
-        "release_year": release_year,
-        "cover_url": cover_url,
-    }
-    res = await ac.put(f"/series/{series_id}", json=request_json)
-    assert res.status_code == status_code
-
-
-@pytest.mark.parametrize(
-    "update_data, status_code",
-    [
-        # Update title only
-        ({"title": "Renamed Show"}, 200),
-        # Update description only
-        ({"description": "Updated description for the series."}, 200),
-        # Update director only
-        ({"director": "New Director"}, 200),
-        # Update release_year only
-        ({"release_year": "2020-01-01"}, 200),
-        # Update cover_url only
-        ({"cover_url": "https://example.com/newcover.jpg"}, 200),
+        ({"cover_url": "https://example.com/updated.jpg"}, 409, None),  # conflict
+        # Invalid cover url
+        ({"cover_url": ""}, 422, None),
+        ({"cover_url": "invalid-uri"}, 422, None),
         # Update multiple fields
         (
+            {"title": "New Title", "description": "New Description", "director": "New Director"},
+            200,
+            "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+        ),
+        (
+            {"title": "New Title", "description": "New Description", "director": "New Director"},
+            200,
+            None,
+        ),
+        (
             {
-                "title": "New Title",
-                "description": "Updated description",
-                "director": "Director",
+                "release_year": "2022-01-01",
+                "cover_url": "https://example.com/test.jpg",
             },
             200,
+            "bf7264e9-6e93-424a-a1f5-943b55f1e102",
         ),
-        # Empty title — should fail
-        ({"title": ""}, 422),
-        # Empty description — should fail
-        ({"description": ""}, 422),
-        # Empty director — should fail
-        ({"director": ""}, 422),
-        # Invalid release_year (future)
-        # ({"release_year": "2100-01-01"}, 422),
-        # Bad date format
-        ({"release_year": "20-01-01"}, 422),
-        # Bad URL in cover_url
-        ({"cover_url": "not-a-url"}, 422),
-        # cover_url with wrong type
-        ({"cover_url": 123}, 422),
+        (
+            {
+                "release_year": "2022-01-01",
+                "cover_url": "https://example.com/test.jpg",
+            },
+            409,
+            None,
+        ),  # conflict
     ],
 )
 async def test_update_series(
     ac,
-    update_data: dict,
-    status_code: int,
+    update_data,
+    status_code,
+    series_id,
 ):
-    series_id = series_ids[0]
+    series_id = series_id or series_ids[0]
     res = await ac.patch(f"/series/{series_id}", json=update_data)
     assert res.status_code == status_code
 
 
 async def test_delete_series(ac):
-    global series_ids
-
-    for series_id in series_ids[:]:
-        res = await ac.delete(f"/series/{series_id}")
-        assert res.status_code == 204
-
-        res = await ac.get(f"/series/{series_id}")
-        assert res.status_code == 404
-
-        series_ids.remove(series_id)
-
-    assert len(series_ids) == 0
+    for series_id in series_ids:
+        assert (await ac.delete(f"/series/{series_id}")).status_code == 204
+        assert (await ac.get(f"/series/{series_id}")).status_code == 404

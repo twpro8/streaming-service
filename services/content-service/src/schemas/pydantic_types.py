@@ -1,3 +1,4 @@
+from datetime import date
 from decimal import Decimal
 
 from enum import Enum
@@ -62,6 +63,9 @@ DescriptionStr = Annotated[
     ),
 ]
 
+DirectorStr = Annotated[str, Field(min_length=3, max_length=48)]
+
+ReleaseYearDate = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
 
 # Enum for content type
 

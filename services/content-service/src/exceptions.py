@@ -164,7 +164,7 @@ class UniqueVideoURLException(UniqueViolationException):
 
 
 class UniqueCoverURLHTTPException(UniqueViolationHTTPException):
-    detail = "Cover URL is already in use"
+    detail = "Cover URL has to be unique"
 
 
 class UniqueVideoURLHTTPException(UniqueViolationHTTPException):
@@ -184,11 +184,11 @@ class UniqueFileURLException(UniqueViolationException):
 
 
 class UniqueEpisodePerSeasonHTTPException(UniqueViolationHTTPException):
-    detail = "Unique episode per season already exists"
+    detail = "Episode number already exists"
 
 
 class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
-    detail = "Unique episode per season already exists"
+    detail = "Season number already exists"
 
 
 class UniqueFileURLHTTPException(UniqueViolationHTTPException):

@@ -1,17 +1,22 @@
 from uuid import UUID
-from datetime import date
 
-from pydantic import AnyUrl, Field
+from pydantic import AnyUrl
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
-from src.schemas.pydantic_types import TitleStr, RatingDecimal, DescriptionStr
+from src.schemas.pydantic_types import (
+    TitleStr,
+    RatingDecimal,
+    DescriptionStr,
+    DirectorStr,
+    ReleaseYearDate,
+)
 
 
 class SeriesAddRequestDTO(BaseSchema):
     title: TitleStr
     description: DescriptionStr
-    director: str = Field(min_length=3, max_length=255)
-    release_year: date
+    director: DirectorStr
+    release_year: ReleaseYearDate
     cover_url: AnyUrl | None = None
 
 
@@ -22,11 +27,7 @@ class SeriesDTO(SeriesAddRequestDTO):
 class SeriesPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
-    director: str | None = Field(default=None, min_length=3, max_length=255)
-    release_year: date | None = None
+    director: DirectorStr | None = None
+    release_year: ReleaseYearDate | None = None
     rating: RatingDecimal | None = None
     cover_url: AnyUrl | None = None
-
-
-class SeriesPutRequestDTO(SeriesAddRequestDTO):
-    pass

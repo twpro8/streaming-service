@@ -5,15 +5,10 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from src.services.base import BaseService
-from src.exceptions import ObjectNotFoundException, SeriesNotFoundException
+from src.exceptions import ObjectNotFoundException, SeriesNotFoundException, UniqueCoverURLException
 
 
 class SeriesService(BaseService):
-    async def add_series(self, data: BaseModel):
-        series = await self.db.series.add(data)
-        await self.db.commit()
-        return series
-
     async def get_series(
         self,
         page: int,
@@ -50,18 +45,25 @@ class SeriesService(BaseService):
             raise SeriesNotFoundException
         return series
 
-    async def replace_series(self, series_id: UUID, series_data: BaseModel):
-        if not await self.check_series_exists(id=series_id):
-            raise SeriesNotFoundException
-
-        await self.db.series.update(id=series_id, data=series_data)
+    async def add_series(self, data: BaseModel):
+        try:
+            series = await self.db.series.add_series(data)
+        except UniqueCoverURLException:
+            raise
         await self.db.commit()
+        return series
 
     async def update_series(self, series_id: UUID, series_data: BaseModel):
         if not await self.check_series_exists(id=series_id):
             raise SeriesNotFoundException
-
-        await self.db.series.update(id=series_id, data=series_data, exclude_unset=True)
+        try:
+            await self.db.series.update_series(
+                id=series_id,
+                data=series_data,
+                exclude_unset=True,
+            )
+        except UniqueCoverURLException:
+            raise
         await self.db.commit()
 
     async def delete_series(self, series_id: UUID):

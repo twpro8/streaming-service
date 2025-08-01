@@ -8,8 +8,6 @@ from src.services.films import FilmService
 from src.exceptions import (
     FilmNotFoundException,
     FilmNotFoundHTTPException,
-    FilmAlreadyExistsException,
-    FilmAlreadyExistsHTTPException,
     UniqueCoverURLException,
     UniqueVideoURLException,
     UniqueCoverURLHTTPException,
@@ -39,8 +37,8 @@ async def get_film(db: DBDep, film_id: UUID):
 async def add_film(db: DBDep, film_data: FilmAddDTO):
     try:
         film = await FilmService(db).add_film(film_data)
-    except FilmAlreadyExistsException:
-        raise FilmAlreadyExistsHTTPException
+    except UniqueCoverURLException:
+        raise UniqueCoverURLHTTPException
     return {"status": "ok", "data": film}
 
 

@@ -2,12 +2,13 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from src.exceptions import SeriesNotFoundException, SeriesNotFoundHTTPException
-from src.schemas.series import (
-    SeriesAddRequestDTO,
-    SeriesPatchRequestDTO,
-    SeriesPutRequestDTO,
+from src.exceptions import (
+    SeriesNotFoundException,
+    SeriesNotFoundHTTPException,
+    UniqueCoverURLException,
+    UniqueCoverURLHTTPException,
 )
+from src.schemas.series import SeriesAddRequestDTO, SeriesPatchRequestDTO
 from src.services.series import SeriesService
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
 
@@ -31,18 +32,12 @@ async def get_one_series(db: DBDep, series_id: UUID):
 
 
 @router.post("", dependencies=[AdminDep], status_code=201)
-async def add_new_series(db: DBDep, data: SeriesAddRequestDTO):
-    series = await SeriesService(db).add_series(data)
-    return {"status": "ok", "data": series}
-
-
-@router.put("/{series_id}", dependencies=[AdminDep])
-async def replace_series(db: DBDep, series_id: UUID, series_data: SeriesPutRequestDTO):
+async def add_series(db: DBDep, data: SeriesAddRequestDTO):
     try:
-        await SeriesService(db).replace_series(series_id, series_data)
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
-    return {"status": "ok"}
+        series = await SeriesService(db).add_series(data)
+    except UniqueCoverURLException:
+        raise UniqueCoverURLHTTPException
+    return {"status": "ok", "data": series}
 
 
 @router.patch("/{series_id}", dependencies=[AdminDep])
@@ -51,6 +46,8 @@ async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequ
         await SeriesService(db).update_series(series_id, series_data)
     except SeriesNotFoundException:
         raise SeriesNotFoundHTTPException
+    except UniqueCoverURLException:
+        raise UniqueCoverURLHTTPException
     return {"status": "ok"}
 
 

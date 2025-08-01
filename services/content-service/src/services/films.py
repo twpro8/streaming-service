@@ -8,8 +8,6 @@ from src.services.base import BaseService
 from src.exceptions import (
     ObjectNotFoundException,
     FilmNotFoundException,
-    ObjectAlreadyExistsException,
-    FilmAlreadyExistsException,
     UniqueCoverURLException,
     UniqueVideoURLException,
 )
@@ -54,9 +52,9 @@ class FilmService(BaseService):
 
     async def add_film(self, film_data: BaseModel):
         try:
-            film = await self.db.films.add(film_data)
-        except ObjectAlreadyExistsException:
-            raise FilmAlreadyExistsException
+            film = await self.db.films.add_film(film_data)
+        except UniqueCoverURLException:
+            raise
         await self.db.commit()
         return film
 
@@ -64,9 +62,7 @@ class FilmService(BaseService):
         if not await self.check_film_exists(id=film_id):
             raise FilmNotFoundException
         try:
-            await self.db.films.update(id=film_id, data=film_data, exclude_unset=True)
-        except ObjectAlreadyExistsException:
-            raise FilmAlreadyExistsException
+            await self.db.films.update_film(id=film_id, data=film_data, exclude_unset=True)
         except UniqueCoverURLException:
             raise UniqueCoverURLException
         except UniqueVideoURLException:

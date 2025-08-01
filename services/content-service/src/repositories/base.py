@@ -3,16 +3,11 @@ from datetime import date
 from decimal import Decimal
 from typing import Type, List
 
-from asyncpg import UniqueViolationError, ForeignKeyViolationError
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update, func
-from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy.exc import NoResultFound
 
-from src.exceptions import (
-    ObjectNotFoundException,
-    ObjectAlreadyExistsException,
-    ForeignKeyViolationException,
-)
+from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 from src.repositories.utils import normalize_for_insert
 
@@ -102,16 +97,7 @@ class BaseRepository:
     async def add(self, data: BaseModel):
         data = normalize_for_insert(data.model_dump())
         stmt = insert(self.model).values(**data).returning(self.model)
-        try:
-            res = await self.session.execute(stmt)
-        except IntegrityError as exc:
-            if isinstance(exc.orig.__cause__, UniqueViolationError):
-                raise ObjectAlreadyExistsException from exc
-            elif isinstance(exc.orig.__cause__, ForeignKeyViolationError):
-                raise ForeignKeyViolationException from exc
-            else:
-                log.exception(f"Unknown error: failed to add data to database, input data: {data}")
-                raise exc
+        res = await self.session.execute(stmt)
         model = res.scalars().one()
         return self.mapper.map_to_domain_entity(model)
 
@@ -122,17 +108,7 @@ class BaseRepository:
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))
         stmt = update(self.model).values(**data).filter_by(**filter_by)
-        try:
-            await self.session.execute(stmt)
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
-            if isinstance(cause, UniqueViolationError):
-                raise ObjectAlreadyExistsException from exc
-            else:
-                log.exception(
-                    f"Unknown error: failed to update data in database, input data: {data}"
-                )
-                raise exc
+        await self.session.execute(stmt)
 
     async def delete(self, **filter_by) -> None:
         stmt = delete(self.model).filter_by(**filter_by)
