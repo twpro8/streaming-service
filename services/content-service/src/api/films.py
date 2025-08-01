@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO, FilmPutRequestDTO
+from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
 from src.services.films import FilmService
 from src.exceptions import (
@@ -42,19 +42,6 @@ async def add_film(db: DBDep, film_data: FilmAddDTO):
     except FilmAlreadyExistsException:
         raise FilmAlreadyExistsHTTPException
     return {"status": "ok", "data": film}
-
-
-@router.put("/{film_id}", dependencies=[AdminDep])
-async def replace_film(db: DBDep, film_id: UUID, film_data: FilmPutRequestDTO):
-    try:
-        await FilmService(db).replace_film(film_id, film_data)
-    except FilmNotFoundException:
-        raise FilmNotFoundHTTPException
-    except UniqueCoverURLException:
-        raise UniqueCoverURLHTTPException
-    except UniqueVideoURLException:
-        raise UniqueVideoURLHTTPException
-    return {"status": "ok"}
 
 
 @router.patch("/{film_id}", dependencies=[AdminDep])

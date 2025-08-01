@@ -60,17 +60,6 @@ class FilmService(BaseService):
         await self.db.commit()
         return film
 
-    async def replace_film(self, film_id: UUID, film_data: BaseModel):
-        if not await self.check_film_exists(id=film_id):
-            raise FilmNotFoundException
-        try:
-            await self.db.films.update(id=film_id, data=film_data)
-        except UniqueCoverURLException:
-            raise UniqueCoverURLException
-        except UniqueVideoURLException:
-            raise UniqueVideoURLException
-        await self.db.commit()
-
     async def update_film(self, film_id: UUID, film_data: BaseModel):
         if not await self.check_film_exists(id=film_id):
             raise FilmNotFoundException

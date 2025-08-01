@@ -23,7 +23,7 @@ DurationInt = Annotated[
     int,
     Field(
         ge=1,
-        le=9999,
+        le=512,
         title="Duration",
         description="Duration in minutes (1 to 9999)",
         examples=[110],
@@ -55,7 +55,7 @@ DescriptionStr = Annotated[
     str,
     Field(
         min_length=3,
-        max_length=2000,
+        max_length=255,
         title="Description",
         description="Detailed description of the content",
         examples=["A thrilling journey of John through mysterious lands."],
