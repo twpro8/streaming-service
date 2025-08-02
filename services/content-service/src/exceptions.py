@@ -142,14 +142,6 @@ class UniqueViolationHTTPException(MasterHTTPException):
     detail = "Unique violation error"
 
 
-class UniqueSeasonNumberException(MasterException):
-    detail = "Unique season number error"
-
-
-class UniqueSeasonNumberHTTPException(MasterHTTPException):
-    detail = "Season with the provided number already exists"
-
-
 class AtLeastOneFieldRequiredException(MasterHTTPException):
     status_code = 422
     detail = "At least one field must be provided"
@@ -187,10 +179,6 @@ class UniqueEpisodePerSeasonHTTPException(UniqueViolationHTTPException):
     detail = "Episode number already exists"
 
 
-class UniqueSeasonPerSeriesHTTPException(UniqueViolationHTTPException):
-    detail = "Season number already exists"
-
-
 class UniqueFileURLHTTPException(UniqueViolationHTTPException):
     detail = "Unique file URL already exists"
 
@@ -200,7 +188,7 @@ class SeasonAlreadyExistsException(ObjectAlreadyExistsException):
 
 
 class SeasonAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    detail = "Season already exists"
+    detail = "Season with the provided number already exists"
 
 
 class CommentNotFoundException(ObjectNotFoundException):

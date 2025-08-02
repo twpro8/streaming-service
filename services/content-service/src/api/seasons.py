@@ -7,10 +7,8 @@ from src.exceptions import (
     SeriesNotFoundException,
     SeriesNotFoundHTTPException,
     SeasonNotFoundHTTPException,
-    UniqueSeasonNumberException,
-    UniqueSeasonNumberHTTPException,
     UniqueSeasonPerSeriesException,
-    UniqueSeasonPerSeriesHTTPException,
+    SeasonAlreadyExistsHTTPException,
 )
 from src.schemas.seasons import SeasonAddDTO, SeasonPatchRequestDTO
 from src.services.seasons import SeasonService
@@ -46,7 +44,7 @@ async def add_season(db: DBDep, season_data: SeasonAddDTO):
     except SeriesNotFoundException:
         raise SeriesNotFoundHTTPException
     except UniqueSeasonPerSeriesException:
-        raise UniqueSeasonPerSeriesHTTPException
+        raise SeasonAlreadyExistsHTTPException
     return {"status": "ok", "data": data}
 
 
@@ -56,8 +54,8 @@ async def update_season(db: DBDep, season_id: UUID, season_data: SeasonPatchRequ
         await SeasonService(db).update_season(season_id=season_id, season_data=season_data)
     except SeasonNotFoundException:
         raise SeasonNotFoundHTTPException
-    except UniqueSeasonNumberException:
-        raise UniqueSeasonNumberHTTPException
+    except UniqueSeasonPerSeriesException:
+        raise SeasonAlreadyExistsHTTPException
     return {"status": "ok"}
 
 

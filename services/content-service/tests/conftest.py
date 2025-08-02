@@ -63,15 +63,9 @@ async def ac() -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture(scope="session")
-async def get_films_ids(ac):
-    res = await ac.get("/films")
-    return [i["id"] for i in res.json()["data"]]
-
-
-@pytest.fixture(scope="session")
-async def get_series_ids(ac):
-    res = await ac.get("/series")
-    return [i["id"] for i in res.json()["data"]]
+async def get_series_ids():
+    data = read_json("series")
+    return [series_id["id"] for series_id in data]
 
 
 def pretty_print(obj):

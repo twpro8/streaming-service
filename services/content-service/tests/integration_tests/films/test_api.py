@@ -254,5 +254,6 @@ async def test_update_film(
 
 async def test_delete_film(ac):
     for film_id in films_ids:
+        assert (await ac.get(f"/films/{film_id}")).status_code == 200
         assert (await ac.delete(f"/films/{film_id}")).status_code == 204
         assert (await ac.get(f"/films/{film_id}")).status_code == 404

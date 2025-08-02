@@ -1,109 +1,113 @@
 import pytest
 
 
-series_seasons_data = {}
-
-
-def add_season(series_id: str, season_id: str):
-    series_seasons_data.setdefault(series_id, [])
-    if season_id not in series_seasons_data[series_id]:
-        series_seasons_data[series_id].append(season_id)
+seasons_ids = []
 
 
 @pytest.mark.parametrize(
-    "title, season_number, status_code",
+    "params, target_length",
     [
-        # Valid data
-        ("Season One", 111, 201),
-        ("Season Two", 222, 201),
-        ("Final Season", 10, 201),
-        ("Mini Season", 500, 201),
-        ("Low Bound", 333, 201),
-        # Existing season nimber
-        ("Low Bound", 111, 409),
-        # Invalid: season_number too high
-        ("Too Many", 501, 422),
-        # Invalid: season_number zero
-        ("Zero Season", 0, 422),
-        # Invalid: season_number negative
-        ("Negative Season", -3, 422),
-        # Invalid: empty title
-        ("", 2, 422),
-        # Invalid: title too long
-        ("S" * 256, 1, 422),
+        ({}, 2),
+        ({"page": 1, "per_page": 1}, 1),
+        ({"page": 2, "per_page": 1}, 1),
+        ({"page": 3, "per_page": 1}, 0),
     ],
 )
-async def test_add_season(
-    ac,
-    get_series_ids,
-    title,
-    season_number,
-    status_code,
-):
+async def test_get_seasons(ac, get_series_ids, params, target_length):
     for series_id in get_series_ids:
-        request_json = {
-            "series_id": series_id,
-            "title": title,
-            "season_number": season_number,
-        }
-
-        res = await ac.post("/seasons", json=request_json)
-        assert res.status_code == status_code
-
-        if res.status_code == 201:
-            season_id = res.json()["data"]["id"]
-            add_season(series_id, season_id)
-
-
-async def test_get_seasons(ac, get_series_ids):
-    for series_id in get_series_ids:
+        params = {"series_id": series_id, **params}
         res = await ac.get(
             "/seasons",
-            params={"series_id": series_id, "page": 1, "per_page": 30},
+            params=params,
         )
         data = res.json()["data"]
 
         assert res.status_code == 200
         assert isinstance(data, list)
+        assert len(data) == target_length
 
 
 @pytest.mark.parametrize(
-    "patch_data, expected_status",
+    "title, season_number, status_code, series_id",
     [
-        # valid updates
-        ({"title": "Updated Season Title"}, 200),
-        ({"season_number": 42}, 200),
-        ({"title": "Combined", "season_number": 99}, 200),
-        # same data (still allowed)
-        ({"title": "Season One"}, 200),
-        # invalid title
-        ({"title": ""}, 422),
-        ({"title": "S" * 256}, 422),
-        # invalid season_number
-        ({"season_number": 0}, 422),
-        ({"season_number": 501}, 422),
-        ({"season_number": -10}, 422),
-        # empty body
-        ({}, 422),
+        # Valid data
+        ("Valid Title", 10, 201, "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4"),
+        ("Valid Title", 10, 201, None),
+        ("Valid Title", 11, 201, "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4"),
+        ("Valid Title", 11, 201, None),
+        ("Valid Title", 12, 201, "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4"),
+        ("Valid Title", 12, 201, None),
+        # Invalid title
+        (1, 2, 422, None),
+        ("", 2, 422, None),
+        ("T" * 256, 1, 422, None),
+        # Invalid season number
+        ("Valid Title", 0, 422, None),
+        ("Valid Title", -3, 422, None),
+        ("Valid Title", 501, 422, None),
+        # Conflict
+        ("Valid Title", 10, 409, None),
+        ("Valid Title", 11, 409, None),
     ],
 )
-async def test_update_season(ac, patch_data, expected_status):
-    for season_ids in series_seasons_data.values():
-        res = await ac.patch(
-            f"/seasons/{season_ids[-1]}",
-            json=patch_data,
-        )
-        assert res.status_code == expected_status
+async def test_add_season(
+    ac,
+    get_series_ids,
+    series_id,
+    title,
+    season_number,
+    status_code,
+):
+    series_id = series_id or "bf5315e1-fdfc-4af3-b18c-1ccc83892797"
+    request_json = {
+        "series_id": series_id,
+        "title": title,
+        "season_number": season_number,
+    }
 
-        if expected_status == 200:
-            assert res.json()["status"] == "ok"
+    res = await ac.post("/seasons", json=request_json)
+    assert res.status_code == status_code
+
+    if res.status_code == 201:
+        seasons_ids.append(res.json()["data"]["id"])
+
+
+@pytest.mark.parametrize(
+    "patch_data, status_code, season_id",
+    [
+        # Valid data
+        ({"title": "Title Updated"}, 200, "abb704d5-da18-4d6a-942e-58f1b6172109"),
+        ({"title": "Title Updated"}, 200, None),
+        ({"season_number": 42}, 200, "abb704d5-da18-4d6a-942e-58f1b6172109"),
+        ({"season_number": 42}, 200, None),
+        (
+            {"title": "Title Again Updated", "season_number": 99},
+            200,
+            "abb704d5-da18-4d6a-942e-58f1b6172109",
+        ),
+        ({"title": "Title Again Updated", "season_number": 99}, 200, None),
+        # Invalid title
+        ({"title": 1}, 422, None),
+        ({"title": ""}, 422, None),
+        ({"title": "T" * 256}, 422, None),
+        # Invalid season number
+        ({"season_number": -1}, 422, None),
+        ({"season_number": 501}, 422, None),
+        # Empty body
+        ({}, 422, None),
+        # Conflict
+        ({"season_number": 99}, 409, "81c29ee1-db3e-4d81-a257-d05e29773deb"),
+        ({"season_number": 99}, 409, "99edd9cc-cd08-4a9d-8809-93b86ab06d28"),
+    ],
+)
+async def test_update_season(ac, patch_data, status_code, season_id):
+    season_id = season_id or "d5ed6e69-5d07-474f-81e4-86627a576d45"
+    res = await ac.patch(f"/seasons/{season_id}", json=patch_data)
+    assert res.status_code == status_code
 
 
 async def test_delete_season(ac):
-    for series_id, season_ids in series_seasons_data.items():
-        for season_id in season_ids:
-            res = await ac.delete(f"/seasons/{season_id}")
-            assert res.status_code == 204
-
-            res = await ac.get(f"/seasons/{season_id}")
-            assert res.status_code == 404
+    for season_id in seasons_ids:
+        assert (await ac.get(f"/seasons/{season_id}")).status_code == 200
+        assert (await ac.delete(f"/seasons/{season_id}")).status_code == 204
+        assert (await ac.get(f"/seasons/{season_id}")).status_code == 404

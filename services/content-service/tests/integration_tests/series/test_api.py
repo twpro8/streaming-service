@@ -226,5 +226,6 @@ async def test_update_series(
 
 async def test_delete_series(ac):
     for series_id in series_ids:
+        assert (await ac.get(f"/series/{series_id}")).status_code == 200
         assert (await ac.delete(f"/series/{series_id}")).status_code == 204
         assert (await ac.get(f"/series/{series_id}")).status_code == 404

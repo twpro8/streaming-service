@@ -43,6 +43,7 @@ async def test_get_episodes(ac, params, target_length):
     data = res.json()["data"]
 
     assert res.status_code == 200
+    assert isinstance(data, list)
     assert len(data) == target_length
 
 
@@ -183,8 +184,6 @@ async def test_update_episode(ac, patch_data, expected_status, episode_id):
     "episode_id", ["fc865d9d-b06c-4907-916b-f7a04371c633", "89314656-ef19-4ae0-83bf-713149c94955"]
 )
 async def test_delete_episode(ac, episode_id):
-    res = await ac.delete(f"/episodes/{episode_id}")
-    assert res.status_code == 204
-
-    res = await ac.get(f"/episodes/{episode_id}")
-    assert res.status_code == 404
+    assert (await ac.get(f"/episodes/{episode_id}")).status_code == 200
+    assert (await ac.delete(f"/episodes/{episode_id}")).status_code == 204
+    assert (await ac.get(f"/episodes/{episode_id}")).status_code == 404

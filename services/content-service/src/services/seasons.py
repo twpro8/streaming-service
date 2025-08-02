@@ -2,9 +2,7 @@ from uuid import UUID
 
 from src.exceptions import (
     SeasonNotFoundException,
-    ObjectAlreadyExistsException,
     SeriesNotFoundException,
-    UniqueSeasonNumberException,
     UniqueSeasonPerSeriesException,
 )
 from src.schemas.seasons import SeasonPatchRequestDTO, SeasonAddDTO
@@ -41,13 +39,13 @@ class SeasonService(BaseService):
             raise SeasonNotFoundException
 
         try:
-            await self.db.seasons.update(
-                id=season_id,
+            await self.db.seasons.update_season(
+                season_id=season_id,
                 data=season_data,
                 exclude_unset=True,
             )
-        except ObjectAlreadyExistsException:
-            raise UniqueSeasonNumberException
+        except UniqueSeasonPerSeriesException:
+            raise
         await self.db.commit()
 
     async def delete_season(self, season_id: UUID):
