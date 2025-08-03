@@ -1,4 +1,3 @@
-import json
 from typing import Any, AsyncGenerator
 
 import pytest
@@ -6,7 +5,7 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 
 from src.config import settings
-from src.api.dependencies import get_db, get_admin
+from src.api.dependencies import get_db, get_admin, get_current_user_id
 from src.db import null_pool_engine, null_pool_session_maker, DBManager
 from src.models.base import Base
 from src.models import *  # noqa
@@ -15,6 +14,7 @@ from src.schemas.episodes import EpisodeDTO
 from src.schemas.films import FilmDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.series import SeriesDTO
+from tests.utils import read_json
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -35,6 +35,7 @@ async def db() -> AsyncGenerator[Any, Any]:
 
 app.dependency_overrides[get_db] = get_db_null_pool  # noqa
 app.dependency_overrides[get_admin] = lambda: None  # noqa
+app.dependency_overrides[get_current_user_id] = lambda: 1  # The number is a user_id | # noqa
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -66,13 +67,3 @@ async def ac() -> AsyncGenerator[AsyncClient, Any]:
 async def get_series_ids():
     data = read_json("series")
     return [series_id["id"] for series_id in data]
-
-
-def pretty_print(obj):
-    print(json.dumps(obj, indent=4, ensure_ascii=False))
-
-
-def read_json(file_name: str) -> list[dict]:
-    path = f"tests/mock_data/{file_name}.json"
-    with open(path, encoding="utf-8") as file_in:
-        return json.load(file_in)

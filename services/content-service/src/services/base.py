@@ -26,7 +26,7 @@ class BaseService:
         episode = await self.db.episodes.get_one_or_none(**filter_by)
         return episode is not None
 
-    async def check_comment_exists(self, **filter_by):
+    async def check_comment_exists(self, **filter_by) -> bool:
         comment = await self.db.comments.get_one_or_none(**filter_by)
         return comment is not None
 

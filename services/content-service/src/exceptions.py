@@ -193,3 +193,7 @@ class SeasonAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
 
 class CommentNotFoundException(ObjectNotFoundException):
     detail = "Comment not found"
+
+
+class CommentNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Comment not found"

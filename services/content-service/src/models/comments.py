@@ -1,8 +1,8 @@
 # ruff: noqa
-
+from datetime import datetime
 from uuid import UUID, uuid4
 
-from sqlalchemy import ForeignKey, String
+from sqlalchemy import ForeignKey, String, DateTime, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -22,7 +22,10 @@ class CommentORM(Base):
     series_id: Mapped[UUID] = mapped_column(
         ForeignKey("series.id", ondelete="CASCADE"), nullable=True
     )
-    text: Mapped[str] = mapped_column(String(255))
+    comment: Mapped[str] = mapped_column(String(255))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=text("TIMEZONE('UTC', now())")
+    )
 
     # Relationships
     film: Mapped["FilmORM"] = relationship(back_populates="comments")

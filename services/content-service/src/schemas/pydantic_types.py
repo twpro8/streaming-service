@@ -67,9 +67,21 @@ DirectorStr = Annotated[str, Field(min_length=3, max_length=48)]
 
 ReleaseYearDate = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
 
+TextStr255 = Annotated[
+    str,
+    Field(
+        min_length=3,
+        max_length=255,
+    ),
+]
+
+
 # Enum for content type
 
 
 class ContentType(str, Enum):
     film = "film"
     series = "series"
+
+    def __str__(self):
+        return self.value

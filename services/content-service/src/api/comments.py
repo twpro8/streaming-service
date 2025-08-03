@@ -1,32 +1,59 @@
 from uuid import UUID
 
 from fastapi import APIRouter
+from fastapi.params import Query
 
 from src.exceptions import (
     ContentNotFoundHTTPException,
     ContentNotFoundException,
+    CommentNotFoundException,
+    CommentNotFoundHTTPException,
 )
-from src.schemas.comments import CommentAddRequestDTO
+from src.schemas.comments import CommentAddRequestDTO, CommentPutRequestDTO
 from src.schemas.pydantic_types import ContentType
 from src.services.comments import CommentService
-from src.api.dependencies import DBDep, UserDep
+from src.api.dependencies import DBDep, UserDep, PaginationDep
 
 
-router = APIRouter(tags=["Comments"])
+router = APIRouter(prefix="/comments", tags=["Comments"])
 
 
-@router.get("/content/{content_type}/{content_id}/comments")
-async def get_comments(db: DBDep, content_type: ContentType, content_id: UUID):
-    try:
-        comments = await CommentService(db).get_content_comments(
-            content_id=content_id, content_type=content_type
-        )
-    except ContentNotFoundException:
-        raise ContentNotFoundHTTPException
+@router.get("")
+async def get_comments(
+    db: DBDep,
+    pagination: PaginationDep,
+    content_id: UUID = Query(),
+    content_type: ContentType = Query(),
+):
+    comments = await CommentService(db).get_comments(
+        content_id=content_id,
+        content_type=content_type,
+        page=pagination.page,
+        per_page=pagination.per_page,
+    )
     return {"status": "ok", "data": comments}
 
 
-@router.post("/comments")
+@router.get("/user")
+async def get_user_comments(db: DBDep, pagination: PaginationDep, user_id: UserDep):
+    comments = await CommentService(db).get_user_comments(
+        user_id=user_id,
+        page=pagination.page,
+        per_page=pagination.per_page,
+    )
+    return {"status": "ok", "data": comments}
+
+
+@router.get("/{comment_id}")
+async def get_comment(db: DBDep, comment_id: UUID):
+    try:
+        comment = await CommentService(db).get_comment(comment_id=comment_id)
+    except CommentNotFoundException:
+        raise CommentNotFoundHTTPException
+    return {"status": "ok", "data": comment}
+
+
+@router.post("", status_code=201)
 async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
     try:
         comment = await CommentService(db).add_comment(user_id=user_id, data=data)
@@ -35,7 +62,24 @@ async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
     return {"status": "ok", "data": comment}
 
 
-@router.delete("/comments/{comment_id}", status_code=204)
+@router.put("/{comment_id}")
+async def update_comment(
+    db: DBDep,
+    user_id: UserDep,
+    comment_id: UUID,
+    data: CommentPutRequestDTO,
+):
+    try:
+        await CommentService(db).update_comment(
+            user_id=user_id,
+            comment_id=comment_id,
+            data=data,
+        )
+    except CommentNotFoundException:
+        raise CommentNotFoundHTTPException
+    return {"status": "ok"}
+
+
+@router.delete("/{comment_id}", status_code=204)
 async def delete_comment(db: DBDep, user_id: UserDep, comment_id: UUID):
     await CommentService(db).remove_comment(comment_id=comment_id, user_id=user_id)
-    return {"status": "ok"}
