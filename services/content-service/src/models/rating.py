@@ -20,14 +20,15 @@ class RatingORM(Base):
     )
     user_id: Mapped[int]
     content_id: Mapped[UUID]
-    rating: Mapped[Decimal] = mapped_column(
-        DECIMAL(3, 1), CheckConstraint("rating >= 0 AND rating <= 10")
-    )
+    value: Mapped[Decimal] = mapped_column(DECIMAL(3, 1))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=text("TIMEZONE('UTC', now())")
     )
 
-    __table_args__ = (UniqueConstraint("user_id", "content_id"),)
+    __table_args__ = (
+        UniqueConstraint("user_id", "content_id"),
+        CheckConstraint("value >= 0 AND value <= 10"),
+    )
 
 
 class RatingAggregateORM(Base):

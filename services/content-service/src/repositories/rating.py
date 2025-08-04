@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import select, update, insert
 
 from src.models import RatingORM, SeriesORM, FilmORM, RatingAggregateORM
 from src.repositories.base import BaseRepository
@@ -22,53 +22,45 @@ class RatingRepository(BaseRepository):
         content_type: ContentType,
         value: Decimal,
     ):
-        """
-        Adds or updates a user's rating for a specific content (film or series) and updates the corresponding
-        rating aggregates. If the rating is updated, the aggregate values (sum, count, average) are recalculated.
-        The function also updates the average rating in the relevant content table (FilmORM or SeriesORM).
-
-        Args:
-            user_id (int): The ID of the user providing the rating.
-            content_id (int): The ID of the content (film or series) being rated.
-            content_type (ContentType): The type of content (film or series).
-            value (Decimal): The rating value (between 0 and 10).
-
-        Returns:
-            None
-        """
-
         delta_sum = value
         delta_count = 1
+        need_update = False
 
-        # Checking an existing rating.
-        rating = await self.get_one_or_none(user_id=user_id, content_id=content_id)
+        # checking an existing rating
+        query = (
+            select(RatingORM).filter_by(user_id=user_id, content_id=content_id).with_for_update()
+        )
+        res = await self.session.execute(query)
+        rating = res.scalar_one_or_none()
 
         if rating:
-            if rating.rating == value:  # Checking if the average rating has changed.
+            if rating.value == value:  # checking if user rating has changed
                 return
-            delta_sum = value - rating.rating
+            delta_sum = value - rating.value
             delta_count = 0
-            rating.rating = value
+            rating.value = value
         else:
             self.session.add(
                 RatingORM(
                     user_id=user_id,
                     content_id=content_id,
-                    rating=value,
+                    value=value,
                 )
             )
 
-        await self.session.flush()
-
-        # Updating aggregates
-        agg_query = select(RatingAggregateORM).filter_by(content_id=content_id)
-        agg_res = await self.session.execute(agg_query)
-        aggregate = agg_res.scalars().one_or_none()
+        # updating aggregates
+        query = select(RatingAggregateORM).filter_by(content_id=content_id).with_for_update()
+        res = await self.session.execute(query)
+        aggregate = res.scalar_one_or_none()
 
         if aggregate:
             aggregate.rating_sum += delta_sum
             aggregate.rating_count += delta_count
-            aggregate.rating_avg = aggregate.rating_sum / aggregate.rating_count
+            old_avg = aggregate.rating_avg
+            new_avg = aggregate.rating_sum / aggregate.rating_count
+            if new_avg != old_avg:
+                aggregate.rating_avg = new_avg
+                need_update = True
         else:
             self.session.add(
                 RatingAggregateORM(
@@ -78,19 +70,18 @@ class RatingRepository(BaseRepository):
                     rating_avg=value,
                 )
             )
+            new_avg = value
+            need_update = True
 
         await self.session.flush()
 
-        # Updating the required table
-        if content_type == ContentType.film:
-            await self.session.execute(
-                update(FilmORM)
-                .filter_by(id=content_id)
-                .values(rating=aggregate.rating_avg if aggregate else value)
-            )
-        elif content_type == ContentType.series:
-            await self.session.execute(
-                update(SeriesORM)
-                .filter_by(id=content_id)
-                .values(rating=aggregate.rating_avg if aggregate else value)
-            )
+        # updating the required table
+        if need_update:
+            if content_type == ContentType.film:
+                await self.session.execute(
+                    update(FilmORM).filter_by(id=content_id).values(rating=new_avg)
+                )
+            elif content_type == ContentType.series:
+                await self.session.execute(
+                    update(SeriesORM).filter_by(id=content_id).values(rating=new_avg)
+                )

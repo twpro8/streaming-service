@@ -12,6 +12,6 @@ class RatingService(BaseService):
             user_id=user_id,
             content_id=data.content_id,
             content_type=data.content_type,
-            value=data.rating,
+            value=data.value,
         )
         await self.db.commit()

@@ -9,11 +9,13 @@ from src.schemas.pydantic_types import IDInt, ContentType, RatingDecimal
 class RatingAddRequestDTO(BaseSchema):
     content_id: UUID
     content_type: ContentType
-    rating: RatingDecimal
+    value: RatingDecimal
 
 
-class RatingAddDTO(RatingAddRequestDTO):
+class RatingAddDTO(BaseSchema):
     user_id: IDInt
+    content_id: UUID
+    value: RatingDecimal
 
 
 class RatingDTO(RatingAddDTO):
