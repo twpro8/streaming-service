@@ -4,6 +4,7 @@ import pytest
 series_ids = []
 
 
+@pytest.mark.order(2)
 @pytest.mark.parametrize(
     "params, expected_count",
     [

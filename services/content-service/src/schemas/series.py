@@ -22,6 +22,7 @@ class SeriesAddRequestDTO(BaseSchema):
 
 class SeriesDTO(SeriesAddRequestDTO):
     id: UUID
+    rating: RatingDecimal
 
 
 class SeriesPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
@@ -29,5 +30,4 @@ class SeriesPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     description: DescriptionStr | None = None
     director: DirectorStr | None = None
     release_year: ReleaseYearDate | None = None
-    rating: RatingDecimal | None = None
     cover_url: AnyUrl | None = None

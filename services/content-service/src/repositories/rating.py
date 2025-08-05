@@ -1,7 +1,7 @@
 from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select, update, insert
+from sqlalchemy import select, update
 
 from src.models import RatingORM, SeriesORM, FilmORM, RatingAggregateORM
 from src.repositories.base import BaseRepository

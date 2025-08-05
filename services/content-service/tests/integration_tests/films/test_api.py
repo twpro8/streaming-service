@@ -4,6 +4,7 @@ import pytest
 films_ids = []
 
 
+@pytest.mark.order(1)
 @pytest.mark.parametrize(
     "params, target_length",
     [

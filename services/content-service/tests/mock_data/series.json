@@ -5,7 +5,8 @@
     "description": "A high school chemistry teacher turns to a life of crime after being diagnosed with cancer.",
     "director": "Vince Gilligan",
     "release_year": "2000-01-01",
-    "cover_url": null
+    "cover_url": null,
+    "rating": "0.0"
   },
   {
     "id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
@@ -13,7 +14,8 @@
     "description": "A group of young friends witnesses supernatural forces and secret experiments in their town.",
     "director": "The Duffer Brothers",
     "release_year": "2001-01-01",
-    "cover_url": null
+    "cover_url": null,
+    "rating": "0.0"
   },
   {
     "id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
@@ -21,7 +23,8 @@
     "description": "A dramatization of the true story of the Chernobyl nuclear disaster.",
     "director": "Johan Renck",
     "release_year": "2002-01-01",
-    "cover_url": null
+    "cover_url": null,
+    "rating": "0.0"
   },
   {
     "id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
@@ -29,7 +32,8 @@
     "description": "A mockumentary on a group of typical office workers, where the workday consists of ego clashes and inappropriate behavior.",
     "director": "Greg Daniels",
     "release_year": "2003-01-01",
-    "cover_url": null
+    "cover_url": null,
+    "rating": "0.0"
   },
   {
     "id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
@@ -37,6 +41,7 @@
     "description": "A family saga with a supernatural twist, set in a German town where the disappearance of two children exposes the secrets of four families.",
     "director": "Baran bo Odar",
     "release_year": "2004-01-01",
-    "cover_url": null
+    "cover_url": null,
+    "rating": "0.0"
   }
 ]
