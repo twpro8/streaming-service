@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13.2"
 
 [[package]]
@@ -141,6 +141,7 @@ dependencies = [
     { name = "black" },
     { name = "fastapi", extra = ["all"] },
     { name = "faststream", extra = ["rabbit"] },
+    { name = "greenlet" },
     { name = "grpcio" },
     { name = "grpcio-tools" },
     { name = "prometheus-client" },
@@ -160,6 +161,7 @@ requires-dist = [
     { name = "black", specifier = ">=25.1.0" },
     { name = "fastapi", extras = ["all"], specifier = ">=0.115.12" },
     { name = "faststream", extras = ["rabbit"], specifier = ">=0.5.44" },
+    { name = "greenlet", specifier = ">=3.1.1" },
     { name = "grpcio", specifier = ">=1.71.0" },
     { name = "grpcio-tools", specifier = ">=1.71.0" },
     { name = "prometheus-client", specifier = ">=0.21.1" },

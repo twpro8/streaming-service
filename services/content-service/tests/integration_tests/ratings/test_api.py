@@ -23,6 +23,7 @@ def calculate_expected_rating(ratings: dict[int, float]) -> str:
     avg = sum(ratings.values()) / len(ratings)
     return str(Decimal(str(avg)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
 
+
 @pytest.mark.order(3)
 @pytest.mark.parametrize(
     "user_id, value, content_type",

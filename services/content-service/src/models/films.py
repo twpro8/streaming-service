@@ -34,3 +34,7 @@ class FilmORM(Base):
 
     # Relationships
     comments: Mapped[List["CommentORM"]] = relationship(back_populates="film")
+    genres: Mapped[List["GenreORM"]] = relationship(
+        secondary="film_genre_associations",
+        back_populates="films",
+    )

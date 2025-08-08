@@ -10,6 +10,7 @@ dependencies = [
     "black>=25.1.0",
     "fastapi[all]>=0.115.12",
     "faststream[rabbit]>=0.5.44",
+    "greenlet>=3.1.1",
     "grpcio>=1.71.0",
     "grpcio-tools>=1.71.0",
     "prometheus-client>=0.21.1",

@@ -33,6 +33,10 @@ class SeriesORM(Base):
     # Relationships
     seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="series")
     comments: Mapped[List["CommentORM"]] = relationship(back_populates="series")
+    genres: Mapped[List["GenreORM"]] = relationship(
+        secondary="series_genre_associations",
+        back_populates="series",
+    )
 
 
 class SeasonORM(Base):
