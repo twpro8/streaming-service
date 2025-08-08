@@ -1,0 +1,46 @@
+from fastapi import APIRouter
+
+from src.api.dependencies import DBDep, PaginationDep
+from src.exceptions import (
+    GenreNotFoundException,
+    GenreNotFoundHTTPException,
+    GenreAlreadyExistsException,
+    GenreAlreadyExistsHTTPException,
+)
+from src.schemas.genres import GenreAddDTO
+from src.services.genres import GenreService
+
+
+router = APIRouter(prefix="/genres", tags=["Genres"])
+
+
+@router.get("")
+async def get_genres(db: DBDep, pagination: PaginationDep):
+    genres = await GenreService(db).get_genres(
+        per_page=pagination.per_page,
+        page=pagination.page,
+    )
+    return {"status": "ok", "data": genres}
+
+
+@router.get("/{genre_id}")
+async def get_genre(db: DBDep, genre_id: int):
+    try:
+        genre = await GenreService(db).get_genre(genre_id=genre_id)
+    except GenreNotFoundException:
+        raise GenreNotFoundHTTPException
+    return {"status": "ok", "data": genre}
+
+
+@router.post("", status_code=201)
+async def add_genre(db: DBDep, genre: GenreAddDTO):
+    try:
+        genre = await GenreService(db).add_genre(genre=genre)
+    except GenreAlreadyExistsException:
+        raise GenreAlreadyExistsHTTPException
+    return {"status": "ok", "data": genre}
+
+
+@router.delete("/{genre_id}", status_code=204)
+async def delete_genre(db: DBDep, genre_id: int):
+    await GenreService(db).delete_genre(genre_id=genre_id)

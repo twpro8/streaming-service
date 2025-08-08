@@ -14,3 +14,4 @@ wheels/
 
 # Personal files
 _helpers
+.DS_Store

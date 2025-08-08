@@ -197,3 +197,19 @@ class CommentNotFoundException(ObjectNotFoundException):
 
 class CommentNotFoundHTTPException(ObjectNotFoundHTTPException):
     detail = "Comment not found"
+
+
+class GenreNotFoundException(ObjectNotFoundException):
+    detail = "Genre not found"
+
+
+class GenreNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Genre not found"
+
+
+class GenreAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Genre already exists"
+
+
+class GenreAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Genre already exists"

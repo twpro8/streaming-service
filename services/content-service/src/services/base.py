@@ -30,6 +30,10 @@ class BaseService:
         comment = await self.db.comments.get_one_or_none(**filter_by)
         return comment is not None
 
+    async def check_genre_exists(self, **filter_by) -> bool:
+        genre = await self.db.genres.get_one_or_none(**filter_by)
+        return genre is not None
+
     async def check_content_exists(self, content_id: UUID, content_type: ContentType) -> bool:
         exists = False
 
