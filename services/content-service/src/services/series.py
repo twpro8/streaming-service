@@ -4,8 +4,15 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from src.schemas.genres import SeriesGenreDTO
+from src.schemas.series import SeriesAddDTO, SeriesAddRequestDTO
 from src.services.base import BaseService
-from src.exceptions import ObjectNotFoundException, SeriesNotFoundException, UniqueCoverURLException
+from src.exceptions import (
+    ObjectNotFoundException,
+    SeriesNotFoundException,
+    UniqueCoverURLException,
+    GenreNotFoundException,
+)
 
 
 class SeriesService(BaseService):
@@ -45,11 +52,23 @@ class SeriesService(BaseService):
             raise SeriesNotFoundException
         return series
 
-    async def add_series(self, data: BaseModel):
+    async def add_series(self, series_data: SeriesAddRequestDTO):
+        _series_data = SeriesAddDTO(**series_data.model_dump())
         try:
-            series = await self.db.series.add_series(data)
+            series = await self.db.series.add_series(_series_data)
         except UniqueCoverURLException:
             raise
+
+        if series_data.genres:
+            _series_genres_data = [
+                SeriesGenreDTO(series_id=series.id, genre_id=genre_id)
+                for genre_id in series_data.genres
+            ]
+            try:
+                await self.db.series_genres.add_series_genres(_series_genres_data)
+            except GenreNotFoundException:
+                raise
+
         await self.db.commit()
         return series
 

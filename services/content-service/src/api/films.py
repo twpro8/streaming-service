@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from src.schemas.films import FilmAddDTO, FilmPatchRequestDTO
+from src.schemas.films import FilmPatchRequestDTO, FilmAddRequestDTO
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
 from src.services.films import FilmService
 from src.exceptions import (
@@ -12,6 +12,8 @@ from src.exceptions import (
     UniqueVideoURLException,
     UniqueCoverURLHTTPException,
     UniqueVideoURLHTTPException,
+    GenreNotFoundException,
+    GenreNotFoundHTTPException,
 )
 
 
@@ -34,11 +36,13 @@ async def get_film(db: DBDep, film_id: UUID):
 
 
 @router.post("", dependencies=[AdminDep], status_code=201)
-async def add_film(db: DBDep, film_data: FilmAddDTO):
+async def add_film(db: DBDep, film_data: FilmAddRequestDTO):
     try:
         film = await FilmService(db).add_film(film_data)
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
+    except GenreNotFoundException:
+        raise GenreNotFoundHTTPException
     return {"status": "ok", "data": film}
 
 

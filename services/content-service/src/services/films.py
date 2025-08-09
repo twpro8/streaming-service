@@ -4,12 +4,15 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
+from src.schemas.films import FilmAddRequestDTO, FilmAddDTO
+from src.schemas.genres import FilmGenreDTO
 from src.services.base import BaseService
 from src.exceptions import (
     ObjectNotFoundException,
     FilmNotFoundException,
     UniqueCoverURLException,
     UniqueVideoURLException,
+    GenreNotFoundException,
 )
 
 
@@ -50,11 +53,28 @@ class FilmService(BaseService):
             raise FilmNotFoundException
         return film
 
-    async def add_film(self, film_data: BaseModel):
+    async def add_film(self, film_data: FilmAddRequestDTO):
+        _film_data = FilmAddDTO(
+            title=film_data.title,
+            description=film_data.description,
+            director=film_data.director,
+            release_year=film_data.release_year,
+            duration=film_data.duration,
+            cover_url=film_data.cover_url,
+        )
         try:
-            film = await self.db.films.add_film(film_data)
+            film = await self.db.films.add_film(_film_data)
         except UniqueCoverURLException:
             raise
+
+        if film_data.genres:
+            _film_genres_data = [
+                FilmGenreDTO(film_id=film.id, genre_id=genre_id) for genre_id in film_data.genres
+            ]
+            try:
+                await self.db.films_genres.add_film_genres(_film_genres_data)
+            except GenreNotFoundException:
+                raise
         await self.db.commit()
         return film
 

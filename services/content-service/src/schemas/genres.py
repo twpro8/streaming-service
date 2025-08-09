@@ -1,6 +1,9 @@
+from uuid import UUID
+
 from pydantic import Field
 
 from src.schemas.base import BaseSchema
+from src.schemas.pydantic_types import IDInt
 
 
 class GenreAddDTO(BaseSchema):
@@ -8,4 +11,14 @@ class GenreAddDTO(BaseSchema):
 
 
 class GenreDTO(GenreAddDTO):
-    id: int
+    id: IDInt
+
+
+class FilmGenreDTO(BaseSchema):
+    film_id: UUID
+    genre_id: IDInt
+
+
+class SeriesGenreDTO(BaseSchema):
+    series_id: UUID
+    genre_id: IDInt

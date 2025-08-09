@@ -1,6 +1,10 @@
 from typing import List
 
-from src.exceptions import ObjectNotFoundException, GenreNotFoundException, GenreAlreadyExistsException
+from src.exceptions import (
+    ObjectNotFoundException,
+    GenreNotFoundException,
+    GenreAlreadyExistsException,
+)
 from src.schemas.genres import GenreDTO, GenreAddDTO
 from src.services.base import BaseService
 

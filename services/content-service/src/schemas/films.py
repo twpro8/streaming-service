@@ -1,3 +1,4 @@
+from typing import List
 from uuid import UUID
 
 from pydantic import AnyUrl
@@ -20,6 +21,10 @@ class FilmAddDTO(BaseSchema):
     release_year: ReleaseYearDate
     duration: DurationInt
     cover_url: AnyUrl | None = None
+
+
+class FilmAddRequestDTO(FilmAddDTO):
+    genres: List[int] = []
 
 
 class FilmDTO(FilmAddDTO):

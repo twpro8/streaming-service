@@ -1,3 +1,5 @@
+# ruff: noqa
+
 from typing import List
 from uuid import UUID
 

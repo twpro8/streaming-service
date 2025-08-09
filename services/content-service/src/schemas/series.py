@@ -1,6 +1,7 @@
+from typing import List
 from uuid import UUID
 
-from pydantic import AnyUrl
+from pydantic import BaseModel, AnyUrl
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.pydantic_types import (
@@ -12,7 +13,7 @@ from src.schemas.pydantic_types import (
 )
 
 
-class SeriesAddRequestDTO(BaseSchema):
+class SeriesAddDTO(BaseModel):
     title: TitleStr
     description: DescriptionStr
     director: DirectorStr
@@ -20,7 +21,11 @@ class SeriesAddRequestDTO(BaseSchema):
     cover_url: AnyUrl | None = None
 
 
-class SeriesDTO(SeriesAddRequestDTO):
+class SeriesAddRequestDTO(BaseSchema, SeriesAddDTO):
+    genres: List[int] = []
+
+
+class SeriesDTO(SeriesAddDTO):
     id: UUID
     rating: RatingDecimal
 

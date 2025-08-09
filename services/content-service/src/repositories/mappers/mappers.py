@@ -3,7 +3,7 @@ from src.repositories.mappers.base import DataMapper
 from src.models.films import FilmORM
 from src.schemas.comments import CommentDTO
 from src.schemas.films import FilmDTO
-from src.schemas.genres import GenreDTO
+from src.schemas.genres import GenreDTO, FilmGenreDTO, SeriesGenreDTO
 from src.schemas.rating import RatingDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.series import SeriesDTO
@@ -43,3 +43,13 @@ class RatingDataMapper(DataMapper):
 class GenreDataMapper(DataMapper):
     db_model = GenreORM
     schema = GenreDTO
+
+
+class FilmGenreDataMapper(DataMapper):
+    db_model = GenreORM
+    schema = FilmGenreDTO
+
+
+class SeriesGenreDataMapper(DataMapper):
+    db_model = SeriesORM
+    schema = SeriesGenreDTO

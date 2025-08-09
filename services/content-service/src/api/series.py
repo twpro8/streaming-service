@@ -7,6 +7,8 @@ from src.exceptions import (
     SeriesNotFoundHTTPException,
     UniqueCoverURLException,
     UniqueCoverURLHTTPException,
+    GenreNotFoundException,
+    GenreNotFoundHTTPException,
 )
 from src.schemas.series import SeriesAddRequestDTO, SeriesPatchRequestDTO
 from src.services.series import SeriesService
@@ -32,11 +34,13 @@ async def get_one_series(db: DBDep, series_id: UUID):
 
 
 @router.post("", dependencies=[AdminDep], status_code=201)
-async def add_series(db: DBDep, data: SeriesAddRequestDTO):
+async def add_series(db: DBDep, series_data: SeriesAddRequestDTO):
     try:
-        series = await SeriesService(db).add_series(data)
+        series = await SeriesService(db).add_series(series_data)
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
+    except GenreNotFoundException:
+        raise GenreNotFoundHTTPException
     return {"status": "ok", "data": series}
 
 
