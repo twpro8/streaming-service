@@ -1,11 +1,14 @@
 import logging
+from typing import List
 
 from asyncpg import UniqueViolationError
 from pydantic import BaseModel
+from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 
+from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException
-from src.models import SeriesORM
+from src.models import SeriesORM, SeriesGenreORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import SeriesDataMapper
 from src.schemas.series import SeriesDTO
@@ -18,6 +21,49 @@ class SeriesRepository(BaseRepository):
     model = SeriesORM
     schema = SeriesDTO
     mapper = SeriesDataMapper
+
+    async def get_filtered_series(
+        self,
+        page: int,
+        per_page: int,
+        genres: List[int] | None,
+        sort_by: SortBy,
+        sort_order: SortOrder,
+        **kwargs,
+    ):
+        filters = {
+            "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
+            "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
+            "director": lambda v: func.lower(self.model.director).contains(v.strip().lower()),
+            "release_year": lambda v: self.model.release_year == v,
+            "release_year_ge": lambda v: self.model.release_year >= v,
+            "release_year_le": lambda v: self.model.release_year <= v,
+            "rating": lambda v: self.model.rating == v,
+            "rating_ge": lambda v: self.model.rating >= v,
+            "rating_le": lambda v: self.model.rating <= v,
+        }
+
+        query = select(self.model)
+        if genres:
+            query = (
+                query.join(SeriesGenreORM).filter(SeriesGenreORM.genre_id.in_(genres)).distinct()
+            )
+
+        for key, value in kwargs.items():
+            if key in filters and value is not None:
+                query = query.filter(filters[key](value))
+
+        # apply sorting and pagination
+        query = self._apply_sorting_and_pagination(
+            query=query,
+            model=self.model,
+            sort_by=sort_by,
+            sort_order=sort_order,
+            page=page,
+            per_page=per_page,
+        )
+
+        return await self._execute_and_map_all(query)
 
     async def add_series(self, data: BaseModel):
         try:

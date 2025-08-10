@@ -1,6 +1,7 @@
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from src.exceptions import (
     SeriesNotFoundException,
@@ -19,8 +20,12 @@ router = APIRouter(prefix="/series", tags=["Series"])
 
 
 @router.get("")
-async def get_series(db: DBDep, common_params: ContentParamsDep):
-    series = await SeriesService(db).get_series(**common_params.model_dump())
+async def get_series(
+    db: DBDep,
+    common_params: ContentParamsDep,
+    genres: Annotated[list[int] | None, Query()] = None,
+):
+    series = await SeriesService(db).get_series(**common_params.model_dump(), genres=genres)
     return {"status": "ok", "data": series}
 
 

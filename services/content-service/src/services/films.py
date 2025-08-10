@@ -1,9 +1,11 @@
 from datetime import date
 from decimal import Decimal
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
 
+from src.enums import SortBy, SortOrder
 from src.schemas.films import FilmAddRequestDTO, FilmAddDTO
 from src.schemas.genres import FilmGenreDTO
 from src.services.base import BaseService
@@ -30,8 +32,11 @@ class FilmService(BaseService):
         rating: Decimal | None,
         rating_ge: Decimal | None,
         rating_le: Decimal | None,
+        genres: List[int] | None,
+        sort_by: SortBy,
+        sort_order: SortOrder,
     ):
-        films = await self.db.films.get_filtered_films_or_series(
+        films = await self.db.films.get_filtered_films(
             page=page,
             per_page=per_page,
             title=title,
@@ -43,6 +48,9 @@ class FilmService(BaseService):
             rating=rating,
             rating_ge=rating_ge,
             rating_le=rating_le,
+            genres=genres,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
         return films
 
@@ -54,14 +62,7 @@ class FilmService(BaseService):
         return film
 
     async def add_film(self, film_data: FilmAddRequestDTO):
-        _film_data = FilmAddDTO(
-            title=film_data.title,
-            description=film_data.description,
-            director=film_data.director,
-            release_year=film_data.release_year,
-            duration=film_data.duration,
-            cover_url=film_data.cover_url,
-        )
+        _film_data = FilmAddDTO(**film_data.model_dump())
         try:
             film = await self.db.films.add_film(_film_data)
         except UniqueCoverURLException:

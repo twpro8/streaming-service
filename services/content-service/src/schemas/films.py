@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from pydantic import AnyUrl
+from pydantic import AnyUrl, BaseModel
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.pydantic_types import (
@@ -14,7 +14,7 @@ from src.schemas.pydantic_types import (
 )
 
 
-class FilmAddDTO(BaseSchema):
+class FilmAddDTO(BaseModel):
     title: TitleStr
     description: DescriptionStr
     director: DirectorStr
@@ -23,7 +23,7 @@ class FilmAddDTO(BaseSchema):
     cover_url: AnyUrl | None = None
 
 
-class FilmAddRequestDTO(FilmAddDTO):
+class FilmAddRequestDTO(BaseSchema, FilmAddDTO):
     genres: List[int] = []
 
 

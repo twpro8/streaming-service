@@ -1,9 +1,11 @@
 from datetime import date
 from decimal import Decimal
+from typing import List
 from uuid import UUID
 
 from pydantic import BaseModel
 
+from src.enums import SortBy, SortOrder
 from src.schemas.genres import SeriesGenreDTO
 from src.schemas.series import SeriesAddDTO, SeriesAddRequestDTO
 from src.services.base import BaseService
@@ -29,8 +31,11 @@ class SeriesService(BaseService):
         rating: Decimal | None,
         rating_ge: Decimal | None,
         rating_le: Decimal | None,
+        genres: List[int] | None,
+        sort_by: SortBy,
+        sort_order: SortOrder,
     ):
-        series = await self.db.series.get_filtered_films_or_series(
+        series = await self.db.series.get_filtered_series(
             page=page,
             per_page=per_page,
             title=title,
@@ -42,6 +47,9 @@ class SeriesService(BaseService):
             rating=rating,
             rating_ge=rating_ge,
             rating_le=rating_le,
+            genres=genres,
+            sort_by=sort_by,
+            sort_order=sort_order,
         )
         return series
 

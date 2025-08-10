@@ -1,6 +1,7 @@
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 
 from src.schemas.films import FilmPatchRequestDTO, FilmAddRequestDTO
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
@@ -21,8 +22,12 @@ router = APIRouter(prefix="/films", tags=["Films"])
 
 
 @router.get("")
-async def get_films(db: DBDep, common_params: ContentParamsDep):
-    films = await FilmService(db).get_films(**common_params.model_dump())
+async def get_films(
+    db: DBDep,
+    common_params: ContentParamsDep,
+    genres: Annotated[list[int] | None, Query()] = None,
+):
+    films = await FilmService(db).get_films(**common_params.model_dump(), genres=genres)
     return {"status": "ok", "data": films}
 
 

@@ -1,12 +1,11 @@
 import logging
-from datetime import date
-from decimal import Decimal
-from typing import Type, List
+from typing import Type
 
 from pydantic import BaseModel
-from sqlalchemy import select, insert, delete, update, func
+from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound
 
+from src.enums import SortBy, SortOrder
 from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 from src.repositories.utils import normalize_for_insert
@@ -25,81 +24,21 @@ class BaseRepository:
 
     async def get_filtered(self, page: int = None, per_page: int = None, *filter, **filter_by):
         query = select(self.model).filter(*filter).filter_by(**filter_by)
-        if page is not None and per_page is not None:
-            query = query.limit(per_page).offset((page - 1) * per_page)
-        res = await self.session.execute(query)
-        return [self.mapper.map_to_domain_entity(model) for model in res.scalars().all()]
-
-    async def get_filtered_films_or_series(
-        self,
-        page,
-        per_page,
-        title: str | None,
-        description: str | None,
-        director: str | None,
-        release_year: date | None,
-        release_year_ge: date | None,
-        release_year_le: date | None,
-        rating: Decimal | None,
-        rating_ge: Decimal | None,
-        rating_le: Decimal | None,
-    ):
-        query = select(self.model)
-        if title is not None:
-            query = query.filter(func.lower(self.model.title).contains(title.strip().lower()))
-        if description is not None:
-            query = query.filter(
-                func.lower(self.model.description).contains(description.strip().lower())
-            )
-        if director is not None:
-            query = query.filter(func.lower(self.model.director).contains(director.strip().lower()))
-        if release_year is not None:
-            query = query.filter(self.model.release_year == release_year)
-        if release_year_ge is not None:
-            query = query.filter(self.model.release_year >= release_year_ge)
-        if release_year_le is not None:
-            query = query.filter(self.model.release_year <= release_year_le)
-        if rating is not None:
-            query = query.filter(self.model.rating == rating)
-        if rating_ge is not None:
-            query = query.filter(self.model.rating >= rating_ge)
-        if rating_le is not None:
-            query = query.filter(self.model.rating <= rating_le)
-
-        query = query.order_by(self.model.id).limit(per_page).offset((page - 1) * per_page)
-        res = await self.session.execute(query)
-
-        return [self.mapper.map_to_domain_entity(model) for model in res.scalars().all()]
-
-    async def get_objects_by_ids(self, ids: List[int]):
-        query = select(self.model).filter(self.model.id.in_(ids))
-        res = await self.session.execute(query)
-        objects = res.scalars().all()
-        return [self.mapper.map_to_domain_entity(obj) for obj in objects]
+        query = self._paginate(query, page, per_page)
+        return await self._execute_and_map_all(query)
 
     async def get_one(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
-        res = await self.session.execute(query)
-        try:
-            model = res.scalars().one()
-        except NoResultFound:
-            raise ObjectNotFoundException
-        return self.mapper.map_to_domain_entity(model)
+        return await self._execute_and_map_one(query)
 
     async def get_one_or_none(self, **filter_by):
         query = select(self.model).filter_by(**filter_by)
-        res = await self.session.execute(query)
-        model = res.scalars().one_or_none()
-        if model is None:
-            return None
-        return self.mapper.map_to_domain_entity(model)
+        return await self._execute_and_map_one_or_none(query)
 
     async def add(self, data: BaseModel):
         data = normalize_for_insert(data.model_dump())
         stmt = insert(self.model).values(**data).returning(self.model)
-        res = await self.session.execute(stmt)
-        model = res.scalars().one()
-        return self.mapper.map_to_domain_entity(model)
+        return await self._execute_and_map_one(stmt)
 
     async def add_bulk(self, data: list[BaseModel]):
         stmt = insert(self.model).values([item.model_dump() for item in data])
@@ -113,3 +52,55 @@ class BaseRepository:
     async def delete(self, **filter_by) -> None:
         stmt = delete(self.model).filter_by(**filter_by)
         await self.session.execute(stmt)
+
+    async def _execute_and_map_one(self, query):
+        res = await self.session.execute(query)
+        try:
+            model = res.scalars().one()
+        except NoResultFound:
+            raise ObjectNotFoundException
+        return self.mapper.map_to_domain_entity(model)
+
+    async def _execute_and_map_one_or_none(self, query):
+        res = await self.session.execute(query)
+        model = res.scalars().one_or_none()
+        if model is None:
+            return None
+        return self.mapper.map_to_domain_entity(model)
+
+    async def _execute_and_map_all(self, query):
+        res = await self.session.execute(query)
+        return [self.mapper.map_to_domain_entity(m) for m in res.scalars().all()]
+
+    @staticmethod
+    def _paginate(query, page: int, per_page: int):
+        """Applies limit and offset to query."""
+        if page is not None and per_page is not None:
+            return query.limit(per_page).offset((page - 1) * per_page)
+        return query
+
+    @staticmethod
+    def _apply_sorting(
+        query, model, sort_by: SortBy = SortBy.ID, sort_order: SortOrder = SortOrder.ASC
+    ):
+        """Applies sorting to query."""
+        if sort_by:
+            column = getattr(model, sort_by, None)
+            if column is not None:
+                if sort_order == SortOrder.DESC:
+                    return query.order_by(column.desc())
+                return query.order_by(column.asc())
+        return query
+
+    def _apply_sorting_and_pagination(
+        self,
+        query,
+        model,
+        page: int = None,
+        per_page: int = None,
+        sort_by: SortBy = SortBy.ID,
+        sort_order: SortOrder = SortOrder.ASC,
+    ):
+        query = self._apply_sorting(query, model, sort_by, sort_order)
+        query = self._paginate(query, page, per_page)
+        return query

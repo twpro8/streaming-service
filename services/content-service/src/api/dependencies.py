@@ -7,6 +7,7 @@ from fastapi import Depends, Request, Query
 from pydantic import BaseModel
 
 from src.db import DBManager, session_maker
+from src.enums import SortBy, SortOrder
 from src.exceptions import NoTokenHTTPException, PermissionDeniedHTTPException
 from src.services.auth import AuthService
 
@@ -70,6 +71,8 @@ class CommonContentParams(PaginationParams):
     rating: Annotated[Decimal | None, Query(None, ge=0, le=10)]
     rating_ge: Annotated[Decimal | None, Query(None, ge=0, le=10)]
     rating_le: Annotated[Decimal | None, Query(None, ge=0, le=10)]
+    sort_by: Annotated[SortBy, Query(SortBy.ID)]
+    sort_order: Annotated[SortOrder, Query(SortOrder.ASC)]
 
 
 ContentParamsDep = Annotated[CommonContentParams, Depends()]
