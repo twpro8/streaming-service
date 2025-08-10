@@ -3,6 +3,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, AnyUrl, ConfigDict, Field
 
+from src.schemas.actors import ActorDTO
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.genres import GenreDTO
 from src.schemas.pydantic_types import (
@@ -23,7 +24,8 @@ class SeriesAddDTO(BaseModel):
 
 
 class SeriesAddRequestDTO(BaseSchema, SeriesAddDTO):
-    genres: List[int] = []
+    genres_ids: List[int] = []
+    actors_ids: List[UUID] = []
 
 
 class SeriesDTO(SeriesAddDTO):
@@ -46,9 +48,16 @@ class SeriesPatchRequestDTO(SeriesPatchDTO, AtLeastOneFieldRequired):
             [],
         ],
     )
+    actors_ids: List[UUID] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
 
     model_config = ConfigDict(extra="forbid")
 
 
 class SeriesWithRelsDTO(SeriesDTO):
     genres: List[GenreDTO]
+    actors: List[ActorDTO]

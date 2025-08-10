@@ -4,6 +4,7 @@ from typing import List
 from uuid import UUID
 
 from src.enums import SortBy, SortOrder
+from src.schemas.actors import SeriesActorDTO
 from src.schemas.genres import SeriesGenreDTO
 from src.schemas.series import (
     SeriesAddDTO,
@@ -16,6 +17,7 @@ from src.exceptions import (
     SeriesNotFoundException,
     UniqueCoverURLException,
     GenreNotFoundException,
+    ActorNotFoundException,
 )
 
 
@@ -68,14 +70,23 @@ class SeriesService(BaseService):
         except UniqueCoverURLException:
             raise
 
-        if series_data.genres:
+        if series_data.genres_ids:
             _series_genres_data = [
                 SeriesGenreDTO(series_id=series.id, genre_id=genre_id)
-                for genre_id in series_data.genres
+                for genre_id in series_data.genres_ids
             ]
             try:
                 await self.db.series_genres.add_series_genres(_series_genres_data)
             except GenreNotFoundException:
+                raise
+        if series_data.actors_ids:
+            _series_actors_data = [
+                SeriesActorDTO(series_id=series.id, actor_id=actor_id)
+                for actor_id in series_data.actors_ids
+            ]
+            try:
+                await self.db.series_actors.add_series_actors(_series_actors_data)
+            except ActorNotFoundException:
                 raise
 
         await self.db.commit()
@@ -103,6 +114,14 @@ class SeriesService(BaseService):
                     genres_ids=series_data.genres_ids,
                 )
             except GenreNotFoundException:
+                raise
+        if series_data.actors_ids is not None:
+            try:
+                await self.db.series_actors.update_series_actors(
+                    series_id=series_id,
+                    actors_ids=series_data.actors_ids,
+                )
+            except ActorNotFoundException:
                 raise
 
         await self.db.commit()

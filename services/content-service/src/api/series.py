@@ -10,6 +10,8 @@ from src.exceptions import (
     UniqueCoverURLHTTPException,
     GenreNotFoundException,
     GenreNotFoundHTTPException,
+    ActorNotFoundException,
+    ActorNotFoundHTTPException,
 )
 from src.schemas.series import SeriesAddRequestDTO, SeriesPatchRequestDTO
 from src.services.series import SeriesService
@@ -46,6 +48,8 @@ async def add_series(db: DBDep, series_data: SeriesAddRequestDTO):
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
+    except ActorNotFoundException:
+        raise ActorNotFoundHTTPException
     return {"status": "ok", "data": series}
 
 
@@ -59,6 +63,8 @@ async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequ
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
+    except ActorNotFoundException:
+        raise ActorNotFoundHTTPException
     return {"status": "ok"}
 
 

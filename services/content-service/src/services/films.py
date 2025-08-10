@@ -5,6 +5,7 @@ from uuid import UUID
 
 
 from src.enums import SortBy, SortOrder
+from src.schemas.actors import FilmActorDTO
 from src.schemas.films import FilmAddRequestDTO, FilmAddDTO, FilmPatchRequestDTO, FilmPatchDTO
 from src.schemas.genres import FilmGenreDTO
 from src.services.base import BaseService
@@ -13,6 +14,7 @@ from src.exceptions import (
     UniqueCoverURLException,
     UniqueVideoURLException,
     GenreNotFoundException,
+    ActorNotFoundException,
 )
 
 
@@ -65,14 +67,25 @@ class FilmService(BaseService):
         except UniqueCoverURLException:
             raise
 
-        if film_data.genres:
+        if film_data.genres_ids:
             _film_genres_data = [
-                FilmGenreDTO(film_id=film.id, genre_id=genre_id) for genre_id in film_data.genres
+                FilmGenreDTO(film_id=film.id, genre_id=genre_id)
+                for genre_id in film_data.genres_ids
             ]
             try:
                 await self.db.films_genres.add_film_genres(_film_genres_data)
             except GenreNotFoundException:
                 raise
+        if film_data.actors_ids:
+            _film_actors_data = [
+                FilmActorDTO(film_id=film.id, actor_id=actor_id)
+                for actor_id in film_data.actors_ids
+            ]
+            try:
+                await self.db.films_actors.add_film_actors(_film_actors_data)
+            except ActorNotFoundException:
+                raise
+
         await self.db.commit()
         return film
 
@@ -96,6 +109,14 @@ class FilmService(BaseService):
                     genres_ids=film_data.genres_ids,
                 )
             except GenreNotFoundException:
+                raise
+        if film_data.actors_ids is not None:
+            try:
+                await self.db.films_actors.update_film_actors(
+                    film_id=film_id,
+                    actors_ids=film_data.actors_ids,
+                )
+            except ActorNotFoundException:
                 raise
 
         await self.db.commit()

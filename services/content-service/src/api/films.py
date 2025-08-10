@@ -15,6 +15,8 @@ from src.exceptions import (
     UniqueVideoURLHTTPException,
     GenreNotFoundException,
     GenreNotFoundHTTPException,
+    ActorNotFoundException,
+    ActorNotFoundHTTPException,
 )
 
 
@@ -48,6 +50,8 @@ async def add_film(db: DBDep, film_data: FilmAddRequestDTO):
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
+    except ActorNotFoundException:
+        raise ActorNotFoundHTTPException
     return {"status": "ok", "data": film}
 
 
@@ -63,6 +67,8 @@ async def update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
         raise UniqueVideoURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
+    except ActorNotFoundException:
+        raise ActorNotFoundHTTPException
     return {"status": "ok"}
 
 

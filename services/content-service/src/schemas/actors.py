@@ -25,3 +25,13 @@ class ActorPatchDTO(BaseSchema, AtLeastOneFieldRequired):
     birth_date: date | None = None
     zodiac_sign: ZodiacSign | None = None
     bio: str | None = None
+
+
+class FilmActorDTO(BaseSchema):
+    film_id: UUID
+    actor_id: UUID
+
+
+class SeriesActorDTO(BaseSchema):
+    series_id: UUID
+    actor_id: UUID

@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.api.dependencies import DBDep, PaginationDep
+from src.api.dependencies import DBDep, PaginationDep, AdminDep
 from src.exceptions import (
     GenreNotFoundException,
     GenreNotFoundHTTPException,
@@ -32,7 +32,7 @@ async def get_genre(db: DBDep, genre_id: int):
     return {"status": "ok", "data": genre}
 
 
-@router.post("", status_code=201)
+@router.post("", dependencies=[AdminDep], status_code=201)
 async def add_genre(db: DBDep, genre_data: GenreAddDTO):
     try:
         genre = await GenreService(db).add_genre(genre_data=genre_data)
@@ -41,6 +41,6 @@ async def add_genre(db: DBDep, genre_data: GenreAddDTO):
     return {"status": "ok", "data": genre}
 
 
-@router.delete("/{genre_id}", status_code=204)
+@router.delete("/{genre_id}", dependencies=[AdminDep], status_code=204)
 async def delete_genre(db: DBDep, genre_id: int):
     await GenreService(db).delete_genre(genre_id=genre_id)

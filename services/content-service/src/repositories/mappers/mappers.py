@@ -1,7 +1,8 @@
 from src.models import SeriesORM, SeasonORM, EpisodeORM, CommentORM, RatingORM, GenreORM, ActorORM
+from src.models.actors import FilmActorORM, SeriesActorORM
 from src.repositories.mappers.base import DataMapper
 from src.models.films import FilmORM
-from src.schemas.actors import ActorDTO
+from src.schemas.actors import ActorDTO, FilmActorDTO, SeriesActorDTO
 from src.schemas.comments import CommentDTO
 from src.schemas.films import FilmDTO, FilmWithRelsDTO
 from src.schemas.genres import GenreDTO, FilmGenreDTO, SeriesGenreDTO
@@ -69,3 +70,13 @@ class SeriesWithRelsDataMapper(DataMapper):
 class ActorDataMapper(DataMapper):
     db_model = ActorORM
     schema = ActorDTO
+
+
+class FilmActorDataMapper(DataMapper):
+    db_model = FilmActorORM
+    schema = FilmActorDTO
+
+
+class SeriesActorDataMapper(DataMapper):
+    db_model = SeriesActorORM
+    schema = SeriesActorDTO

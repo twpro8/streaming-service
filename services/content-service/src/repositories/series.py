@@ -67,7 +67,11 @@ class SeriesRepository(BaseRepository):
         return await self._execute_and_map_all(query)
 
     async def get_one_or_none_with_rels(self, **filter_by):
-        query = select(self.model).options(selectinload(self.model.genres)).filter_by(**filter_by)
+        query = (
+            select(self.model)
+            .options(selectinload(self.model.genres), selectinload(self.model.actors))
+            .filter_by(**filter_by)
+        )
         res = await self.session.execute(query)
         model = res.scalars().one_or_none()
         if model is None:
