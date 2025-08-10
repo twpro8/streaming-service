@@ -38,3 +38,6 @@ class FilmORM(Base):
         secondary="film_genre_associations",
         back_populates="films",
     )
+    actors: Mapped[List["ActorORM"]] = relationship(
+        secondary="film_actor_associations", back_populates="films"
+    )

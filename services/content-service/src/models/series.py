@@ -37,6 +37,9 @@ class SeriesORM(Base):
         secondary="series_genre_associations",
         back_populates="series",
     )
+    actors: Mapped[List["ActorORM"]] = relationship(
+        secondary="series_actor_associations", back_populates="series"
+    )
 
 
 class SeasonORM(Base):

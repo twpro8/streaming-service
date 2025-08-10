@@ -3,6 +3,7 @@ from src.models.series import SeriesORM, SeasonORM, EpisodeORM
 from src.models.comments import CommentORM
 from src.models.rating import RatingORM, RatingAggregateORM
 from src.models.genres import GenreORM, FilmGenreORM, SeriesGenreORM
+from src.models.actors import ActorORM
 
 __all__ = [
     "FilmORM",
@@ -15,4 +16,5 @@ __all__ = [
     "GenreORM",
     "FilmGenreORM",
     "SeriesGenreORM",
+    "ActorORM",
 ]

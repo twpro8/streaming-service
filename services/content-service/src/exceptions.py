@@ -213,3 +213,19 @@ class GenreAlreadyExistsException(ObjectAlreadyExistsException):
 
 class GenreAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Genre already exists"
+
+
+class ActorAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Actor already exists"
+
+
+class ActorAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Actor already exists"
+
+
+class ActorNotFoundException(ObjectNotFoundException):
+    detail = "Actor not found"
+
+
+class ActorNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Actor not found"
