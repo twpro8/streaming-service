@@ -5,12 +5,13 @@ from asyncpg import UniqueViolationError
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException, UniqueVideoURLException
 from src.models import FilmORM, FilmGenreORM
 from src.repositories.base import BaseRepository
-from src.repositories.mappers.mappers import FilmDataMapper
+from src.repositories.mappers.mappers import FilmDataMapper, FilmWithRelsDataMapper
 from src.schemas.films import FilmDTO
 
 
@@ -24,11 +25,11 @@ class FilmRepository(BaseRepository):
 
     async def get_filtered_films(
         self,
-        page: int,
-        per_page: int,
+        page: int | None,
+        per_page: int | None,
         genres: List[int] | None,
-        sort_by: SortBy,
-        sort_order: SortOrder,
+        sort_by: SortBy | None,
+        sort_order: SortOrder | None,
         **kwargs,
     ):
         filters = {
@@ -62,6 +63,14 @@ class FilmRepository(BaseRepository):
         )
 
         return await self._execute_and_map_all(query)
+
+    async def get_one_or_none_with_rels(self, **filter_by):
+        query = select(self.model).options(selectinload(self.model.genres)).filter_by(**filter_by)
+        res = await self.session.execute(query)
+        model = res.scalars().one_or_none()
+        if model is None:
+            return None
+        return FilmWithRelsDataMapper.map_to_domain_entity(model)
 
     async def add_film(self, data: BaseModel):
         try:

@@ -5,12 +5,13 @@ from asyncpg import UniqueViolationError
 from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException
 from src.models import SeriesORM, SeriesGenreORM
 from src.repositories.base import BaseRepository
-from src.repositories.mappers.mappers import SeriesDataMapper
+from src.repositories.mappers.mappers import SeriesDataMapper, SeriesWithRelsDataMapper
 from src.schemas.series import SeriesDTO
 
 
@@ -24,11 +25,11 @@ class SeriesRepository(BaseRepository):
 
     async def get_filtered_series(
         self,
-        page: int,
-        per_page: int,
+        page: int | None,
+        per_page: int | None,
         genres: List[int] | None,
-        sort_by: SortBy,
-        sort_order: SortOrder,
+        sort_by: SortBy | None,
+        sort_order: SortOrder | None,
         **kwargs,
     ):
         filters = {
@@ -64,6 +65,14 @@ class SeriesRepository(BaseRepository):
         )
 
         return await self._execute_and_map_all(query)
+
+    async def get_one_or_none_with_rels(self, **filter_by):
+        query = select(self.model).options(selectinload(self.model.genres)).filter_by(**filter_by)
+        res = await self.session.execute(query)
+        model = res.scalars().one_or_none()
+        if model is None:
+            return None
+        return SeriesWithRelsDataMapper.map_to_domain_entity(model)
 
     async def add_series(self, data: BaseModel):
         try:

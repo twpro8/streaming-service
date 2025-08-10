@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel, AnyUrl
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.genres import GenreDTO
 from src.schemas.pydantic_types import (
     TitleStr,
     RatingDecimal,
@@ -36,3 +37,7 @@ class SeriesPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     director: DirectorStr | None = None
     release_year: ReleaseYearDate | None = None
     cover_url: AnyUrl | None = None
+
+
+class SeriesWithRelsDTO(SeriesDTO):
+    genres: List[GenreDTO]

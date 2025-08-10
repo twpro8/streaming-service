@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import AnyUrl, BaseModel
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.genres import GenreDTO
 from src.schemas.pydantic_types import (
     TitleStr,
     DurationInt,
@@ -41,3 +42,7 @@ class FilmPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     duration: DurationInt | None = None
     video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
+
+
+class FilmWithRelsDTO(FilmDTO):
+    genres: List[GenreDTO]

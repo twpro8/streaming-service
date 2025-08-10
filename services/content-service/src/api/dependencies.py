@@ -71,8 +71,8 @@ class CommonContentParams(PaginationParams):
     rating: Annotated[Decimal | None, Query(None, ge=0, le=10)]
     rating_ge: Annotated[Decimal | None, Query(None, ge=0, le=10)]
     rating_le: Annotated[Decimal | None, Query(None, ge=0, le=10)]
-    sort_by: Annotated[SortBy, Query(SortBy.ID)]
-    sort_order: Annotated[SortOrder, Query(SortOrder.ASC)]
+    sort_by: Annotated[SortBy | None, Query(None)]
+    sort_order: Annotated[SortOrder | None, Query(None)]
 
 
 ContentParamsDep = Annotated[CommonContentParams, Depends()]

@@ -10,7 +10,6 @@ from src.schemas.films import FilmAddRequestDTO, FilmAddDTO
 from src.schemas.genres import FilmGenreDTO
 from src.services.base import BaseService
 from src.exceptions import (
-    ObjectNotFoundException,
     FilmNotFoundException,
     UniqueCoverURLException,
     UniqueVideoURLException,
@@ -21,8 +20,8 @@ from src.exceptions import (
 class FilmService(BaseService):
     async def get_films(
         self,
-        page: int,
-        per_page: int,
+        page: int | None,
+        per_page: int | None,
         title: str | None,
         description: str | None,
         director: str | None,
@@ -33,8 +32,8 @@ class FilmService(BaseService):
         rating_ge: Decimal | None,
         rating_le: Decimal | None,
         genres: List[int] | None,
-        sort_by: SortBy,
-        sort_order: SortOrder,
+        sort_by: SortBy | None,
+        sort_order: SortOrder | None,
     ):
         films = await self.db.films.get_filtered_films(
             page=page,
@@ -55,9 +54,8 @@ class FilmService(BaseService):
         return films
 
     async def get_film(self, film_id: UUID):
-        try:
-            film = await self.db.films.get_one(id=film_id)
-        except ObjectNotFoundException:
+        film = await self.db.films.get_one_or_none_with_rels(id=film_id)
+        if film is None:
             raise FilmNotFoundException
         return film
 

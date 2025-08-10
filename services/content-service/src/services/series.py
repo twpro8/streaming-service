@@ -10,7 +10,6 @@ from src.schemas.genres import SeriesGenreDTO
 from src.schemas.series import SeriesAddDTO, SeriesAddRequestDTO
 from src.services.base import BaseService
 from src.exceptions import (
-    ObjectNotFoundException,
     SeriesNotFoundException,
     UniqueCoverURLException,
     GenreNotFoundException,
@@ -20,8 +19,8 @@ from src.exceptions import (
 class SeriesService(BaseService):
     async def get_series(
         self,
-        page: int,
-        per_page: int,
+        page: int | None,
+        per_page: int | None,
         title: str | None,
         description: str | None,
         director: str | None,
@@ -32,8 +31,8 @@ class SeriesService(BaseService):
         rating_ge: Decimal | None,
         rating_le: Decimal | None,
         genres: List[int] | None,
-        sort_by: SortBy,
-        sort_order: SortOrder,
+        sort_by: SortBy | None,
+        sort_order: SortOrder | None,
     ):
         series = await self.db.series.get_filtered_series(
             page=page,
@@ -54,9 +53,8 @@ class SeriesService(BaseService):
         return series
 
     async def get_one_series(self, series_id: UUID):
-        try:
-            series = await self.db.series.get_one(id=series_id)
-        except ObjectNotFoundException:
+        series = await self.db.series.get_one_or_none_with_rels(id=series_id)
+        if series is None:
             raise SeriesNotFoundException
         return series
 
