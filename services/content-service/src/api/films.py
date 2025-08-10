@@ -61,6 +61,8 @@ async def update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
         raise UniqueCoverURLHTTPException
     except UniqueVideoURLException:
         raise UniqueVideoURLHTTPException
+    except GenreNotFoundException:
+        raise GenreNotFoundHTTPException
     return {"status": "ok"}
 
 

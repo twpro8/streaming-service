@@ -57,6 +57,8 @@ async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequ
         raise SeriesNotFoundHTTPException
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
+    except GenreNotFoundException:
+        raise GenreNotFoundHTTPException
     return {"status": "ok"}
 
 

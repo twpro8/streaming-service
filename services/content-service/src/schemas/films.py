@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.genres import GenreDTO
@@ -34,7 +34,7 @@ class FilmDTO(FilmAddDTO):
     video_url: AnyUrl | None = None
 
 
-class FilmPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
+class FilmPatchDTO(BaseModel):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
     director: DirectorStr | None = None
@@ -42,6 +42,17 @@ class FilmPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     duration: DurationInt | None = None
     video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
+
+
+class FilmPatchRequestDTO(FilmPatchDTO, AtLeastOneFieldRequired):
+    genres_ids: List[int] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class FilmWithRelsDTO(FilmDTO):

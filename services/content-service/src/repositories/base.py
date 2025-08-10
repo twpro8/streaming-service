@@ -45,7 +45,10 @@ class BaseRepository:
         await self.session.execute(stmt)
 
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
-        data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))
+        _model_dump = data.model_dump(exclude_unset=exclude_unset)
+        if not _model_dump:
+            return
+        data = normalize_for_insert(_model_dump)
         stmt = update(self.model).values(**data).filter_by(**filter_by)
         await self.session.execute(stmt)
 

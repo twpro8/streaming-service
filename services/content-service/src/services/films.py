@@ -3,10 +3,9 @@ from decimal import Decimal
 from typing import List
 from uuid import UUID
 
-from pydantic import BaseModel
 
 from src.enums import SortBy, SortOrder
-from src.schemas.films import FilmAddRequestDTO, FilmAddDTO
+from src.schemas.films import FilmAddRequestDTO, FilmAddDTO, FilmPatchRequestDTO, FilmPatchDTO
 from src.schemas.genres import FilmGenreDTO
 from src.services.base import BaseService
 from src.exceptions import (
@@ -77,15 +76,28 @@ class FilmService(BaseService):
         await self.db.commit()
         return film
 
-    async def update_film(self, film_id: UUID, film_data: BaseModel):
+    async def update_film(self, film_id: UUID, film_data: FilmPatchRequestDTO):
         if not await self.check_film_exists(id=film_id):
             raise FilmNotFoundException
+
+        _film_data = FilmPatchDTO(**film_data.model_dump(exclude_unset=True))
+
         try:
-            await self.db.films.update_film(id=film_id, data=film_data, exclude_unset=True)
+            await self.db.films.update_film(id=film_id, data=_film_data, exclude_unset=True)
         except UniqueCoverURLException:
             raise UniqueCoverURLException
         except UniqueVideoURLException:
             raise UniqueVideoURLException
+
+        if film_data.genres_ids is not None:
+            try:
+                await self.db.films_genres.update_film_genres(
+                    film_id=film_id,
+                    genres_ids=film_data.genres_ids,
+                )
+            except GenreNotFoundException:
+                raise
+
         await self.db.commit()
 
     async def remove_film(self, film_id: UUID):

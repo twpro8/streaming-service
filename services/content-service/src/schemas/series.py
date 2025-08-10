@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from pydantic import BaseModel, AnyUrl
+from pydantic import BaseModel, AnyUrl, ConfigDict, Field
 
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.genres import GenreDTO
@@ -31,12 +31,23 @@ class SeriesDTO(SeriesAddDTO):
     rating: RatingDecimal
 
 
-class SeriesPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
+class SeriesPatchDTO(BaseModel):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
     director: DirectorStr | None = None
     release_year: ReleaseYearDate | None = None
     cover_url: AnyUrl | None = None
+
+
+class SeriesPatchRequestDTO(SeriesPatchDTO, AtLeastOneFieldRequired):
+    genres_ids: List[int] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
+
+    model_config = ConfigDict(extra="forbid")
 
 
 class SeriesWithRelsDTO(SeriesDTO):

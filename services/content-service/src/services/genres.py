@@ -21,10 +21,10 @@ class GenreService(BaseService):
             raise GenreNotFoundException
         return genre
 
-    async def add_genre(self, genre: GenreAddDTO) -> GenreDTO:
-        if await self.check_genre_exists(name=genre.name):
+    async def add_genre(self, genre_data: GenreAddDTO) -> GenreDTO:
+        if await self.check_genre_exists(name=genre_data.name):
             raise GenreAlreadyExistsException
-        genre = await self.db.genres.add(data=genre)
+        genre = await self.db.genres.add(data=genre_data)
         await self.db.commit()
         return genre
 

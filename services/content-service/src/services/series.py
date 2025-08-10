@@ -3,11 +3,14 @@ from decimal import Decimal
 from typing import List
 from uuid import UUID
 
-from pydantic import BaseModel
-
 from src.enums import SortBy, SortOrder
 from src.schemas.genres import SeriesGenreDTO
-from src.schemas.series import SeriesAddDTO, SeriesAddRequestDTO
+from src.schemas.series import (
+    SeriesAddDTO,
+    SeriesAddRequestDTO,
+    SeriesPatchRequestDTO,
+    SeriesPatchDTO,
+)
 from src.services.base import BaseService
 from src.exceptions import (
     SeriesNotFoundException,
@@ -78,17 +81,30 @@ class SeriesService(BaseService):
         await self.db.commit()
         return series
 
-    async def update_series(self, series_id: UUID, series_data: BaseModel):
+    async def update_series(self, series_id: UUID, series_data: SeriesPatchRequestDTO):
         if not await self.check_series_exists(id=series_id):
             raise SeriesNotFoundException
+
+        _series_data = SeriesPatchDTO(**series_data.model_dump(exclude_unset=True))
+
         try:
             await self.db.series.update_series(
                 id=series_id,
-                data=series_data,
+                data=_series_data,
                 exclude_unset=True,
             )
         except UniqueCoverURLException:
             raise
+
+        if series_data.genres_ids is not None:
+            try:
+                await self.db.series_genres.update_series_genres(
+                    series_id=series_id,
+                    genres_ids=series_data.genres_ids,
+                )
+            except GenreNotFoundException:
+                raise
+
         await self.db.commit()
 
     async def delete_series(self, series_id: UUID):

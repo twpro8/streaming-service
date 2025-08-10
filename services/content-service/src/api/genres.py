@@ -33,9 +33,9 @@ async def get_genre(db: DBDep, genre_id: int):
 
 
 @router.post("", status_code=201)
-async def add_genre(db: DBDep, genre: GenreAddDTO):
+async def add_genre(db: DBDep, genre_data: GenreAddDTO):
     try:
-        genre = await GenreService(db).add_genre(genre=genre)
+        genre = await GenreService(db).add_genre(genre_data=genre_data)
     except GenreAlreadyExistsException:
         raise GenreAlreadyExistsHTTPException
     return {"status": "ok", "data": genre}
