@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, List
 from uuid import UUID
 
 from fastapi import APIRouter, Query
@@ -27,9 +27,9 @@ router = APIRouter(prefix="/films", tags=["Films"])
 async def get_films(
     db: DBDep,
     common_params: ContentParamsDep,
-    genres: Annotated[list[int] | None, Query()] = None,
+    genres_ids: Annotated[List[int] | None, Query()] = None,
 ):
-    films = await FilmService(db).get_films(**common_params.model_dump(), genres=genres)
+    films = await FilmService(db).get_films(**common_params.model_dump(), genres_ids=genres_ids)
     return {"status": "ok", "data": films}
 
 

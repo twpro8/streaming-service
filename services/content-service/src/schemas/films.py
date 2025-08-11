@@ -1,7 +1,7 @@
 from typing import List
 from uuid import UUID
 
-from pydantic import AnyUrl, BaseModel, ConfigDict, Field
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, StrictInt
 
 from src.schemas.actors import ActorDTO
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
@@ -26,8 +26,8 @@ class FilmAddDTO(BaseModel):
 
 
 class FilmAddRequestDTO(BaseSchema, FilmAddDTO):
-    genres_ids: List[int] = []
-    actors_ids: List[UUID] = []
+    genres_ids: List[StrictInt] | None = Field(default=None, examples=[[],])
+    actors_ids: List[UUID] | None = Field(default=None, examples=[[],])
 
 
 class FilmDTO(FilmAddDTO):
@@ -47,13 +47,13 @@ class FilmPatchDTO(BaseModel):
 
 
 class FilmPatchRequestDTO(FilmPatchDTO, AtLeastOneFieldRequired):
-    genres_ids: List[int] | None = Field(
+    genres_ids: List[StrictInt] = Field(
         default=None,
         examples=[
             [],
         ],
     )
-    actors_ids: List[UUID] | None = Field(
+    actors_ids: List[UUID] = Field(
         default=None,
         examples=[
             [],

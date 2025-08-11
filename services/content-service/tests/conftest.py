@@ -12,6 +12,7 @@ from src.models import *  # noqa
 from src.main import app
 from src.schemas.episodes import EpisodeDTO
 from src.schemas.films import FilmDTO
+from src.schemas.genres import GenreDTO, FilmGenreDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.series import SeriesDTO
 from tests.utils import read_json
@@ -48,12 +49,16 @@ async def setup_database(check_test_mode):
     series_data = [SeriesDTO.model_validate(s) for s in read_json("series")]
     seasons_data = [SeasonDTO.model_validate(s) for s in read_json("seasons")]
     episodes_data = [EpisodeDTO.model_validate(e) for e in read_json("episodes")]
+    genres_data = [GenreDTO.model_validate(g) for g in read_json("genres")]
+    films_genres_data = [FilmGenreDTO.model_validate(fg) for fg in read_json("films_genres")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.films.add_bulk(films_data)
         await db_.series.add_bulk(series_data)
         await db_.seasons.add_bulk(seasons_data)
         await db_.episodes.add_bulk(episodes_data)
+        await db_.genres.add_bulk(genres_data)
+        await db_.films_genres.add_bulk(films_genres_data)
         await db_.commit()
 
 

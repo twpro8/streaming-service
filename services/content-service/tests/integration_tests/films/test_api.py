@@ -51,7 +51,22 @@ films_ids = []
         ({"release_year": "1999-01-01"}, 0),
         ({"release_year_ge": "2005-01-01"}, 0),
         ({"release_year_le": "1999-01-01"}, 0),
-        # AND CASES FOR GENRES
+        # Genres
+        ({"genres_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [2, 4, 6, 8, 10], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [1, 3, 5, 7, 9], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [2, 4, 6, 8], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [1]}, 1),
+        ({"genres_ids": [2]}, 2),
+        ({"genres_ids": [3]}, 1),
+        ({"genres_ids": [4]}, 2),
+        ({"genres_ids": [5]}, 1),
+        ({"genres_ids": [6]}, 2),
+        ({"genres_ids": [7]}, 1),
+        ({"genres_ids": [8]}, 2),
+        ({"genres_ids": [9]}, 1),
+        ({"genres_ids": [10]}, 1),
+        ({"genres_ids": [1, 2, 3]}, 2),
     ],
 )
 async def test_get_films(ac, params, target_length):
@@ -64,7 +79,7 @@ async def test_get_films(ac, params, target_length):
 
 
 @pytest.mark.parametrize(
-    "title, description, director, release_year, duration, cover_url, status_code",
+    "title, description, director, release_year, duration, cover_url, genres_ids, status_code",
     [
         # Valid data
         (
@@ -74,6 +89,7 @@ async def test_get_films(ac, params, target_length):
             "2005-01-01",
             140,
             "https://example.com/valid_url.jpg",
+            None,
             201,
         ),
         (
@@ -83,31 +99,50 @@ async def test_get_films(ac, params, target_length):
             "1999-09-09",
             140,
             None,
+            None,
             201,
         ),
         # Invalid title
-        ("", "Valid Description", "Valid Director", "2006-01-01", 140, None, 422),
-        ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", 140, None, 422),
+        ("", "Valid Description", "Valid Director", "2006-01-01", 140, None, None, 422),
+        ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", 140, None, None, 422),
         # Invalid description
-        ("Valid Title", "", "Valid Director", "2020-01-01", 140, None, 422),
-        ("Valid Title", "D" * 256, "Valid Director", "2020-01-01", 140, None, 422),
+        ("Valid Title", "", "Valid Director", "2020-01-01", 140, None, None, 422),
+        ("Valid Title", "D" * 256, "Valid Director", "2020-01-01", 140, None, None, 422),
         # Invalid director
-        ("Valid Title", "Valid Description", "", "2020-01-01", 140, None, 422),
-        ("Valid Title", "Valid Description", "D" * 50, "2020-01-01", 140, None, 422),
+        ("Valid Title", "Valid Description", "", "2020-01-01", 140, None, None, 422),
+        ("Valid Title", "Valid Description", "D" * 50, "2020-01-01", 140, None, None, 422),
         # Invalid release year
-        ("Valid Title", "Valid Description", "Valid Director", "10-01-01", 90, None, 422),
-        ("Valid Title", "Valid Description", "Valid Director", "some-garbage-here", 90, None, 422),
-        ("Valid Title", "Valid Description", "Valid Director", 1, 90, None, 422),
-        ("Valid Title", "Description", "Director", "2100-01-01", 90, None, 422),
-        ("Valid Title", "Description", "Director", "999-01-01", 90, None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "10-01-01", 90, None, None, 422),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "some-garbage-here",
+            90,
+            None,
+            None,
+            422,
+        ),
+        ("Valid Title", "Valid Description", "Valid Director", 1, 90, None, None, 422),
+        ("Valid Title", "Description", "Director", "2100-01-01", 90, None, None, 422),
+        ("Valid Title", "Description", "Director", "999-01-01", 90, None, None, 422),
         # Invalid duration
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", -1, None, 422),
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 513, None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", -1, None, None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 513, None, None, 422),
         # Invalid cover url
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, "not-a-url", 422),
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, 1, 422),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "2020-01-01",
+            140,
+            "not-a-url",
+            None,
+            422,
+        ),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, 1, None, 422),
         # All optional fields None (cover_url) - should succeed
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, None, 201),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 140, None, None, 201),
         # Conflict
         (
             "Valid Title",
@@ -116,7 +151,131 @@ async def test_get_films(ac, params, target_length):
             "2020-01-01",
             140,
             "https://example.com/valid_url.jpg",
+            None,
             409,
+        ),
+        # Valid data with genres
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://one_two_three.com/valid_url.jpg",
+            [1, 2, 3],
+            201,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://ott.com/valid_url.jpg",
+            [1, 2, 3],
+            201,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://tff.com/valid_url.jpg",
+            [3, 4, 5],
+            201,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://fss.com/valid_url.jpg",
+            [5, 6, 7],
+            201,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://sent.com/valid_url.jpg",
+            [7, 8, 9, 10],
+            201,
+        ),
+        # Genre not found: 404
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://ett.com/valid_url.jpg",
+            [11, 12, 13],
+            404,
+        ),
+        # Invalid genres ids
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://igi.com/valid_url.jpg",
+            ["abs"],
+            422,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://igi.com/valid_url.jpg",
+            ["1", "2"],
+            422,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://igi.com/valid_url.jpg",
+            [6.2, 7.3],
+            422,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://igi.com/valid_url.jpg",
+            [True, False],
+            422,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://igi.com/valid_url.jpg",
+            [[],],
+            422,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://igi.com/valid_url.jpg",
+            [{},],
+            422,
         ),
     ],
 )
@@ -128,6 +287,7 @@ async def test_add_film(
     release_year,
     duration,
     cover_url,
+    genres_ids,
     status_code,
 ):
     request_json = {
@@ -137,6 +297,7 @@ async def test_add_film(
         "release_year": release_year,
         "duration": duration,
         "cover_url": cover_url,
+        "genres_ids": genres_ids,
     }
 
     res = await ac.post("/films", json=request_json)
@@ -167,6 +328,15 @@ async def test_add_film(
         # Update description
         ({"description": "Description Updated"}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
         ({"description": "Description Updated"}, 200, None),
+        # Update genres
+        ({"genres_ids": [1,2,3]}, 200, None),
+        ({"genres_ids": [2]}, 200, None),
+        ({"genres_ids": [4, 5, 6]}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
+        ({"genres_ids": ["abc"]}, 422, None),
+        ({"genres_ids": ["1", "2"]}, 422, None),
+        ({"genres_ids": [True, False]}, 422, None),
+        ({"genres_ids": [9,10,11]}, 404, None),
+        ({"genres_ids": [9.1,8.7]}, 422, None),
         # Invalid description
         ({"description": ""}, 422, None),
         ({"description": "D" * 256}, 422, None),

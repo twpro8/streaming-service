@@ -1,0 +1,58 @@
+[
+  {
+    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "genre_id": 1
+  },
+  {
+    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "genre_id": 2
+  },
+  {
+    "film_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "genre_id": 2
+  },
+  {
+    "film_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "genre_id": 3
+  },
+  {
+    "film_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "genre_id": 4
+  },
+  {
+    "film_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "genre_id": 4
+  },
+  {
+    "film_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "genre_id": 5
+  },
+  {
+    "film_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "genre_id": 6
+  },
+  {
+    "film_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "genre_id": 6
+  },
+  {
+    "film_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "genre_id": 7
+  },
+  {
+    "film_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "genre_id": 8
+  },
+  {
+    "film_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "genre_id": 8
+  },
+  {
+    "film_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "genre_id": 9
+  },
+  {
+    "film_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "genre_id": 10
+  }
+]

@@ -27,7 +27,7 @@ class FilmRepository(BaseRepository):
         self,
         page: int | None,
         per_page: int | None,
-        genres: List[int] | None,
+        genres_ids: List[int] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
         **kwargs,
@@ -45,8 +45,10 @@ class FilmRepository(BaseRepository):
         }
 
         query = select(self.model)
-        if genres:
-            query = query.join(FilmGenreORM).filter(FilmGenreORM.genre_id.in_(genres)).distinct()
+        if genres_ids:
+            query = (
+                query.join(FilmGenreORM).filter(FilmGenreORM.genre_id.in_(genres_ids)).distinct()
+            )
 
         for key, value in kwargs.items():
             if key in filters and value is not None:
