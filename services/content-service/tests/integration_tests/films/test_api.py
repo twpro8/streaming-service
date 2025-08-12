@@ -253,7 +253,9 @@ async def test_get_films(ac, params, target_length):
             "1969-01-01",
             140,
             None,
-            [[],],
+            [
+                [],
+            ],
             422,
         ),
         (
@@ -263,7 +265,9 @@ async def test_get_films(ac, params, target_length):
             "1969-01-01",
             140,
             None,
-            [{},],
+            [
+                {},
+            ],
             422,
         ),
     ],

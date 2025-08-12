@@ -1,42 +1,32 @@
 [
   {
-    "id": 1,
     "name": "Romance"
   },
   {
-    "id": 2,
     "name": "Drama"
   },
   {
-    "id": 3,
     "name": "Horror"
   },
   {
-    "id": 4,
     "name": "Action"
   },
   {
-    "id": 5,
     "name": "Fantasy"
   },
   {
-    "id": 6,
     "name": "Adventure"
   },
   {
-    "id": 7,
     "name": "Thriller"
   },
   {
-    "id": 8,
     "name": "Western"
   },
   {
-    "id": 9,
     "name": "Mystery"
   },
   {
-    "id": 10,
     "name": "Comedy"
   }
 ]

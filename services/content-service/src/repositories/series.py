@@ -47,7 +47,9 @@ class SeriesRepository(BaseRepository):
         query = select(self.model)
         if genres_ids:
             query = (
-                query.join(SeriesGenreORM).filter(SeriesGenreORM.genre_id.in_(genres_ids)).distinct()
+                query.join(SeriesGenreORM)
+                .filter(SeriesGenreORM.genre_id.in_(genres_ids))
+                .distinct()
             )
 
         for key, value in kwargs.items():

@@ -8,6 +8,7 @@ from src.exceptions import (
     GenreAlreadyExistsHTTPException,
 )
 from src.schemas.genres import GenreAddDTO
+from src.schemas.pydantic_types import IDInt
 from src.services.genres import GenreService
 
 
@@ -24,7 +25,7 @@ async def get_genres(db: DBDep, pagination: PaginationDep):
 
 
 @router.get("/{genre_id}")
-async def get_genre(db: DBDep, genre_id: int):
+async def get_genre(db: DBDep, genre_id: IDInt):
     try:
         genre = await GenreService(db).get_genre(genre_id=genre_id)
     except GenreNotFoundException:
@@ -42,5 +43,5 @@ async def add_genre(db: DBDep, genre_data: GenreAddDTO):
 
 
 @router.delete("/{genre_id}", dependencies=[AdminDep], status_code=204)
-async def delete_genre(db: DBDep, genre_id: int):
+async def delete_genre(db: DBDep, genre_id: IDInt):
     await GenreService(db).delete_genre(genre_id=genre_id)

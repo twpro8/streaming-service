@@ -24,8 +24,18 @@ class SeriesAddDTO(BaseModel):
 
 
 class SeriesAddRequestDTO(BaseSchema, SeriesAddDTO):
-    genres_ids: List[conint(strict=True, ge=1)] | None = Field(default=None, examples=[[],])
-    actors_ids: List[UUID] | None = Field(default=None, examples=[[],])
+    genres_ids: List[conint(strict=True, ge=1)] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
+    actors_ids: List[UUID] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
 
 
 class SeriesDTO(SeriesAddDTO):

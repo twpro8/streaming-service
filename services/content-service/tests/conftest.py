@@ -12,7 +12,7 @@ from src.models import *  # noqa
 from src.main import app
 from src.schemas.episodes import EpisodeDTO
 from src.schemas.films import FilmDTO
-from src.schemas.genres import GenreDTO, FilmGenreDTO, SeriesGenreDTO
+from src.schemas.genres import GenreAddDTO, FilmGenreDTO, SeriesGenreDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.series import SeriesDTO
 from tests.utils import read_json
@@ -49,7 +49,7 @@ async def setup_database(check_test_mode):
     series_data = [SeriesDTO.model_validate(s) for s in read_json("series")]
     seasons_data = [SeasonDTO.model_validate(s) for s in read_json("seasons")]
     episodes_data = [EpisodeDTO.model_validate(e) for e in read_json("episodes")]
-    genres_data = [GenreDTO.model_validate(g) for g in read_json("genres")]
+    genres_data = [GenreAddDTO.model_validate(g) for g in read_json("genres")]
     films_genres_data = [FilmGenreDTO.model_validate(fg) for fg in read_json("films_genres")]
     series_genres_data = [SeriesGenreDTO.model_validate(sg) for sg in read_json("series_genres")]
 
