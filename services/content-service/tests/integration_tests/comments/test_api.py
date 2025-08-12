@@ -77,13 +77,13 @@ async def test_add_comment(
         "content_type": content_type,
         "comment": comment_body,
     } | extra
-    response = await ac.post(url=prefix, json=request_body)
-    assert response.status_code == status_code
+    res = await ac.post(url=prefix, json=request_body)
+    assert res.status_code == status_code
 
     if status_code == 201:
-        assert response.json()["status"] == "ok"
+        assert res.json()["status"] == "ok"
 
-        data = response.json()["data"]
+        data = res.json()["data"]
         assert isinstance(data, dict)
 
         exact_id = "film_id" if content_type == ContentType.film else "series_id"
@@ -179,11 +179,11 @@ async def test_get_comments(
     ],
 )
 async def test_get_user_comments(ac, query_params, targen_length, status_code):
-    response = await ac.get(url="%s/user" % prefix, params=query_params)
-    assert response.status_code == status_code
+    res = await ac.get(url="%s/user" % prefix, params=query_params)
+    assert res.status_code == status_code
 
     if status_code == 200:
-        data = response.json()["data"]
+        data = res.json()["data"]
         assert isinstance(data, list)
         assert len(data) == targen_length
 
@@ -203,14 +203,14 @@ async def test_get_user_comments(ac, query_params, targen_length, status_code):
 async def test_update_comment(ac, comment_body, status_code, extra):
     request_body = {"comment": comment_body} | extra
 
-    response = await ac.put(url=f"%s/{comments[0]}" % prefix, json=request_body)
-    assert response.status_code == status_code
+    res = await ac.put(url=f"%s/{comments[0]}" % prefix, json=request_body)
+    assert res.status_code == status_code
 
     if status_code == 200:
-        response = await ac.get(url=f"%s/{comments[0]}" % prefix)
-        assert response.status_code == 200
+        res = await ac.get(url=f"%s/{comments[0]}" % prefix)
+        assert res.status_code == 200
 
-        data = response.json()["data"]
+        data = res.json()["data"]
 
         assert isinstance(data, dict)
         assert data["id"] == comments[0]

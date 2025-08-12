@@ -1,0 +1,58 @@
+[
+  {
+    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "genre_id": 1
+  },
+  {
+    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "genre_id": 2
+  },
+  {
+    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "genre_id": 2
+  },
+  {
+    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "genre_id": 3
+  },
+  {
+    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "genre_id": 4
+  },
+  {
+    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "genre_id": 4
+  },
+  {
+    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "genre_id": 5
+  },
+  {
+    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "genre_id": 6
+  },
+  {
+    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "genre_id": 6
+  },
+  {
+    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "genre_id": 7
+  },
+  {
+    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "genre_id": 8
+  },
+  {
+    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "genre_id": 8
+  },
+  {
+    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "genre_id": 9
+  },
+  {
+    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "genre_id": 10
+  }
+]

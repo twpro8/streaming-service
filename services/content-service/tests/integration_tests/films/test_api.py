@@ -102,6 +102,36 @@ async def test_get_films(ac, params, target_length):
             None,
             201,
         ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://ott.com/valid_url.jpg",
+            list(range(1, 4)),
+            201,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            None,
+            list(range(3, 6)),
+            201,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            "https://sent.com/valid_url.jpg",
+            list(range(5, 11)),
+            201,
+        ),
         # Invalid title
         ("", "Valid Description", "Valid Director", "2006-01-01", 140, None, None, 422),
         ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", 140, None, None, 422),
@@ -154,57 +184,6 @@ async def test_get_films(ac, params, target_length):
             None,
             409,
         ),
-        # Valid data with genres
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            140,
-            "https://one_two_three.com/valid_url.jpg",
-            [1, 2, 3],
-            201,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            140,
-            "https://ott.com/valid_url.jpg",
-            [1, 2, 3],
-            201,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            140,
-            "https://tff.com/valid_url.jpg",
-            [3, 4, 5],
-            201,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            140,
-            "https://fss.com/valid_url.jpg",
-            [5, 6, 7],
-            201,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            140,
-            "https://sent.com/valid_url.jpg",
-            [7, 8, 9, 10],
-            201,
-        ),
         # Genre not found: 404
         (
             "Valid Title",
@@ -223,7 +202,7 @@ async def test_get_films(ac, params, target_length):
             "Valid Director",
             "1969-01-01",
             140,
-            "https://igi.com/valid_url.jpg",
+            None,
             ["abs"],
             422,
         ),
@@ -233,8 +212,8 @@ async def test_get_films(ac, params, target_length):
             "Valid Director",
             "1969-01-01",
             140,
-            "https://igi.com/valid_url.jpg",
-            ["1", "2"],
+            None,
+            [0, 0],
             422,
         ),
         (
@@ -243,7 +222,17 @@ async def test_get_films(ac, params, target_length):
             "Valid Director",
             "1969-01-01",
             140,
-            "https://igi.com/valid_url.jpg",
+            None,
+            [-1],
+            422,
+        ),
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "1969-01-01",
+            140,
+            None,
             [6.2, 7.3],
             422,
         ),
@@ -253,7 +242,7 @@ async def test_get_films(ac, params, target_length):
             "Valid Director",
             "1969-01-01",
             140,
-            "https://igi.com/valid_url.jpg",
+            None,
             [True, False],
             422,
         ),
@@ -263,7 +252,7 @@ async def test_get_films(ac, params, target_length):
             "Valid Director",
             "1969-01-01",
             140,
-            "https://igi.com/valid_url.jpg",
+            None,
             [[],],
             422,
         ),
@@ -273,7 +262,7 @@ async def test_get_films(ac, params, target_length):
             "Valid Director",
             "1969-01-01",
             140,
-            "https://igi.com/valid_url.jpg",
+            None,
             [{},],
             422,
         ),
@@ -304,16 +293,22 @@ async def test_add_film(
     assert res.status_code == status_code
 
     if status_code == 201:
-        added_film = res.json()["data"]
+        film_id = res.json()["data"]["id"]
 
-        assert added_film["title"] == title
-        assert added_film["description"] == description
-        assert added_film["director"] == director
-        assert added_film["release_year"] == release_year
-        assert added_film["duration"] == duration
-        assert added_film["cover_url"] == cover_url
+        res = await ac.get(f"/films/{film_id}")
+        film = res.json()["data"]
 
-        films_ids.append(added_film["id"])
+        assert film["title"] == title
+        assert film["description"] == description
+        assert film["director"] == director
+        assert film["release_year"] == release_year
+        assert film["duration"] == duration
+        assert film["cover_url"] == cover_url
+
+        if genres_ids is not None:
+            assert len(film["genres"]) == len(genres_ids)
+
+        films_ids.append(film_id)
 
 
 @pytest.mark.parametrize(
@@ -329,14 +324,15 @@ async def test_add_film(
         ({"description": "Description Updated"}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
         ({"description": "Description Updated"}, 200, None),
         # Update genres
-        ({"genres_ids": [1,2,3]}, 200, None),
-        ({"genres_ids": [2]}, 200, None),
-        ({"genres_ids": [4, 5, 6]}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
-        ({"genres_ids": ["abc"]}, 422, None),
-        ({"genres_ids": ["1", "2"]}, 422, None),
-        ({"genres_ids": [True, False]}, 422, None),
-        ({"genres_ids": [9,10,11]}, 404, None),
-        ({"genres_ids": [9.1,8.7]}, 422, None),
+        ({"genres_ids": list(range(1, 4))}, 200, None),
+        ({"genres_ids": list(range(2, 5))}, 200, None),
+        ({"genres_ids": []}, 200, None),
+        ({"genres_ids": list(range(4, 7))}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
+        ({"genres_ids": list(range(8, 11))}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
+        ({"genres_ids": []}, 200, "2449c8d3-6875-467e-b192-e89dc7a5a7e9"),
+        ({"genres_ids": [5]}, 200, None),
+        ({"genres_ids": [5, 7, 8]}, 200, None),
+        ({"genres_ids": []}, 200, None),
         # Invalid description
         ({"description": ""}, 422, None),
         ({"description": "D" * 256}, 422, None),
@@ -410,6 +406,12 @@ async def test_add_film(
             409,
             None,
         ),  # conflict
+        # Invalid genres ids
+        ({"genres_ids": ["abc"]}, 422, None),
+        ({"genres_ids": ["1", "2"]}, 422, None),
+        ({"genres_ids": [True, False]}, 422, None),
+        ({"genres_ids": [11, 12]}, 404, None),
+        ({"genres_ids": [9.1, 8.7]}, 422, None),
     ],
 )
 async def test_update_film(
@@ -421,6 +423,16 @@ async def test_update_film(
     film_id = film_id or films_ids[0]
     res = await ac.patch(f"/films/{film_id}", json=update_data)
     assert res.status_code == status_code
+
+    if res.status_code == 200:
+        res = await ac.get(f"/films/{film_id}")
+        data = res.json()["data"]
+
+        for key, value in update_data.items():
+            if key == "genres_ids":
+                assert len(data["genres"]) == len(value)
+                continue
+            assert data[key] == value
 
 
 async def test_delete_film(ac):

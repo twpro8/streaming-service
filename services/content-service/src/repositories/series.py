@@ -27,7 +27,7 @@ class SeriesRepository(BaseRepository):
         self,
         page: int | None,
         per_page: int | None,
-        genres: List[int] | None,
+        genres_ids: List[int] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
         **kwargs,
@@ -45,9 +45,9 @@ class SeriesRepository(BaseRepository):
         }
 
         query = select(self.model)
-        if genres:
+        if genres_ids:
             query = (
-                query.join(SeriesGenreORM).filter(SeriesGenreORM.genre_id.in_(genres)).distinct()
+                query.join(SeriesGenreORM).filter(SeriesGenreORM.genre_id.in_(genres_ids)).distinct()
             )
 
         for key, value in kwargs.items():

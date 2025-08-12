@@ -62,7 +62,7 @@ async def test_valid_rating(ac, user_id, value, content_type):
     app.dependency_overrides[get_current_user_id] = lambda: user_id  # noqa
 
     content_id = content_ids[content_type]
-    response = await ac.post(
+    res = await ac.post(
         "/ratings",
         json={
             "content_id": content_id,
@@ -71,16 +71,16 @@ async def test_valid_rating(ac, user_id, value, content_type):
         },
     )
 
-    assert response.status_code == 200
+    assert res.status_code == 200
 
     users_ratings[content_type][user_id] = value
     expected_avg = calculate_expected_rating(users_ratings[content_type])
 
     endpoint = "/films" if content_type == ContentType.film else "/series"
-    response = await ac.get(f"{endpoint}/{content_id}")
-    assert response.status_code == 200
+    res = await ac.get(f"{endpoint}/{content_id}")
+    assert res.status_code == 200
 
-    data = response.json()["data"]
+    data = res.json()["data"]
     assert data["rating"] == expected_avg
 
 
@@ -102,7 +102,7 @@ async def test_valid_rating(ac, user_id, value, content_type):
 )
 async def test_invalid_rating(ac, value, content_type):
     content_id = content_ids[content_type]
-    response = await ac.post(
+    res = await ac.post(
         "/ratings",
         json={
             "content_id": content_id,
@@ -111,13 +111,13 @@ async def test_invalid_rating(ac, value, content_type):
         },
     )
 
-    assert response.status_code == 422
+    assert res.status_code == 422
 
 
 @pytest.mark.parametrize("content_type", [ContentType.film, ContentType.series])
 async def test_no_content(ac, content_type):
     content_id = str(uuid4())
-    response = await ac.post(
+    res = await ac.post(
         "/ratings",
         json={
             "content_id": content_id,
@@ -125,13 +125,13 @@ async def test_no_content(ac, content_type):
             "value": 1.0,
         },
     )
-    assert response.status_code == 404
+    assert res.status_code == 404
 
 
 @pytest.mark.parametrize("content_type", ["invalid-content-type", -1, 1, True])
 async def test_invalid_content_type(ac, content_type):
     content_id = str(uuid4())
-    response = await ac.post(
+    res = await ac.post(
         "/ratings",
         json={
             "content_id": content_id,
@@ -139,4 +139,4 @@ async def test_invalid_content_type(ac, content_type):
             "value": 1.0,
         },
     )
-    assert response.status_code == 422
+    assert res.status_code == 422

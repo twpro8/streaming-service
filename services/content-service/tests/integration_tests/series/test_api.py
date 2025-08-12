@@ -6,7 +6,7 @@ series_ids = []
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "params, expected_count",
+    "params, target_length",
     [
         ({"page": 1, "per_page": 30}, 5),
         ({"page": 1, "per_page": 2}, 2),
@@ -51,58 +51,84 @@ series_ids = []
         ({"release_year": "1999-01-01"}, 0),
         ({"release_year_ge": "2005-01-01"}, 0),
         ({"release_year_le": "1999-01-01"}, 0),
-        # AND CASES FOR GENRES
+        # Genres
+        ({"genres_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [2, 4, 6, 8, 10], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [1, 3, 5, 7, 9], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [2, 4, 6, 8], "page": 1, "per_page": 30}, 5),
+        ({"genres_ids": [1]}, 1),
+        ({"genres_ids": [2]}, 2),
+        ({"genres_ids": [3]}, 1),
+        ({"genres_ids": [4]}, 2),
+        ({"genres_ids": [5]}, 1),
+        ({"genres_ids": [6]}, 2),
+        ({"genres_ids": [7]}, 1),
+        ({"genres_ids": [8]}, 2),
+        ({"genres_ids": [9]}, 1),
+        ({"genres_ids": [10]}, 1),
+        ({"genres_ids": [1, 2, 3]}, 2),
     ],
 )
-async def test_get_series(ac, params, expected_count):
+async def test_get_series(ac, params, target_length):
     res = await ac.get("/series", params=params)
     data = res.json()["data"]
 
     assert res.status_code == 200
     assert isinstance(data, list)
-    assert len(data) == expected_count
+    assert len(data) == target_length
 
 
 @pytest.mark.parametrize(
-    "title, description, director, release_year, cover_url, status_code",
+    "title, description, director, release_year, cover_url, genres_ids, status_code",
     [
         # Valid data
         (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "2005-01-01",
-            "https://example.com/valid_url.jpg",
-            201,
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                "https://example.com/valid_url.jpg",
+                list(range(1, 4)),
+                201,
         ),
         (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1999-09-09",
-            None,
-            201,
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                list(range(3, 6)),
+                201,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                "https://sent.com/valid_url.jpg",
+                list(range(5, 11)),
+                201,
         ),
         # Invalid title
-        ("", "Valid Description", "Valid Director", "2006-01-01", None, 422),
-        ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", None, 422),
+        ("", "Valid Description", "Valid Director", "2006-01-01", None, None, 422),
+        ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", None, None, 422),
         # Invalid description
-        ("Valid Title", "", "Valid Director", "2020-01-01", None, 422),
-        ("Valid Title", "D" * 256, "Valid Director", "2020-01-01", None, 422),
+        ("Valid Title", "", "Valid Director", "2020-01-01", None, None, 422),
+        ("Valid Title", "D" * 256, "Valid Director", "2020-01-01", None, None, 422),
         # Invalid director
-        ("Valid Title", "Valid Description", "", "2020-01-01", None, 422),
-        ("Valid Title", "Valid Description", "D" * 50, "2020-01-01", None, 422),
+        ("Valid Title", "Valid Description", "", "2020-01-01", None, None, 422),
+        ("Valid Title", "Valid Description", "D" * 50, "2020-01-01", None, None, 422),
         # Invalid release year
-        ("Valid Title", "Valid Description", "Valid Director", "10-01-01", None, 422),
-        ("Valid Title", "Valid Description", "Valid Director", "some-garbage-here", None, 422),
-        ("Valid Title", "Valid Description", "Valid Director", 1, None, 422),
-        ("Valid Title", "Description", "Director", "2100-01-01", None, 422),
-        ("Valid Title", "Description", "Director", "999-01-01", None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "10-01-01", None, None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "some-garbage-here", None, None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", 1, None, None, 422),
+        ("Valid Title", "Description", "Director", "2100-01-01", None, None, 422),
+        ("Valid Title", "Description", "Director", "999-01-01", None, None, 422),
         # Invalid cover url
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", "not-a-url", 422),
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 1, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", "not-a-url", None, 422),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 1, None, 422),
         # All optional fields None (cover_url) - should succeed
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", None, 201),
+        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", None, None, 201),
         # Conflict
         (
             "Valid Title",
@@ -110,7 +136,82 @@ async def test_get_series(ac, params, expected_count):
             "Valid Director",
             "2020-01-01",
             "https://example.com/valid_url.jpg",
+            None,
             409,
+        ),
+        # Genre not found: 404
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                "https://ett.com/valid_url.jpg",
+                [11, 12, 13],
+                404,
+        ),
+        # Invalid genres ids
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                ["abs"],
+                422,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                [0, 0],
+                422,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                [-1],
+                422,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                [6.2, 7.3],
+                422,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                [True, False],
+                422,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                [[], ],
+                422,
+        ),
+        (
+                "Valid Title",
+                "Valid Description",
+                "Valid Director",
+                "1969-01-01",
+                None,
+                [{}, ],
+                422,
         ),
     ],
 )
@@ -121,6 +222,7 @@ async def test_add_series(
     director,
     release_year,
     cover_url,
+    genres_ids,
     status_code,
 ):
     request_json = {
@@ -129,20 +231,27 @@ async def test_add_series(
         "director": director,
         "release_year": release_year,
         "cover_url": cover_url,
+        "genres_ids": genres_ids,
     }
     res = await ac.post("/series", json=request_json)
     assert res.status_code == status_code
 
     if status_code == 201:
-        added_series = res.json()["data"]
+        series_id = res.json()["data"]["id"]
 
-        assert added_series["title"] == title
-        assert added_series["description"] == description
-        assert added_series["director"] == director
-        assert added_series["release_year"] == release_year
-        assert added_series["cover_url"] == cover_url
+        res = await ac.get(f"/series/{series_id}")
+        series = res.json()["data"]
 
-        series_ids.append(added_series["id"])
+        assert series["title"] == title
+        assert series["description"] == description
+        assert series["director"] == director
+        assert series["release_year"] == release_year
+        assert series["cover_url"] == cover_url
+
+        if genres_ids is not None:
+            assert len(series["genres"]) == len(genres_ids)
+
+        series_ids.append(series_id)
 
 
 @pytest.mark.parametrize(
@@ -157,6 +266,16 @@ async def test_add_series(
         # Update description
         ({"description": "Description Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
         ({"description": "Description Updated"}, 200, None),
+        # Update genres
+        ({"genres_ids": list(range(1, 4))}, 200, None),
+        ({"genres_ids": list(range(2, 5))}, 200, None),
+        ({"genres_ids": []}, 200, None),
+        ({"genres_ids": list(range(4, 7))}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"genres_ids": list(range(8, 11))}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"genres_ids": []}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
+        ({"genres_ids": [5]}, 200, None),
+        ({"genres_ids": [5, 7, 8]}, 200, None),
+        ({"genres_ids": []}, 200, None),
         # Invalid description
         ({"description": ""}, 422, None),
         ({"description": "D" * 256}, 422, None),
@@ -212,6 +331,12 @@ async def test_add_series(
             409,
             None,
         ),  # conflict
+        # Invalid genres ids
+        ({"genres_ids": ["abc"]}, 422, None),
+        ({"genres_ids": ["1", "2"]}, 422, None),
+        ({"genres_ids": [True, False]}, 422, None),
+        ({"genres_ids": [11, 12]}, 404, None),
+        ({"genres_ids": [9.1, 8.7]}, 422, None),
     ],
 )
 async def test_update_series(
@@ -223,6 +348,16 @@ async def test_update_series(
     series_id = series_id or series_ids[0]
     res = await ac.patch(f"/series/{series_id}", json=update_data)
     assert res.status_code == status_code
+
+    if res.status_code == 200:
+        res = await ac.get(f"/series/{series_id}")
+        data = res.json()["data"]
+
+        for key, value in update_data.items():
+            if key == "genres_ids":
+                assert len(data["genres"]) == len(value)
+                continue
+            assert data[key] == value
 
 
 async def test_delete_series(ac):
