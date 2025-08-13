@@ -107,3 +107,27 @@ async def get_films_with_rels(ac):
         data = res.json()["data"]
         films.append(data)
     return films
+
+
+@pytest.fixture
+async def created_films(ac):
+    films = []
+    try:
+        for i in range(700, 703):
+            res = await ac.post(
+                "/films",
+                json={
+                    "title": f"Python Movie{i}",
+                    "description": f"Hola Amigo{i}",
+                    "director": f"Mike Purple{i}",
+                    "release_year": "1777-01-01",
+                    "duration": 135,
+                },
+            )
+            assert res.status_code == 201
+            film = res.json()["data"]
+            films.append(film)
+        yield films
+    finally:
+        for film in films:
+            await ac.delete(f"/films/{film['id']}")
