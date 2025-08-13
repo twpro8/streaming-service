@@ -1,0 +1,72 @@
+[
+  {
+    "first_name": "Ethan",
+    "last_name": "Reynolds",
+    "birth_date": "1987-03-14",
+    "zodiac_sign": "Pisces",
+    "bio": "Ethan Reynolds is a stage and film actor known for his versatility in drama and comedy."
+  },
+  {
+    "first_name": "Sofia",
+    "last_name": "Martinez",
+    "birth_date": "1992-07-09",
+    "zodiac_sign": "Cancer",
+    "bio": "Sofia Martinez is an award-winning actress from Spain, famous for her historical drama roles."
+  },
+  {
+    "first_name": "Liam",
+    "last_name": "O'Connor",
+    "birth_date": "1985-11-21",
+    "zodiac_sign": "Scorpio",
+    "bio": "Liam O'Connor is known for his intense performances in psychological thrillers."
+  },
+  {
+    "first_name": "Ava",
+    "last_name": "Bennett",
+    "birth_date": "1990-05-26",
+    "zodiac_sign": "Gemini",
+    "bio": "Ava Bennett is a British actress recognized for her roles in period dramas."
+  },
+  {
+    "first_name": "Noah",
+    "last_name": "Keller",
+    "birth_date": "1983-01-12",
+    "zodiac_sign": "Capricorn",
+    "bio": "Noah Keller is an American actor with a strong background in independent cinema."
+  },
+  {
+    "first_name": "Isabella",
+    "last_name": "Rossi",
+    "birth_date": "1995-09-03",
+    "zodiac_sign": "Virgo",
+    "bio": "Isabella Rossi is an Italian actress who has appeared in several international productions."
+  },
+  {
+    "first_name": "Mason",
+    "last_name": "Harper",
+    "birth_date": "1988-06-15",
+    "zodiac_sign": "Gemini",
+    "bio": "Mason Harper is a versatile actor who has worked in theater, television, and film."
+  },
+  {
+    "first_name": "Olivia",
+    "last_name": "Nguyen",
+    "birth_date": "1991-12-28",
+    "zodiac_sign": "Capricorn",
+    "bio": "Olivia Nguyen is known for her roles in romantic comedies and indie films."
+  },
+  {
+    "first_name": "Henry",
+    "last_name": "Petrov",
+    "birth_date": "1986-08-17",
+    "zodiac_sign": "Leo",
+    "bio": "Henry Petrov is a Russian-born actor famous for his roles in action movies."
+  },
+  {
+    "first_name": "Chloe",
+    "last_name": "Anderson",
+    "birth_date": "1993-04-04",
+    "zodiac_sign": "Aries",
+    "bio": "Chloe Anderson is an actress from Canada known for her performances in mystery dramas."
+  }
+]

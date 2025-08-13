@@ -1,16 +1,17 @@
 from uuid import UUID
-from datetime import datetime, date
+from datetime import datetime
 
 from src.enums import ZodiacSign
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.pydantic_types import BirthDate, Str48, Str128
 
 
 class ActorAddDTO(BaseSchema):
-    first_name: str
-    last_name: str
-    birth_date: date
+    first_name: Str48
+    last_name: Str48
+    birth_date: BirthDate
     zodiac_sign: ZodiacSign | None = None
-    bio: str | None = None
+    bio: Str128 | None = None
 
 
 class ActorDTO(ActorAddDTO):
@@ -20,11 +21,11 @@ class ActorDTO(ActorAddDTO):
 
 
 class ActorPatchDTO(BaseSchema, AtLeastOneFieldRequired):
-    first_name: str | None = None
-    last_name: str | None = None
-    birth_date: date | None = None
+    first_name: Str48 | None = None
+    last_name: Str48 | None = None
+    birth_date: BirthDate | None = None
     zodiac_sign: ZodiacSign | None = None
-    bio: str | None = None
+    bio: Str128 | None = None
 
 
 class FilmActorDTO(BaseSchema):

@@ -1,5 +1,6 @@
 import pytest
-from math import ceil
+
+from tests.utils import calculate_expected_length
 
 
 @pytest.mark.parametrize(
@@ -12,26 +13,15 @@ from math import ceil
         {"page": 1, "per_page": 30},
     ],
 )
-async def test_get_genres(ac, params):
-    all_res = await ac.get("/genres", params={"page": 1, "per_page": 30})
-    assert all_res.status_code == 200
-
-    all_data = all_res.json()["data"]
-    total_count = len(all_data)
-
+async def test_get_genres(ac, params, get_all_genres):
     res = await ac.get("/genres", params=params)
     assert res.status_code == 200
 
     data = res.json()["data"]
 
-    page = params["page"]
-    per_page = params["per_page"]
-    total_pages = ceil(total_count / per_page)
-
-    if page <= total_pages:
-        expected_length = min(per_page, total_count - (page - 1) * per_page)
-    else:
-        expected_length = 0
+    expected_length = calculate_expected_length(
+        params["page"], params["per_page"], len(get_all_genres)
+    )
 
     assert len(data) == expected_length
 

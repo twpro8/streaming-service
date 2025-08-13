@@ -10,6 +10,7 @@ from src.db import null_pool_engine, null_pool_session_maker, DBManager
 from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
+from src.schemas.actors import ActorAddDTO
 from src.schemas.episodes import EpisodeDTO
 from src.schemas.films import FilmDTO
 from src.schemas.genres import GenreAddDTO, FilmGenreDTO, SeriesGenreDTO
@@ -52,6 +53,7 @@ async def setup_database(check_test_mode):
     genres_data = [GenreAddDTO.model_validate(g) for g in read_json("genres")]
     films_genres_data = [FilmGenreDTO.model_validate(fg) for fg in read_json("films_genres")]
     series_genres_data = [SeriesGenreDTO.model_validate(sg) for sg in read_json("series_genres")]
+    actors_data = [ActorAddDTO.model_validate(ad) for ad in read_json("actors")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.films.add_bulk(films_data)
@@ -61,6 +63,7 @@ async def setup_database(check_test_mode):
         await db_.genres.add_bulk(genres_data)
         await db_.films_genres.add_bulk(films_genres_data)
         await db_.series_genres.add_bulk(series_genres_data)
+        await db_.actors.add_bulk(actors_data)
         await db_.commit()
 
 
@@ -131,3 +134,24 @@ async def created_films(ac):
     finally:
         for film in films:
             await ac.delete(f"/films/{film['id']}")
+
+
+@pytest.fixture(scope="session")
+async def get_all_films():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        films = await db_.films.get_filtered()
+        return [film.model_dump() for film in films]
+
+
+@pytest.fixture(scope="session")
+async def get_all_genres():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        genres = await db_.genres.get_filtered()
+        return [genre.model_dump() for genre in genres]
+
+
+@pytest.fixture(scope="session")
+async def get_all_actors():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        actors = await db_.actors.get_filtered()
+        return [actor.model_dump() for actor in actors]

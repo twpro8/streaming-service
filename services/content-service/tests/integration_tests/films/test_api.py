@@ -3,7 +3,7 @@ from math import ceil
 
 import pytest
 
-from tests.utils import get_and_validate, count_films
+from tests.utils import get_and_validate, count_films, calculate_expected_length
 
 
 @pytest.mark.order(1)
@@ -16,25 +16,11 @@ from tests.utils import get_and_validate, count_films
         (4, 2),
     ],
 )
-async def test_films_pagination(ac, page, per_page, max_pagination):
-    res = await ac.get("/films", params=max_pagination)
-    assert res.status_code == 200
-
-    all_data = res.json()["data"]
-    total_count = len(all_data)
-
+async def test_films_pagination(ac, page, per_page, get_all_films):
     res = await ac.get("/films", params={"page": page, "per_page": per_page})
     assert res.status_code == 200
-
     data = res.json()["data"]
-
-    total_pages = ceil(total_count / per_page)
-
-    if page <= total_pages:
-        expected_length = min(per_page, total_count - (page - 1) * per_page)
-    else:
-        expected_length = 0
-
+    expected_length = calculate_expected_length(page, per_page, len(get_all_films))
     assert len(data) == expected_length
 
 
@@ -69,7 +55,9 @@ async def test_filter_by_title_valid(ac, title, get_films, max_pagination):
     ],
 )
 async def test_filter_by_director(ac, director, get_films, max_pagination):
-    data = await get_and_validate(ac=ac, url="/films", params={"director": director, **max_pagination})
+    data = await get_and_validate(
+        ac=ac, url="/films", params={"director": director, **max_pagination}
+    )
     assert len(data) == count_films(films=get_films, field="director", value=director)
 
 
@@ -87,7 +75,9 @@ async def test_filter_by_director(ac, director, get_films, max_pagination):
     ],
 )
 async def test_filter_by_description(ac, description, get_films, max_pagination):
-    data = await get_and_validate(ac=ac, url="/films", params={"description": description, **max_pagination})
+    data = await get_and_validate(
+        ac=ac, url="/films", params={"description": description, **max_pagination}
+    )
     assert len(data) == count_films(films=get_films, field="description", value=description)
 
 
@@ -102,7 +92,9 @@ async def test_filter_by_description(ac, description, get_films, max_pagination)
     ],
 )
 async def test_filter_by_exact_release_year(ac, release_year, get_films, max_pagination):
-    data = await get_and_validate(ac=ac, url="/films", params={"release_year": release_year, **max_pagination})
+    data = await get_and_validate(
+        ac=ac, url="/films", params={"release_year": release_year, **max_pagination}
+    )
     assert len(data) == count_films(films=get_films, field="release_year", value=release_year)
 
 
@@ -130,7 +122,7 @@ async def test_filter_by_release_year_ge(ac, release_year_ge, get_films, max_pag
         params={
             "release_year_ge": release_year_ge,
             **max_pagination,
-        }
+        },
     )
     assert len(data) == expected_count
 
@@ -159,7 +151,7 @@ async def test_filter_by_release_year_le(ac, release_year_le, get_films, max_pag
         params={
             "release_year_le": release_year_le,
             **max_pagination,
-        }
+        },
     )
     assert len(data) == expected_count
 
@@ -190,7 +182,7 @@ async def test_filter_by_release_year_range(
             "release_year_ge": release_year_ge,
             "release_year_le": release_year_le,
             **max_pagination,
-        }
+        },
     )
     assert len(data) == expected_count
 
@@ -216,7 +208,9 @@ async def test_filter_by_exact_rating(ac, rating, get_films, max_pagination):
 @pytest.mark.parametrize("rating_ge", ["0.0", "2.0", "5.0", "9.0"])
 async def test_filter_by_rating_ge(ac, rating_ge, get_films, max_pagination):
     expected_count = sum(1 for film in get_films if float(rating_ge) <= float(film["rating"]))
-    data = await get_and_validate(ac=ac, url="/films", params={"rating_ge": rating_ge, **max_pagination})
+    data = await get_and_validate(
+        ac=ac, url="/films", params={"rating_ge": rating_ge, **max_pagination}
+    )
     assert len(data) == expected_count
 
 
@@ -224,7 +218,9 @@ async def test_filter_by_rating_ge(ac, rating_ge, get_films, max_pagination):
 @pytest.mark.parametrize("rating_le", ["4.0", "5.0", "9.0"])
 async def test_filter_by_rating_le(ac, rating_le, get_films, max_pagination):
     expected_count = sum(1 for film in get_films if float(rating_le) >= float(film["rating"]))
-    data = await get_and_validate(ac=ac, url="/films", params={"rating_le": rating_le, **max_pagination})
+    data = await get_and_validate(
+        ac=ac, url="/films", params={"rating_le": rating_le, **max_pagination}
+    )
     assert len(data) == expected_count
 
 
@@ -255,7 +251,9 @@ async def test_get_filter_by_genres(ac, genres_ids, get_films_with_rels, max_pag
         for film in get_films_with_rels
         if any(genre["id"] in genres_ids for genre in film["genres"])
     )
-    data = await get_and_validate(ac=ac, url="/films", params={"genres_ids": genres_ids, **max_pagination})
+    data = await get_and_validate(
+        ac=ac, url="/films", params={"genres_ids": genres_ids, **max_pagination}
+    )
     assert len(data) == expected_count
 
 
@@ -453,9 +451,8 @@ async def test_update_field_valid(ac, get_films, field, value):
     res = await ac.patch(f"/films/{film_id}", json={field: value})
     assert res.status_code == 200
 
-    res = await ac.get(f"/films/{film_id}")
-    assert res.status_code == 200
-    data = res.json()["data"]
+    data = await get_and_validate(ac, f"/films/{film_id}", expect_list=False)
+
     if field == "genres_ids":
         assert len(data["genres"]) == len(value)
         assert all(genre["id"] in value for genre in data["genres"])

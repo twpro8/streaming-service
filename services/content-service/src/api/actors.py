@@ -16,7 +16,7 @@ from src.services.actors import ActorService
 router = APIRouter(prefix="/actors", tags=["Actors"])
 
 
-@router.get("", status_code=201)
+@router.get("")
 async def get_actors(db: DBDep, pagination: PaginationDep):
     actors = await ActorService(db).get_actors(
         page=pagination.page,
@@ -34,7 +34,7 @@ async def get_actor(db: DBDep, actor_id: UUID):
     return {"status": "ok", "data": actor}
 
 
-@router.post("", dependencies=[AdminDep])
+@router.post("", dependencies=[AdminDep], status_code=201)
 async def add_actor(db: DBDep, actor_data: ActorAddDTO):
     try:
         actor = await ActorService(db).add_actor(actor_data=actor_data)
