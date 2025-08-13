@@ -1,3 +1,6 @@
+from datetime import datetime
+from math import ceil
+
 import pytest
 
 
@@ -6,78 +9,303 @@ films_ids = []
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "params, target_length",
+    "page, per_page",
     [
-        ({"page": 1, "per_page": 30}, 5),
-        ({"page": 1, "per_page": 2}, 2),
-        ({"page": 2, "per_page": 2}, 2),
-        ({"page": 3, "per_page": 2}, 1),
-        # Exact title match
-        ({"title": "Hidden"}, 1),
-        ({"title": "Chamber"}, 1),
-        # Director filter
-        ({"director": "Greta Thorn"}, 1),
-        ({"director": "Thorn Greta"}, 0),
-        ({"director": "Guy"}, 1),
-        # Description filter
-        ({"description": "the"}, 2),
-        ({"description": "about isolation"}, 1),
-        ({"description": "post-apocalyptic wasteland"}, 1),
-        # Exact release_year
-        ({"release_year": "2000-01-01"}, 1),
-        ({"release_year": "2003-01-01"}, 1),
-        ({"release_year": "2004-01-01"}, 1),
-        # release_year_ge
-        ({"release_year_ge": "1899-01-01"}, 5),
-        # release_year_le
-        ({"release_year_le": "2005-01-01"}, 5),
-        # release_year range
-        (
-            {
-                "release_year_ge": "2002-01-01",
-                "release_year_le": "2004-01-01",
-            },
-            3,
-        ),
-        # Rating
-        ({"rating": "0.0"}, 5),
-        ({"rating_ge": "1.0"}, 0),
-        ({"rating_le": "5"}, 5),
-        # No match
-        ({"title": "NotExists"}, 0),
-        ({"title": "The Hidden Sparrow"}, 0),
-        ({"description": "About life exp"}, 0),
-        ({"director": "Some guy"}, 0),
-        ({"release_year": "1999-01-01"}, 0),
-        ({"release_year_ge": "2005-01-01"}, 0),
-        ({"release_year_le": "1999-01-01"}, 0),
-        # Genres
-        ({"genres_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [2, 4, 6, 8, 10], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [1, 3, 5, 7, 9], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [2, 4, 6, 8], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [1]}, 1),
-        ({"genres_ids": [2]}, 2),
-        ({"genres_ids": [3]}, 1),
-        ({"genres_ids": [4]}, 2),
-        ({"genres_ids": [5]}, 1),
-        ({"genres_ids": [6]}, 2),
-        ({"genres_ids": [7]}, 1),
-        ({"genres_ids": [8]}, 2),
-        ({"genres_ids": [9]}, 1),
-        ({"genres_ids": [10]}, 1),
-        ({"genres_ids": [1, 2, 3]}, 2),
+        (1, 2),
+        (2, 2),
+        (3, 2),
+        (4, 2),
     ],
 )
-async def test_get_films(ac, params, target_length):
-    res = await ac.get("/films", params=params)
+async def test_films_pagination(ac, page, per_page, max_pagination):
+    res = await ac.get("/films", params=max_pagination)
+    assert res.status_code == 200
+
+    all_data = res.json()["data"]
+    total_count = len(all_data)
+
+    res = await ac.get("/films", params={"page": page, "per_page": per_page})
+    assert res.status_code == 200
+
+    data = res.json()["data"]
+
+    total_pages = ceil(total_count / per_page)
+
+    if page <= total_pages:
+        expected_length = min(per_page, total_count - (page - 1) * per_page)
+    else:
+        expected_length = 0
+
+    assert len(data) == expected_length
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "title",
+    [
+        " hidden",
+        "chamber ",
+        " THE ",
+        "no match",
+        "meet dave",
+    ],
+)
+async def test_filter_by_title_valid(ac, title, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if title.lower().strip() in film["title"].lower())
+
+    res = await ac.get("/films", params={"title": title, **max_pagination})
     data = res.json()["data"]
 
     assert res.status_code == 200
     assert isinstance(data, list)
-    assert len(data) == target_length
+    assert len(data) == expected_count
 
 
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "director",
+    [
+        " GRETA Thorn ",
+        "   Guy   ",
+        "   Quantum",
+        "Lens   ",
+        "   Max",
+        "no match",
+        "who is he?",
+        "Some guy",
+    ],
+)
+async def test_filter_by_director(ac, director, get_films, max_pagination):
+    expected_count = sum(
+        1 for film in get_films if director.lower().strip() in film["director"].lower()
+    )
+
+    res = await ac.get("/films", params={"director": director, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "description",
+    [
+        "    the ",
+        "about isolation",
+        "post-apocalyptic wasteland",
+        "and",
+        "no match",
+        "unknown desc",
+        "funky drive",
+    ],
+)
+async def test_filter_by_description(ac, description, get_films, max_pagination):
+    expected_count = sum(
+        1 for film in get_films if description.lower().strip() in film["description"].lower()
+    )
+
+    res = await ac.get("/films", params={"description": description, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "release_year",
+    [
+        "2000-01-01",
+        "2003-01-01",
+        "2004-01-01",
+        "1999-01-01",
+    ],
+)
+async def test_filter_by_exact_release_year(ac, release_year, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if release_year in film["release_year"])
+
+    res = await ac.get("/films", params={"release_year": release_year, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "release_year_ge",
+    [
+        "1899-01-01",
+        "2003-01-01",
+        "2010-01-01",
+        "2100-01-01",
+    ],
+)
+async def test_filter_by_release_year_ge(ac, release_year_ge, get_films, max_pagination):
+    expected_count = sum(
+        1
+        for film in get_films
+        if datetime.strptime(film["release_year"], "%Y-%m-%d")
+        >= datetime.strptime(release_year_ge, "%Y-%m-%d")
+    )
+
+    res = await ac.get("/films", params={"release_year_ge": release_year_ge, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "release_year_le",
+    [
+        "1999-01-01",
+        "2003-01-01",
+        "2005-01-01",
+        "2010-01-01",
+    ],
+)
+async def test_filter_by_release_year_le(ac, release_year_le, get_films, max_pagination):
+    expected_count = sum(
+        1
+        for film in get_films
+        if datetime.strptime(film["release_year"], "%Y-%m-%d")
+        <= datetime.strptime(release_year_le, "%Y-%m-%d")
+    )
+
+    res = await ac.get("/films", params={"release_year_le": release_year_le, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "release_year_ge, release_year_le",
+    [
+        ("2002-01-01", "2004-01-01"),
+        ("1956-01-01", "2025-01-01"),
+        ("1899-01-01", "1952-01-01"),
+    ],
+)
+async def test_filter_by_release_year_range(
+    ac, release_year_ge, release_year_le, get_films, max_pagination
+):
+    expected_count = sum(
+        1
+        for film in get_films
+        if datetime.strptime(release_year_ge, "%Y-%m-%d")
+        <= datetime.strptime(film["release_year"], "%Y-%m-%d")
+        <= datetime.strptime(release_year_le, "%Y-%m-%d")
+    )
+    res = await ac.get(
+        "/films",
+        params={
+            "release_year_ge": release_year_ge,
+            "release_year_le": release_year_le,
+            **max_pagination,
+        },
+    )
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "rating",
+    [
+        "0.0",
+        "1.0",
+        "5.0",
+        "7.0",
+        "8.0",
+    ],
+)
+async def test_filter_by_exact_rating(ac, rating, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if rating in film["rating"])
+
+    res = await ac.get("/films", params={"rating": rating, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize("rating_ge", ["0.0", "2.0", "5.0", "9.0"])
+async def test_filter_by_rating_ge(ac, rating_ge, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if float(rating_ge) <= float(film["rating"]))
+
+    res = await ac.get("/films", params={"rating_ge": rating_ge, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize("rating_le", ["4.0", "5.0", "9.0"])
+async def test_filter_by_rating_le(ac, rating_le, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if float(rating_le) >= float(film["rating"]))
+
+    res = await ac.get("/films", params={"rating_le": rating_le, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "genres_ids",
+    [
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        [2, 4, 6, 8, 10],
+        [1, 3, 5, 7, 9],
+        [2, 4, 6, 8],
+        [1],
+        [2],
+        [3],
+        [4],
+        [5],
+        [6],
+        [7],
+        [8],
+        [9],
+        [10],
+        [1, 2, 3],
+    ],
+)
+async def test_get_filter_by_genres(ac, genres_ids, get_films_with_rels, max_pagination):
+    expected_count = sum(
+        1
+        for film in get_films_with_rels
+        if any(genre["id"] in genres_ids for genre in film["genres"])
+    )
+
+    res = await ac.get("/films", params={"genres_ids": genres_ids, **max_pagination})
+    data = res.json()["data"]
+
+    assert res.status_code == 200
+    assert isinstance(data, list)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
 @pytest.mark.parametrize(
     "title, description, director, release_year, duration, cover_url, genres_ids, status_code",
     [
@@ -315,6 +543,7 @@ async def test_add_film(
         films_ids.append(film_id)
 
 
+@pytest.mark.order(1)
 @pytest.mark.parametrize(
     "update_data, status_code, film_id",
     [
@@ -435,10 +664,11 @@ async def test_update_film(
         for key, value in update_data.items():
             if key == "genres_ids":
                 assert len(data["genres"]) == len(value)
-                continue
-            assert data[key] == value
+            else:
+                assert data[key] == value
 
 
+@pytest.mark.order(1)
 async def test_delete_film(ac):
     for film_id in films_ids:
         assert (await ac.get(f"/films/{film_id}")).status_code == 200

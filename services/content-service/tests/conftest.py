@@ -74,3 +74,36 @@ async def ac() -> AsyncGenerator[AsyncClient, Any]:
 async def get_series_ids():
     data = read_json("series")
     return [series_id["id"] for series_id in data]
+
+
+@pytest.fixture
+async def created_genres(ac):
+    ids = []
+    for name in ["TestGenre1", "TestGenre2", "TestGenre3"]:
+        res = await ac.post("/genres", json={"name": name})
+        assert res.status_code == 201
+        ids.append(res.json()["data"]["id"])
+    yield ids
+    for genre_id in ids:
+        await ac.delete(f"/genres/{genre_id}")
+
+
+@pytest.fixture(scope="session")
+async def max_pagination():
+    return {"page": 1, "per_page": 30}
+
+
+@pytest.fixture(scope="session")
+async def get_films():
+    return read_json("films")
+
+
+@pytest.fixture(scope="session")
+async def get_films_with_rels(ac):
+    films = []
+    for film in read_json("films"):
+        res = await ac.get(f"/films/{film['id']}")
+        assert res.status_code == 200
+        data = res.json()["data"]
+        films.append(data)
+    return films

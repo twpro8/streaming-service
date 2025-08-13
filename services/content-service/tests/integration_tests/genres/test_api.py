@@ -2,18 +2,6 @@ import pytest
 from math import ceil
 
 
-@pytest.fixture
-async def created_genres(ac):
-    ids = []
-    for name in ["TestGenre1", "TestGenre2", "TestGenre3"]:
-        res = await ac.post("/genres", json={"name": name})
-        assert res.status_code == 201
-        ids.append(res.json()["data"]["id"])
-    yield ids
-    for genre_id in ids:
-        await ac.delete(f"/genres/{genre_id}")
-
-
 @pytest.mark.parametrize(
     "params",
     [
@@ -27,8 +15,9 @@ async def created_genres(ac):
 async def test_get_genres(ac, params):
     all_res = await ac.get("/genres", params={"page": 1, "per_page": 30})
     assert all_res.status_code == 200
-    all_genres = all_res.json()["data"]
-    total_count = len(all_genres)
+
+    all_data = all_res.json()["data"]
+    total_count = len(all_data)
 
     res = await ac.get("/genres", params=params)
     assert res.status_code == 200
