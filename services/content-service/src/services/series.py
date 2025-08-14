@@ -1,4 +1,3 @@
-from datetime import date
 from decimal import Decimal
 from typing import List
 from uuid import UUID
@@ -29,9 +28,9 @@ class SeriesService(BaseService):
         title: str | None,
         description: str | None,
         director: str | None,
-        release_year: date | None,
-        release_year_ge: date | None,
-        release_year_le: date | None,
+        year: int | None,
+        year_gt: int | None,
+        year_lt: int | None,
         rating: Decimal | None,
         rating_ge: Decimal | None,
         rating_le: Decimal | None,
@@ -45,9 +44,9 @@ class SeriesService(BaseService):
             title=title,
             description=description,
             director=director,
-            release_year=release_year,
-            release_year_ge=release_year_ge,
-            release_year_le=release_year_le,
+            year=year,
+            year_gt=year_gt,
+            year_lt=year_lt,
             rating=rating,
             rating_ge=rating_ge,
             rating_le=rating_le,

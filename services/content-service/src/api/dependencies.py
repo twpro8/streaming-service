@@ -1,4 +1,3 @@
-from datetime import date
 from decimal import Decimal
 from typing import Annotated
 from uuid import UUID
@@ -143,9 +142,9 @@ class CommonContentParams(PaginationParams):
     title: Annotated[str | None, Query(None)]
     description: Annotated[str | None, Query(None)]
     director: Annotated[str | None, Query(None)]
-    release_year: Annotated[date | None, Query(None)]
-    release_year_ge: Annotated[date | None, Query(None)]
-    release_year_le: Annotated[date | None, Query(None)]
+    year: Annotated[int | None, Query(None)]
+    year_gt: Annotated[int | None, Query(None)]
+    year_lt: Annotated[int | None, Query(None)]
     rating: Annotated[Decimal | None, Query(None, ge=0, le=10)]
     rating_ge: Annotated[Decimal | None, Query(None, ge=0, le=10)]
     rating_le: Annotated[Decimal | None, Query(None, ge=0, le=10)]

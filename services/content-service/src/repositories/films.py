@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from typing import List
 from uuid import UUID
 
@@ -39,9 +40,10 @@ class FilmRepository(BaseRepository):
             "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
             "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
             "director": lambda v: func.lower(self.model.director).contains(v.strip().lower()),
-            "release_year": lambda v: self.model.release_year == v,
-            "release_year_ge": lambda v: self.model.release_year >= v,
-            "release_year_le": lambda v: self.model.release_year <= v,
+            "year": lambda v: (self.model.release_year >= date(v, 1, 1))
+            & (self.model.release_year <= date(v, 12, 31)),
+            "year_gt": lambda v: self.model.release_year > date(v, 1, 1),
+            "year_lt": lambda v: self.model.release_year < date(v, 1, 1),
             "rating": lambda v: self.model.rating == v,
             "rating_ge": lambda v: self.model.rating >= v,
             "rating_le": lambda v: self.model.rating <= v,

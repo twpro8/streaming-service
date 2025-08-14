@@ -1,4 +1,3 @@
-from datetime import datetime
 from uuid import uuid4
 
 import pytest
@@ -83,44 +82,30 @@ async def test_filter_by_description(ac, description, get_films, max_pagination)
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "release_year",
+    "year",
     [
-        "2000-01-01",
-        "2003-01-01",
-        "2004-01-01",
-        "1999-01-01",
+        2000,
+        2003,
+        2004,
+        1999,
     ],
 )
-async def test_filter_by_exact_release_year(ac, release_year, get_films, max_pagination):
-    data = await get_and_validate(
-        ac=ac, url="/films", params={"release_year": release_year, **max_pagination}
-    )
-    assert len(data) == count_films(films=get_films, field="release_year", value=release_year)
+async def test_filter_by_exact_release_year(ac, year, get_films, max_pagination):
+    data = await get_and_validate(ac=ac, url="/films", params={"year": year, **max_pagination})
+    expected_count = sum(1 for film in get_films if year == int(film["release_year"][:4]))
+    assert len(data) == expected_count
 
 
 @pytest.mark.order(1)
-@pytest.mark.parametrize(
-    "release_year_ge",
-    [
-        "1899-01-01",
-        "2003-01-01",
-        "2010-01-01",
-        "2100-01-01",
-    ],
-)
-async def test_filter_by_release_year_ge(ac, release_year_ge, get_films, max_pagination):
-    expected_count = sum(
-        1
-        for film in get_films
-        if datetime.strptime(film["release_year"], "%Y-%m-%d")
-        >= datetime.strptime(release_year_ge, "%Y-%m-%d")
-    )
+@pytest.mark.parametrize("year_gt", [1899, 2003, 2010, 2100])
+async def test_filter_by_release_year_gt(ac, year_gt, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if int(film["release_year"][:4]) > year_gt)
 
     data = await get_and_validate(
         ac=ac,
         url="/films",
         params={
-            "release_year_ge": release_year_ge,
+            "year_gt": year_gt,
             **max_pagination,
         },
     )
@@ -129,27 +114,17 @@ async def test_filter_by_release_year_ge(ac, release_year_ge, get_films, max_pag
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "release_year_le",
-    [
-        "1999-01-01",
-        "2003-01-01",
-        "2005-01-01",
-        "2010-01-01",
-    ],
+    "year_lt",
+    [1999, 2003, 2005, 2010],
 )
-async def test_filter_by_release_year_le(ac, release_year_le, get_films, max_pagination):
-    expected_count = sum(
-        1
-        for film in get_films
-        if datetime.strptime(film["release_year"], "%Y-%m-%d")
-        <= datetime.strptime(release_year_le, "%Y-%m-%d")
-    )
+async def test_filter_by_release_year_lt(ac, year_lt, get_films, max_pagination):
+    expected_count = sum(1 for film in get_films if int(film["release_year"][:4]) < year_lt)
 
     data = await get_and_validate(
         ac=ac,
         url="/films",
         params={
-            "release_year_le": release_year_le,
+            "year_lt": year_lt,
             **max_pagination,
         },
     )
@@ -158,29 +133,29 @@ async def test_filter_by_release_year_le(ac, release_year_le, get_films, max_pag
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "release_year_ge, release_year_le",
+    "year_gt, year_lt",
     [
-        ("2002-01-01", "2004-01-01"),
-        ("1956-01-01", "2025-01-01"),
-        ("1899-01-01", "1952-01-01"),
+        (2002, 2004),
+        (1956, 2025),
+        (1899, 1952),
     ],
 )
 async def test_filter_by_release_year_range(
-    ac, release_year_ge, release_year_le, get_films, max_pagination
+    ac,
+    year_gt,
+    year_lt,
+    get_films,
+    max_pagination,
 ):
     expected_count = sum(
-        1
-        for film in get_films
-        if datetime.strptime(release_year_ge, "%Y-%m-%d")
-        <= datetime.strptime(film["release_year"], "%Y-%m-%d")
-        <= datetime.strptime(release_year_le, "%Y-%m-%d")
+        1 for film in get_films if year_gt < int(film["release_year"][:4]) < year_lt
     )
     data = await get_and_validate(
         ac=ac,
         url="/films",
         params={
-            "release_year_ge": release_year_ge,
-            "release_year_le": release_year_le,
+            "year_gt": year_gt,
+            "year_lt": year_lt,
             **max_pagination,
         },
     )

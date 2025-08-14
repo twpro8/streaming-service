@@ -24,18 +24,18 @@ series_ids = []
         ({"description": "diagnosed with cancer"}, 1),
         ({"description": "story of the chernobyl"}, 1),
         # Exact release_year
-        ({"release_year": "2000-01-01"}, 1),
-        ({"release_year": "2003-01-01"}, 1),
-        ({"release_year": "2004-01-01"}, 1),
-        # release_year_ge
-        ({"release_year_ge": "1899-01-01"}, 5),
-        # release_year_le
-        ({"release_year_le": "2005-01-01"}, 5),
+        ({"year": 2000}, 1),
+        ({"year": 2003}, 1),
+        ({"year": 2004}, 1),
+        # release_year_gt
+        ({"year_gt": 1899}, 5),
+        # release_year_lt
+        ({"year_lt": 2006}, 5),
         # release_year range
         (
             {
-                "release_year_ge": "2002-01-01",
-                "release_year_le": "2004-01-01",
+                "year_gt": 2001,
+                "year_lt": 2005,
             },
             3,
         ),
@@ -48,9 +48,9 @@ series_ids = []
         ({"title": "The Hidden Sparrow"}, 0),
         ({"description": "About life exp"}, 0),
         ({"director": "Some guy"}, 0),
-        ({"release_year": "1999-01-01"}, 0),
-        ({"release_year_ge": "2005-01-01"}, 0),
-        ({"release_year_le": "1999-01-01"}, 0),
+        ({"year": 1999}, 0),
+        ({"year_gt": 2005}, 0),
+        ({"year_lt": 1999}, 0),
         # Genres
         ({"genres_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "page": 1, "per_page": 30}, 5),
         ({"genres_ids": [2, 4, 6, 8, 10], "page": 1, "per_page": 30}, 5),

@@ -29,7 +29,7 @@ async def get_and_validate(
 
 
 def count_films(films, field, value):
-    return sum(1 for film in films if value.lower().strip() in film[field].lower())
+    return sum(1 for film in films if value.strip().lower() in film[field].lower())
 
 
 def calculate_expected_length(page, per_page, total_count):
