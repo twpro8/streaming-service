@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 
 from src.schemas.films import FilmPatchRequestDTO, FilmAddRequestDTO
-from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
+from src.api.dependencies import DBDep, AdminDep, ContentParamsDep, SortDep
 from src.services.films import FilmService
 from src.exceptions import (
     FilmNotFoundException,
@@ -27,6 +27,7 @@ router = APIRouter(prefix="/films", tags=["Films"])
 async def get_films(
     db: DBDep,
     common_params: ContentParamsDep,
+    sort: SortDep,
     genres_ids: Annotated[List[int] | None, Query()] = None,
     actors_ids: Annotated[List[UUID] | None, Query()] = None,
 ):
@@ -34,6 +35,8 @@ async def get_films(
         **common_params.model_dump(),
         genres_ids=genres_ids,
         actors_ids=actors_ids,
+        sort_by=sort.field,
+        sort_order=sort.order,
     )
     return {"status": "ok", "data": films}
 

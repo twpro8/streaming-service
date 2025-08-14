@@ -38,7 +38,7 @@ async def test_get_nonexistent_actor(ac):
     "first_name, last_name, birth_date, zodiac_sign, bio",
     [
         ("John", "Smith", "1977-01-17", None, None),
-        ("Lana", "Light", "1988-01-25", ZodiacSign.PISCES, "Well-known actress"),
+        ("Lana", "Light", "1988-01-25", ZodiacSign.pisces, "Well-known actress"),
     ],
 )
 async def test_add_actor_valid(ac, first_name, last_name, birth_date, zodiac_sign, bio):
@@ -81,7 +81,7 @@ async def test_add_actor_invalid(ac, field, invalid_value):
         "first_name": "Test1",
         "last_name": "Test1",
         "birth_date": "1955-01-01",
-        "zodiac_sign": ZodiacSign.PISCES,
+        "zodiac_sign": ZodiacSign.pisces,
         "bio": "Likes kittens...",
         field: invalid_value,
     }
@@ -99,8 +99,8 @@ async def test_add_actor_invalid(ac, field, invalid_value):
         ("last_name", "Updated Two"),
         ("birth_date", "1959-01-01"),
         ("birth_date", "1957-01-01"),
-        ("zodiac_sign", ZodiacSign.AQUARIUS),
-        ("zodiac_sign", ZodiacSign.CAPRICORN),
+        ("zodiac_sign", ZodiacSign.aquarius),
+        ("zodiac_sign", ZodiacSign.capricorn),
         ("bio", "Updated bio one ... "),
         ("bio", "Updated bio two ... "),
     ],

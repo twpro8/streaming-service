@@ -7,27 +7,27 @@ class StrEnum(str, Enum):
 
 
 class SortBy(StrEnum):
-    ID = "id"
-    TITLE = "title"
-    RELEASE_YEAR = "release_year"
-    RATING = "rating"
+    id = "id"
+    title = "title"
+    release_year = "release_year"
+    rating = "rating"
 
 
 class SortOrder(StrEnum):
-    ASC = "asc"
-    DESC = "desc"
+    asc = "asc"
+    desc = "desc"
 
 
 class ZodiacSign(StrEnum):
-    ARIES = "Aries"
-    TAURUS = "Taurus"
-    GEMINI = "Gemini"
-    CANCER = "Cancer"
-    LEO = "Leo"
-    VIRGO = "Virgo"
-    LIBRA = "Libra"
-    SCORPIO = "Scorpio"
-    SAGITTARIUS = "Sagittarius"
-    CAPRICORN = "Capricorn"
-    AQUARIUS = "Aquarius"
-    PISCES = "Pisces"
+    aries = "Aries"
+    taurus = "Taurus"
+    gemini = "Gemini"
+    cancer = "Cancer"
+    leo = "Leo"
+    virgo = "Virgo"
+    libra = "Libra"
+    scorpio = "Scorpio"
+    sagittarius = "Sagittarius"
+    capricorn = "Capricorn"
+    aquarius = "Aquarius"
+    pisces = "Pisces"

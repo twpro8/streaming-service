@@ -13,7 +13,8 @@ class MasterHTTPException(HTTPException):
     status_code = 418
     detail = "I'm a teapot"
 
-    def __init__(self):
+    def __init__(self, detail: str = None):
+        self.detail = detail or self.__class__.detail
         super().__init__(status_code=self.status_code, detail=self.detail)
 
 
@@ -229,3 +230,13 @@ class ActorNotFoundException(ObjectNotFoundException):
 
 class ActorNotFoundHTTPException(ObjectNotFoundHTTPException):
     detail = "Actor not found"
+
+
+class UnknownSortFieldHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Unknown sort field"
+
+
+class UnknownSortOrderHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "Unknown sort order. Use field:asc|desc"

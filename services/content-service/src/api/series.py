@@ -15,8 +15,7 @@ from src.exceptions import (
 )
 from src.schemas.series import SeriesAddRequestDTO, SeriesPatchRequestDTO
 from src.services.series import SeriesService
-from src.api.dependencies import DBDep, AdminDep, ContentParamsDep
-
+from src.api.dependencies import DBDep, AdminDep, ContentParamsDep, SortDep
 
 router = APIRouter(prefix="/series", tags=["Series"])
 
@@ -25,9 +24,15 @@ router = APIRouter(prefix="/series", tags=["Series"])
 async def get_series(
     db: DBDep,
     common_params: ContentParamsDep,
+    sort: SortDep,
     genres_ids: Annotated[List[int] | None, Query()] = None,
 ):
-    series = await SeriesService(db).get_series(**common_params.model_dump(), genres_ids=genres_ids)
+    series = await SeriesService(db).get_series(
+        **common_params.model_dump(),
+        genres_ids=genres_ids,
+        sort_by=sort.field,
+        sort_order=sort.order,
+    )
     return {"status": "ok", "data": series}
 
 

@@ -84,13 +84,13 @@ class BaseRepository:
 
     @staticmethod
     def _apply_sorting(
-        query, model, sort_by: SortBy = SortBy.ID, sort_order: SortOrder = SortOrder.ASC
+        query, model, sort_by: SortBy = SortBy.id, sort_order: SortOrder = SortOrder.asc
     ):
         """Applies sorting to query."""
         if sort_by:
             column = getattr(model, sort_by, None)
             if column is not None:
-                if sort_order == SortOrder.DESC:
+                if sort_order == SortOrder.desc:
                     return query.order_by(column.desc())
                 return query.order_by(column.asc())
         return query
@@ -101,8 +101,8 @@ class BaseRepository:
         model,
         page: int = None,
         per_page: int = None,
-        sort_by: SortBy = SortBy.ID,
-        sort_order: SortOrder = SortOrder.ASC,
+        sort_by: SortBy = SortBy.id,
+        sort_order: SortOrder = SortOrder.asc,
     ):
         query = self._apply_sorting(query, model, sort_by, sort_order)
         query = self._paginate(query, page, per_page)
