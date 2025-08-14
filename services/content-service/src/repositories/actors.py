@@ -13,7 +13,13 @@ from src.repositories.mappers.mappers import (
     FilmActorDataMapper,
     SeriesActorDataMapper,
 )
-from src.schemas.actors import ActorDTO, ActorAddDTO, ActorPatchDTO, FilmActorDTO, SeriesActorDTO
+from src.schemas.actors import (
+    ActorDTO,
+    ActorAddRequestDTO,
+    ActorPatchDTO,
+    FilmActorDTO,
+    SeriesActorDTO,
+)
 
 
 class ActorRepository(BaseRepository):
@@ -21,7 +27,7 @@ class ActorRepository(BaseRepository):
     schema = ActorDTO
     mapper = ActorDataMapper
 
-    async def add_actor(self, actor_data: ActorAddDTO):
+    async def add_actor(self, actor_data: ActorAddRequestDTO):
         try:
             actor = await self.add(data=actor_data)
         except IntegrityError as exc:

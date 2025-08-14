@@ -10,7 +10,7 @@ from src.db import null_pool_engine, null_pool_session_maker, DBManager
 from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
-from src.schemas.actors import ActorAddDTO
+from src.schemas.actors import ActorAddDTO, FilmActorDTO
 from src.schemas.episodes import EpisodeDTO
 from src.schemas.films import FilmDTO
 from src.schemas.genres import GenreAddDTO, FilmGenreDTO, SeriesGenreDTO
@@ -54,6 +54,7 @@ async def setup_database(check_test_mode):
     films_genres_data = [FilmGenreDTO.model_validate(fg) for fg in read_json("films_genres")]
     series_genres_data = [SeriesGenreDTO.model_validate(sg) for sg in read_json("series_genres")]
     actors_data = [ActorAddDTO.model_validate(ad) for ad in read_json("actors")]
+    films_actors_data = [FilmActorDTO.model_validate(fa) for fa in read_json("films_actors")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.films.add_bulk(films_data)
@@ -64,6 +65,7 @@ async def setup_database(check_test_mode):
         await db_.films_genres.add_bulk(films_genres_data)
         await db_.series_genres.add_bulk(series_genres_data)
         await db_.actors.add_bulk(actors_data)
+        await db_.films_actors.add_bulk(films_actors_data)
         await db_.commit()
 
 
@@ -101,7 +103,7 @@ async def get_films():
     return read_json("films")
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
 async def get_films_with_rels(ac):
     films = []
     for film in read_json("films"):

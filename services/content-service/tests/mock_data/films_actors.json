@@ -1,0 +1,58 @@
+[
+  {
+    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "actor_id": "a33cd0cb-4825-4df5-be3c-0463062aafdb"
+  },
+  {
+    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "actor_id": "700fe73b-d503-4eb1-9bfe-6eb0c15ebfd3"
+  },
+  {
+    "film_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "actor_id": "700fe73b-d503-4eb1-9bfe-6eb0c15ebfd3"
+  },
+  {
+    "film_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "actor_id": "777b5f00-5a27-49aa-a600-8cef3319e5c0"
+  },
+  {
+    "film_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "actor_id": "a5abb191-e78b-4a89-bd99-bee9b3270d8a"
+  },
+  {
+    "film_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "actor_id": "a5abb191-e78b-4a89-bd99-bee9b3270d8a"
+  },
+  {
+    "film_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "actor_id": "91e653c1-c013-43ba-8cc4-8bf4a8456ca3"
+  },
+  {
+    "film_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "actor_id": "ad143eae-2e35-45d2-a68d-249a7a664518"
+  },
+  {
+    "film_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "actor_id": "ad143eae-2e35-45d2-a68d-249a7a664518"
+  },
+  {
+    "film_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "actor_id": "52053775-af0c-42fd-98b4-a07cd46ad945"
+  },
+  {
+    "film_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "actor_id": "a6fa8e19-3355-4955-9814-8372999697c6"
+  },
+  {
+    "film_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "actor_id": "a6fa8e19-3355-4955-9814-8372999697c6"
+  },
+  {
+    "film_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "actor_id": "7759f88a-28f5-4b12-89c9-e092dd003e65"
+  },
+  {
+    "film_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "actor_id": "d620ca8a-1fe1-4a3d-b381-f3984bb74aa1"
+  }
+]

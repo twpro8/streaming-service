@@ -1,5 +1,6 @@
 [
   {
+    "id": "a33cd0cb-4825-4df5-be3c-0463062aafdb",
     "first_name": "Ethan",
     "last_name": "Reynolds",
     "birth_date": "1987-03-14",
@@ -7,6 +8,7 @@
     "bio": "Ethan Reynolds is a stage and film actor known for his versatility in drama and comedy."
   },
   {
+    "id": "700fe73b-d503-4eb1-9bfe-6eb0c15ebfd3",
     "first_name": "Sofia",
     "last_name": "Martinez",
     "birth_date": "1992-07-09",
@@ -14,6 +16,7 @@
     "bio": "Sofia Martinez is an award-winning actress from Spain, famous for her historical drama roles."
   },
   {
+    "id": "777b5f00-5a27-49aa-a600-8cef3319e5c0",
     "first_name": "Liam",
     "last_name": "O'Connor",
     "birth_date": "1985-11-21",
@@ -21,6 +24,7 @@
     "bio": "Liam O'Connor is known for his intense performances in psychological thrillers."
   },
   {
+    "id": "a5abb191-e78b-4a89-bd99-bee9b3270d8a",
     "first_name": "Ava",
     "last_name": "Bennett",
     "birth_date": "1990-05-26",
@@ -28,6 +32,7 @@
     "bio": "Ava Bennett is a British actress recognized for her roles in period dramas."
   },
   {
+    "id": "91e653c1-c013-43ba-8cc4-8bf4a8456ca3",
     "first_name": "Noah",
     "last_name": "Keller",
     "birth_date": "1983-01-12",
@@ -35,6 +40,7 @@
     "bio": "Noah Keller is an American actor with a strong background in independent cinema."
   },
   {
+    "id": "ad143eae-2e35-45d2-a68d-249a7a664518",
     "first_name": "Isabella",
     "last_name": "Rossi",
     "birth_date": "1995-09-03",
@@ -42,6 +48,7 @@
     "bio": "Isabella Rossi is an Italian actress who has appeared in several international productions."
   },
   {
+    "id": "52053775-af0c-42fd-98b4-a07cd46ad945",
     "first_name": "Mason",
     "last_name": "Harper",
     "birth_date": "1988-06-15",
@@ -49,6 +56,7 @@
     "bio": "Mason Harper is a versatile actor who has worked in theater, television, and film."
   },
   {
+    "id": "a6fa8e19-3355-4955-9814-8372999697c6",
     "first_name": "Olivia",
     "last_name": "Nguyen",
     "birth_date": "1991-12-28",
@@ -56,6 +64,7 @@
     "bio": "Olivia Nguyen is known for her roles in romantic comedies and indie films."
   },
   {
+    "id": "7759f88a-28f5-4b12-89c9-e092dd003e65",
     "first_name": "Henry",
     "last_name": "Petrov",
     "birth_date": "1986-08-17",
@@ -63,6 +72,7 @@
     "bio": "Henry Petrov is a Russian-born actor famous for his roles in action movies."
   },
   {
+    "id": "d620ca8a-1fe1-4a3d-b381-f3984bb74aa1",
     "first_name": "Chloe",
     "last_name": "Anderson",
     "birth_date": "1993-04-04",

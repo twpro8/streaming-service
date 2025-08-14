@@ -6,7 +6,16 @@ from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.pydantic_types import BirthDate, Str48, Str128
 
 
+class ActorAddRequestDTO(BaseSchema):
+    first_name: Str48
+    last_name: Str48
+    birth_date: BirthDate
+    zodiac_sign: ZodiacSign | None = None
+    bio: Str128 | None = None
+
+
 class ActorAddDTO(BaseSchema):
+    id: UUID
     first_name: Str48
     last_name: Str48
     birth_date: BirthDate
@@ -15,7 +24,6 @@ class ActorAddDTO(BaseSchema):
 
 
 class ActorDTO(ActorAddDTO):
-    id: UUID
     created_at: datetime
     updated_at: datetime
 

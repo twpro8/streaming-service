@@ -9,7 +9,7 @@ from src.exceptions import (
     ActorNotFoundException,
     ActorNotFoundHTTPException,
 )
-from src.schemas.actors import ActorAddDTO, ActorPatchDTO
+from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO
 from src.services.actors import ActorService
 
 
@@ -35,7 +35,7 @@ async def get_actor(db: DBDep, actor_id: UUID):
 
 
 @router.post("", dependencies=[AdminDep], status_code=201)
-async def add_actor(db: DBDep, actor_data: ActorAddDTO):
+async def add_actor(db: DBDep, actor_data: ActorAddRequestDTO):
     try:
         actor = await ActorService(db).add_actor(actor_data=actor_data)
     except ActorAlreadyExistsException:

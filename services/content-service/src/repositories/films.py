@@ -1,15 +1,17 @@
 import logging
 from typing import List
+from uuid import UUID
 
 from asyncpg import UniqueViolationError
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select, func, exists
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException, UniqueVideoURLException
 from src.models import FilmORM, FilmGenreORM
+from src.models.actors import FilmActorORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import FilmDataMapper, FilmWithRelsDataMapper
 from src.schemas.films import FilmDTO
@@ -28,6 +30,7 @@ class FilmRepository(BaseRepository):
         page: int | None,
         per_page: int | None,
         genres_ids: List[int] | None,
+        actors_ids: List[UUID] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
         **kwargs,
@@ -46,9 +49,15 @@ class FilmRepository(BaseRepository):
 
         query = select(self.model)
         if genres_ids:
-            query = (
-                query.join(FilmGenreORM).filter(FilmGenreORM.genre_id.in_(genres_ids)).distinct()
+            genre_filter = exists().where(
+                FilmGenreORM.film_id == self.model.id, FilmGenreORM.genre_id.in_(genres_ids)
             )
+            query = query.filter(genre_filter)
+        if actors_ids:
+            actor_filter = exists().where(
+                FilmActorORM.film_id == self.model.id, FilmActorORM.actor_id.in_(actors_ids)
+            )
+            query = query.filter(actor_filter)
 
         for key, value in kwargs.items():
             if key in filters and value is not None:

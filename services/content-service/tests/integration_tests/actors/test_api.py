@@ -14,7 +14,7 @@ from tests.utils import get_and_validate, calculate_expected_length
         (3, 3),
         (4, 3),
         (5, 3),
-    ]
+    ],
 )
 async def test_actors_pagination(ac, page, per_page, get_all_actors):
     expected_length = calculate_expected_length(page, per_page, len(get_all_actors))
@@ -24,7 +24,7 @@ async def test_actors_pagination(ac, page, per_page, get_all_actors):
 
 async def test_get_existing_actor(ac, get_all_actors):
     for actor in get_all_actors:
-        data = await get_and_validate(ac, f"/actors/{actor["id"]}", expect_list=False)
+        data = await get_and_validate(ac, f"/actors/{actor['id']}", expect_list=False)
         assert isinstance(data, dict)
 
 
@@ -39,7 +39,7 @@ async def test_get_nonexistent_actor(ac):
     [
         ("John", "Smith", "1977-01-17", None, None),
         ("Lana", "Light", "1988-01-25", ZodiacSign.PISCES, "Well-known actress"),
-    ]
+    ],
 )
 async def test_add_actor_valid(ac, first_name, last_name, birth_date, zodiac_sign, bio):
     req_body = {
@@ -64,13 +64,14 @@ async def test_add_actor_valid(ac, first_name, last_name, birth_date, zodiac_sig
 
 
 invalid_cases = [
-    ("first_name", ["f", "f"*50, None]),
-    ("last_name", ["l", "l"*50, None]),
+    ("first_name", ["f", "f" * 50, None]),
+    ("last_name", ["l", "l" * 50, None]),
     ("birth_date", ["999-01-01", "2100-01-01", "invalid-format", None]),
     ("zodiac_sign", ["Rat", "Cat", "Boss"]),
-    ("bio", ["b", "b"*130]),
+    ("bio", ["b", "b" * 130]),
     ("extra", ["Hello!"]),
 ]
+
 
 @pytest.mark.parametrize(
     "field, invalid_value", [(field, val) for field, vals in invalid_cases for val in vals]
@@ -102,7 +103,7 @@ async def test_add_actor_invalid(ac, field, invalid_value):
         ("zodiac_sign", ZodiacSign.CAPRICORN),
         ("bio", "Updated bio one ... "),
         ("bio", "Updated bio two ... "),
-    ]
+    ],
 )
 async def test_update_actor_valid(ac, field, value, get_all_actors):
     actor_id = get_all_actors[0]["id"]
@@ -118,15 +119,15 @@ async def test_update_actor_valid(ac, field, value, get_all_actors):
     "field, value",
     [
         ("first_name", "f"),
-        ("first_name", "f"*50),
+        ("first_name", "f" * 50),
         ("last_name", "l"),
-        ("last_name", "l"*50),
+        ("last_name", "l" * 50),
         ("birth_date", "999-01-01"),
         ("birth_date", "2100-01-01"),
         ("zodiac_sign", "Corn dog"),
         ("bio", "b"),
-        ("bio", "b"*130),
-    ]
+        ("bio", "b" * 130),
+    ],
 )
 async def test_update_actor_invalid(ac, field, value, get_all_actors):
     actor_id = get_all_actors[0]["id"]
@@ -138,6 +139,6 @@ async def test_update_actor_invalid(ac, field, value, get_all_actors):
 
 async def test_delete_actor(ac, get_all_actors):
     for actor in get_all_actors:
-        assert (await ac.get(f"/actors/{actor["id"]}")).status_code == 200
-        assert (await ac.delete(f"/actors/{actor["id"]}")).status_code == 204
-        assert (await ac.get(f"/actors/{actor["id"]}")).status_code == 404
+        assert (await ac.get(f"/actors/{actor['id']}")).status_code == 200
+        assert (await ac.delete(f"/actors/{actor['id']}")).status_code == 204
+        assert (await ac.get(f"/actors/{actor['id']}")).status_code == 404

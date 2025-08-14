@@ -1,5 +1,5 @@
 from datetime import datetime
-from math import ceil
+from uuid import uuid4
 
 import pytest
 
@@ -259,6 +259,35 @@ async def test_get_filter_by_genres(ac, genres_ids, get_films_with_rels, max_pag
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
+    "set_indexes",
+    [
+        [0, 1, 2, 3, 4],
+        [1, 4],
+        [1, 3, 4],
+        [1],
+        [2],
+        [4],
+    ],
+)
+async def test_get_filter_by_actors(
+    ac,
+    set_indexes,
+    get_all_actors,
+    get_films_with_rels,
+    max_pagination,
+):
+    actors_ids = [str(get_all_actors[i]["id"]) for i in set_indexes]
+    expected_count = sum(
+        1
+        for film in get_films_with_rels
+        if any(actor["id"] in actors_ids for actor in film["actors"])
+    )
+    data = await get_and_validate(ac, "/films", params={"actors_ids": actors_ids, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
     "title, description, director, release_year, duration",
     [
         (
@@ -304,7 +333,7 @@ async def test_add_valid_data_without_optional(
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "title, description, director, release_year, duration, cover_url, genres_ids",
+    "title, description, director, release_year, duration, cover_url, genres_ids, actors_indexes",
     [
         (
             "Valid Title3",
@@ -314,6 +343,7 @@ async def test_add_valid_data_without_optional(
             135,
             "https://www.example.com/abc",
             [1, 2, 3],
+            [0, 1, 2],
         ),
         (
             "Valid Title4",
@@ -323,12 +353,23 @@ async def test_add_valid_data_without_optional(
             135,
             "https://www.example.com/def",
             [3, 4, 5],
+            [2, 3, 4],
         ),
     ],
 )
 async def test_add_valid_data_with_optional(
-    ac, title, description, director, release_year, duration, cover_url, genres_ids
+    ac,
+    title,
+    description,
+    director,
+    release_year,
+    duration,
+    cover_url,
+    genres_ids,
+    actors_indexes,
+    get_all_actors,
 ):
+    actors_ids = [str(get_all_actors[i]["id"]) for i in actors_indexes]
     res = await ac.post(
         "/films",
         json={
@@ -339,6 +380,7 @@ async def test_add_valid_data_with_optional(
             "duration": duration,
             "cover_url": cover_url,
             "genres_ids": genres_ids,
+            "actors_ids": actors_ids,
         },
     )
     assert res.status_code == 201
@@ -368,6 +410,7 @@ invalid_cases = [
     ("duration", [None, False, -1, 513, "string", [], {}, 1.1]),
     ("cover_url", ["string", False, [], {}, 0, 1, 1.1]),
     ("genres_ids", ["string", False, {}, 0, 1, 1.1, ["string", 1.1, False, 0, [], {}]]),
+    ("actors_ids", ["string", 11]),
 ]
 
 
@@ -410,7 +453,14 @@ async def test_on_conflict(ac, get_films_with_rels):
 
 
 @pytest.mark.order(1)
-async def test_not_found(ac):
+@pytest.mark.parametrize(
+    "field, value",
+    [
+        ("genres_ids", [99]),
+        ("actors_ids", [str(uuid4())]),
+    ],
+)
+async def test_not_found(ac, field, value):
     req_body = {
         "title": "Valid Title8",
         "description": "Valid Description8",
@@ -418,7 +468,7 @@ async def test_not_found(ac):
         "release_year": "2020-01-01",
         "duration": 135,
         "cover_url": "https://www.example.com/barbara",
-        "genres_ids": [99],  # no such a genre
+        field: value,
     }
     res = await ac.post("/films", json=req_body)
     assert res.status_code == 404
@@ -440,9 +490,6 @@ async def test_not_found(ac):
         ("duration", 222),
         ("duration", 333),
         ("cover_url", "https://example.com/updated.jpg"),
-        ("genres_ids", [7, 8, 9]),
-        ("genres_ids", [2, 3, 7]),
-        ("genres_ids", []),
     ],
 )
 async def test_update_field_valid(ac, get_films, field, value):
@@ -452,12 +499,38 @@ async def test_update_field_valid(ac, get_films, field, value):
     assert res.status_code == 200
 
     data = await get_and_validate(ac, f"/films/{film_id}", expect_list=False)
+    assert data[field] == value
 
-    if field == "genres_ids":
-        assert len(data["genres"]) == len(value)
-        assert all(genre["id"] in value for genre in data["genres"])
-    else:
-        assert data[field] == value
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize("genres_ids", [[7, 8, 9], [2, 3, 7], [], [1, 2, 3]])
+async def test_update_films_genres(ac, get_films, genres_ids):
+    film_id = get_films[0]["id"]
+
+    res = await ac.patch(f"/films/{film_id}", json={"genres_ids": genres_ids})
+    assert res.status_code == 200
+
+    data = await get_and_validate(ac, f"/films/{film_id}", expect_list=False)
+
+    assert len(data["genres"]) == len(genres_ids)
+    assert all(genre["id"] in genres_ids for genre in data["genres"])
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "actors_indexes", [[0, 1, 2], [2, 3], [], [5, 7, 9], [0, 4, 2], [], [7, 8, 1]]
+)
+async def test_update_films_actors(ac, get_all_actors, get_films, actors_indexes):
+    film_id = get_films[0]["id"]
+    actors_ids = [str(get_all_actors[i]["id"]) for i in actors_indexes]
+
+    res = await ac.patch(f"/films/{film_id}", json={"actors_ids": actors_ids})
+    assert res.status_code == 200
+
+    data = await get_and_validate(ac, f"/films/{film_id}", expect_list=False)
+
+    assert len(data["actors"]) == len(actors_indexes)
+    assert all(actor["id"] in actors_ids for actor in data["actors"])
 
 
 @pytest.mark.order(1)
@@ -481,6 +554,8 @@ async def test_update_field_valid(ac, get_films, field, value):
         ("cover_url", "invalid-format"),
         ("genres_ids", 11),
         ("genres_ids", ["str"]),
+        ("actors_ids", [11]),
+        ("actors_ids", ["str"]),
     ],
 )
 async def test_update_field_invalid(ac, get_films, field, value):

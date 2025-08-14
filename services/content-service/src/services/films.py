@@ -33,6 +33,7 @@ class FilmService(BaseService):
         rating_ge: Decimal | None,
         rating_le: Decimal | None,
         genres_ids: List[int] | None,
+        actors_ids: List[UUID] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
     ):
@@ -49,6 +50,7 @@ class FilmService(BaseService):
             rating_ge=rating_ge,
             rating_le=rating_le,
             genres_ids=genres_ids,
+            actors_ids=actors_ids,
             sort_by=sort_by,
             sort_order=sort_order,
         )

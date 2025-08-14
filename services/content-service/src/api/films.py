@@ -28,8 +28,13 @@ async def get_films(
     db: DBDep,
     common_params: ContentParamsDep,
     genres_ids: Annotated[List[int] | None, Query()] = None,
+    actors_ids: Annotated[List[UUID] | None, Query()] = None,
 ):
-    films = await FilmService(db).get_films(**common_params.model_dump(), genres_ids=genres_ids)
+    films = await FilmService(db).get_films(
+        **common_params.model_dump(),
+        genres_ids=genres_ids,
+        actors_ids=actors_ids,
+    )
     return {"status": "ok", "data": films}
 
 

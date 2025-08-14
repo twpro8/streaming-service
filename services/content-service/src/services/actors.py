@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from src.exceptions import ActorAlreadyExistsException, ActorNotFoundException
-from src.schemas.actors import ActorAddDTO, ActorPatchDTO
+from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO
 from src.services.base import BaseService
 
 
@@ -15,7 +15,7 @@ class ActorService(BaseService):
             raise ActorNotFoundException
         return actor
 
-    async def add_actor(self, actor_data: ActorAddDTO):
+    async def add_actor(self, actor_data: ActorAddRequestDTO):
         try:
             actor = await self.db.actors.add_actor(actor_data=actor_data)
         except ActorAlreadyExistsException:
