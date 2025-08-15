@@ -45,8 +45,8 @@ class FilmRepository(BaseRepository):
             "year_gt": lambda v: self.model.release_year > date(v, 1, 1),
             "year_lt": lambda v: self.model.release_year < date(v, 1, 1),
             "rating": lambda v: self.model.rating == v,
-            "rating_ge": lambda v: self.model.rating >= v,
-            "rating_le": lambda v: self.model.rating <= v,
+            "rating_gt": lambda v: self.model.rating > v,
+            "rating_lt": lambda v: self.model.rating < v,
         }
 
         query = select(self.model)

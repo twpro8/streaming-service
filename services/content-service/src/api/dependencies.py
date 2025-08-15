@@ -146,8 +146,8 @@ class CommonContentParams(PaginationParams):
     year_gt: Annotated[int | None, Query(None)]
     year_lt: Annotated[int | None, Query(None)]
     rating: Annotated[Decimal | None, Query(None, ge=0, le=10)]
-    rating_ge: Annotated[Decimal | None, Query(None, ge=0, le=10)]
-    rating_le: Annotated[Decimal | None, Query(None, ge=0, le=10)]
+    rating_gt: Annotated[Decimal | None, Query(None, ge=0, le=10)]
+    rating_lt: Annotated[Decimal | None, Query(None, ge=0, le=10)]
 
 
 ContentParamsDep = Annotated[CommonContentParams, Depends()]

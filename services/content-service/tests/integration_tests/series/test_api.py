@@ -1,241 +1,280 @@
+from uuid import uuid4
+
 import pytest
 
-
-series_ids = []
+from tests.utils import calculate_expected_length, get_and_validate, count_content
 
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "params, target_length",
+    "page, per_page",
     [
-        ({"page": 1, "per_page": 30}, 5),
-        ({"page": 1, "per_page": 2}, 2),
-        ({"page": 2, "per_page": 2}, 2),
-        ({"page": 3, "per_page": 2}, 1),
-        # Exact title match
-        ({"title": "Bad"}, 1),
-        ({"title": "Things"}, 1),
-        # Director filter
-        ({"director": "Johan Renck"}, 1),
-        ({"director": "The Duffer"}, 1),
-        ({"director": "Guy"}, 0),
-        # Description filter
-        ({"description": "the"}, 4),
-        ({"description": "diagnosed with cancer"}, 1),
-        ({"description": "story of the chernobyl"}, 1),
-        # Exact release_year
-        ({"year": 2000}, 1),
-        ({"year": 2003}, 1),
-        ({"year": 2004}, 1),
-        # release_year_gt
-        ({"year_gt": 1899}, 5),
-        # release_year_lt
-        ({"year_lt": 2006}, 5),
-        # release_year range
-        (
-            {
-                "year_gt": 2001,
-                "year_lt": 2005,
-            },
-            3,
-        ),
-        # Rating
-        ({"rating": "0.0"}, 5),
-        ({"rating_ge": "1.0"}, 0),
-        ({"rating_le": "5"}, 5),
-        # No match
-        ({"title": "NotExists"}, 0),
-        ({"title": "The Hidden Sparrow"}, 0),
-        ({"description": "About life exp"}, 0),
-        ({"director": "Some guy"}, 0),
-        ({"year": 1999}, 0),
-        ({"year_gt": 2005}, 0),
-        ({"year_lt": 1999}, 0),
-        # Genres
-        ({"genres_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [2, 4, 6, 8, 10], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [1, 3, 5, 7, 9], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [2, 4, 6, 8], "page": 1, "per_page": 30}, 5),
-        ({"genres_ids": [1]}, 1),
-        ({"genres_ids": [2]}, 2),
-        ({"genres_ids": [3]}, 1),
-        ({"genres_ids": [4]}, 2),
-        ({"genres_ids": [5]}, 1),
-        ({"genres_ids": [6]}, 2),
-        ({"genres_ids": [7]}, 1),
-        ({"genres_ids": [8]}, 2),
-        ({"genres_ids": [9]}, 1),
-        ({"genres_ids": [10]}, 1),
-        ({"genres_ids": [1, 2, 3]}, 2),
+        (1, 1),
+        (2, 2),
+        (3, 3),
+        (4, 4),
+        (1, 30),
     ],
 )
-async def test_get_series(ac, params, target_length):
-    res = await ac.get("/series", params=params)
-    data = res.json()["data"]
-
-    assert res.status_code == 200
-    assert isinstance(data, list)
-    assert len(data) == target_length
+async def test_pagination(ac, page, per_page, get_all_series):
+    data = await get_and_validate(ac, "/series", params={"page": page, "per_page": per_page})
+    expected_length = calculate_expected_length(page, per_page, len(get_all_series))
+    assert len(data) == expected_length
 
 
+@pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "title, description, director, release_year, cover_url, genres_ids, status_code",
+    "title",
     [
-        # Valid data
+        "Bad",
+        "Things ",
+        " THE ",
+        "no match",
+        "meet dave",
+    ],
+)
+async def test_filter_by_title(ac, title, get_all_series, max_pagination):
+    data = await get_and_validate(ac, "/series", params={"title": title, **max_pagination})
+    assert len(data) == count_content(get_all_series, field="title", value=title)
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "director",
+    [
+        "Johan Renck",
+        "The Duffer",
+        " THE ",
+        "no Guy",
+        "dave",
+    ],
+)
+async def test_filter_by_director(ac, director, get_all_series, max_pagination):
+    data = await get_and_validate(ac, "/series", params={"director": director, **max_pagination})
+    assert len(data) == count_content(get_all_series, field="director", value=director)
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "description",
+    [
+        "story of the chernobyl",
+        "diagnosed with cancer",
+        " THE ",
+        "nothing",
+        "no match",
+    ],
+)
+async def test_filter_by_description(ac, description, get_all_series, max_pagination):
+    data = await get_and_validate(
+        ac, "/series", params={"description": description, **max_pagination}
+    )
+    assert len(data) == count_content(get_all_series, field="description", value=description)
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("year", [1899, 1995, 2000, 2003, 2004, 2012])
+async def test_filter_by_release_year(ac, year, get_all_series, max_pagination):
+    expected_count = sum(1 for series in get_all_series if year == series["release_year"].year)
+    data = await get_and_validate(ac, "/series", params={"year": year, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("year_gt", [1899, 2002, 2005, 2012])
+async def test_filter_by_release_year_gt(ac, year_gt, get_all_series, max_pagination):
+    expected_count = sum(1 for series in get_all_series if year_gt < series["release_year"].year)
+    data = await get_and_validate(ac, "/series", params={"year_gt": year_gt, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("year_lt", [1899, 2002, 2006, 2012])
+async def test_filter_by_release_year_lt(ac, year_lt, get_all_series, max_pagination):
+    expected_count = sum(1 for series in get_all_series if year_lt > series["release_year"].year)
+    data = await get_and_validate(ac, "/series", params={"year_lt": year_lt, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("year_gt, year_lt", [(2001, 2005), (1899, 2000), (2003, 2012)])
+async def test_filter_by_release_year_range(ac, year_gt, year_lt, get_all_series, max_pagination):
+    expected_count = sum(
+        1 for series in get_all_series if year_gt < series["release_year"].year < year_lt
+    )
+    data = await get_and_validate(
+        ac, "/series", params={"year_gt": year_gt, "year_lt": year_lt, **max_pagination}
+    )
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("rating", [0.0, 1.0, 5.0, 7.5, 8.0, 2.0])
+async def test_filter_by_rating(ac, rating, get_all_series, max_pagination):
+    expected_count = sum(1 for series in get_all_series if rating == float(series["rating"]))
+    data = await get_and_validate(ac, "/series", params={"rating": rating, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("rating_gt", [0.0, 1.0, 5.0, 7.5, 8.0, 2.0])
+async def test_filter_by_rating_gt(ac, rating_gt, get_all_series, max_pagination):
+    expected_count = sum(1 for series in get_all_series if rating_gt < float(series["rating"]))
+    data = await get_and_validate(ac, "/series", params={"rating_gt": rating_gt, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("rating_lt", [0.0, 5.0, 1.0, 5.0, 7.5, 8.0, 2.0])
+async def test_filter_by_rating_lt(ac, rating_lt, get_all_series, max_pagination):
+    expected_count = sum(1 for series in get_all_series if rating_lt > float(series["rating"]))
+    data = await get_and_validate(ac, "/series", params={"rating_lt": rating_lt, **max_pagination})
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "rating_gt, rating_lt", [(0.0, 0.3), (5.0, 7.6), (1.0, 4.5), (5.0, 6.0), (7.5, 9.0)]
+)
+async def test_filter_by_rating_range(ac, rating_gt, rating_lt, get_all_series, max_pagination):
+    expected_count = sum(
+        1 for series in get_all_series if rating_gt < float(series["rating"]) < rating_lt
+    )
+    data = await get_and_validate(
+        ac, "/series", params={"rating_gt": rating_gt, "rating_lt": rating_lt, **max_pagination}
+    )
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "genres_ids",
+    [
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        [2, 4, 6, 8, 10],
+        [1, 3, 5, 7, 9],
+        [2, 4, 6, 8],
+        [1],
+        [2],
+        [3],
+        [4],
+        [5],
+        [6],
+        [7],
+        [8],
+        [9],
+        [10],
+        [1, 2, 3],
+    ],
+)
+async def test_filter_by_genres(ac, genres_ids, get_all_series_with_rels, max_pagination):
+    expected_count = sum(
+        1
+        for s in get_all_series_with_rels
+        if any(genre["id"] in genres_ids for genre in s["genres"])
+    )
+    data = await get_and_validate(
+        ac, "/series", params={"genres_ids": genres_ids, **max_pagination}
+    )
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "set_indexes",
+    [
+        [0, 1, 2, 3, 4],
+        [1, 4],
+        [1, 3, 4],
+        [1],
+        [2],
+        [8, 9, 5],
+        [4],
+    ],
+)
+async def test_get_filter_by_actors(
+    ac,
+    set_indexes,
+    get_all_actors,
+    get_all_series_with_rels,
+    max_pagination,
+):
+    actors_ids = [str(get_all_actors[i]["id"]) for i in set_indexes]
+    expected_count = sum(
+        1
+        for series in get_all_series_with_rels
+        if any(actor["id"] in actors_ids for actor in series["actors"])
+    )
+    data = await get_and_validate(
+        ac, "/series", params={"actors_ids": actors_ids, **max_pagination}
+    )
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "title, description, director, release_year",
+    [
         (
             "Valid Title",
             "Valid Description",
             "Valid Director",
-            "1969-01-01",
-            "https://example.com/valid_url.jpg",
-            list(range(1, 4)),
-            201,
+            "2005-01-01",
         ),
         (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            list(range(3, 6)),
-            201,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            "https://sent.com/valid_url.jpg",
-            list(range(5, 11)),
-            201,
-        ),
-        # Invalid title
-        ("", "Valid Description", "Valid Director", "2006-01-01", None, None, 422),
-        ("T" * 256, "Valid Description", "Valid Director", "2006-01-01", None, None, 422),
-        # Invalid description
-        ("Valid Title", "", "Valid Director", "2020-01-01", None, None, 422),
-        ("Valid Title", "D" * 256, "Valid Director", "2020-01-01", None, None, 422),
-        # Invalid director
-        ("Valid Title", "Valid Description", "", "2020-01-01", None, None, 422),
-        ("Valid Title", "Valid Description", "D" * 50, "2020-01-01", None, None, 422),
-        # Invalid release year
-        ("Valid Title", "Valid Description", "Valid Director", "10-01-01", None, None, 422),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "some-garbage-here",
-            None,
-            None,
-            422,
-        ),
-        ("Valid Title", "Valid Description", "Valid Director", 1, None, None, 422),
-        ("Valid Title", "Description", "Director", "2100-01-01", None, None, 422),
-        ("Valid Title", "Description", "Director", "999-01-01", None, None, 422),
-        # Invalid cover url
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "2020-01-01",
-            "not-a-url",
-            None,
-            422,
-        ),
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", 1, None, 422),
-        # All optional fields None (cover_url) - should succeed
-        ("Valid Title", "Valid Description", "Valid Director", "2020-01-01", None, None, 201),
-        # Conflict
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "2020-01-01",
-            "https://example.com/valid_url.jpg",
-            None,
-            409,
-        ),
-        # Genre not found: 404
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            "https://ett.com/valid_url.jpg",
-            [11, 12, 13],
-            404,
-        ),
-        # Invalid genres ids
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            ["abs"],
-            422,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            [0, 0],
-            422,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            [-1],
-            422,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            [6.2, 7.3],
-            422,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            [True, False],
-            422,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            [
-                [],
-            ],
-            422,
-        ),
-        (
-            "Valid Title",
-            "Valid Description",
-            "Valid Director",
-            "1969-01-01",
-            None,
-            [
-                {},
-            ],
-            422,
+            "Valid Title2",
+            "Valid Description2",
+            "Valid Director2",
+            "2006-01-01",
         ),
     ],
 )
-async def test_add_series(
+async def test_add_valid_data_without_optional(ac, title, description, director, release_year):
+    res = await ac.post(
+        "/series",
+        json={
+            "title": title,
+            "description": description,
+            "director": director,
+            "release_year": release_year,
+        },
+    )
+    assert res.status_code == 201
+
+    series_id = res.json()["data"]["id"]
+    series = await get_and_validate(ac=ac, url=f"/series/{series_id}", expect_list=False)
+
+    assert series["title"] == title
+    assert series["description"] == description
+    assert series["director"] == director
+    assert series["release_year"] == release_year
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "title, description, director, release_year, cover_url, genres_ids, actors_indexes",
+    [
+        (
+            "Valid Title",
+            "Valid Description",
+            "Valid Director",
+            "2005-01-01",
+            "https://www.example.com/abc",
+            [1, 2, 3],
+            [0, 1, 2],
+        ),
+        (
+            "Valid Title2",
+            "Valid Description2",
+            "Valid Director2",
+            "2006-01-01",
+            "https://www.example.com/def",
+            [3, 4, 5],
+            [2, 3, 4],
+        ),
+    ],
+)
+async def test_add_valid_data_with_optional(
     ac,
     title,
     description,
@@ -243,145 +282,196 @@ async def test_add_series(
     release_year,
     cover_url,
     genres_ids,
-    status_code,
+    actors_indexes,
+    get_all_actors,
 ):
-    request_json = {
-        "title": title,
-        "description": description,
-        "director": director,
-        "release_year": release_year,
-        "cover_url": cover_url,
-        "genres_ids": genres_ids,
-    }
-    res = await ac.post("/series", json=request_json)
-    assert res.status_code == status_code
+    actors_ids = [str(get_all_actors[i]["id"]) for i in actors_indexes]
+    res = await ac.post(
+        "/series",
+        json={
+            "title": title,
+            "description": description,
+            "director": director,
+            "release_year": release_year,
+            "cover_url": cover_url,
+            "genres_ids": genres_ids,
+            "actors_ids": actors_ids,
+        },
+    )
+    assert res.status_code == 201
 
-    if status_code == 201:
-        series_id = res.json()["data"]["id"]
+    series_id = res.json()["data"]["id"]
+    series = await get_and_validate(ac=ac, url=f"/series/{series_id}", expect_list=False)
 
-        res = await ac.get(f"/series/{series_id}")
-        series = res.json()["data"]
-
-        assert series["title"] == title
-        assert series["description"] == description
-        assert series["director"] == director
-        assert series["release_year"] == release_year
-        assert series["cover_url"] == cover_url
-
-        if genres_ids is not None:
-            assert len(series["genres"]) == len(genres_ids)
-
-        series_ids.append(series_id)
+    assert series["title"] == title
+    assert series["description"] == description
+    assert series["director"] == director
+    assert series["release_year"] == release_year
+    assert series["cover_url"] == cover_url
+    assert len(series["genres"]) == len(genres_ids)
+    assert all(genre["id"] in genres_ids for genre in series["genres"])
 
 
+invalid_cases = [
+    ("title", [None, True, False, "t", "t" * 256, 1, [], {}, 1.1]),
+    ("description", [None, True, False, "d", "d" * 256, 1, [], {}, 1.1]),
+    ("director", [None, True, False, "d", "d" * 50, 1, [], {}, 1.1]),
+    (
+        "release_year",
+        ["10-01-01", "999-01-01", "2100-01-01", None, True, False, "string", 1, [], {}, 1.1],
+    ),
+    ("cover_url", ["string", False, [], {}, 0, 1, 1.1]),
+    ("genres_ids", ["string", False, {}, 0, 1, 1.1, ["string", 1.1, False, 0, [], {}]]),
+    ("actors_ids", ["string", 11]),
+]
+
+
+@pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "update_data, status_code, series_id",
+    "field, invalid_value", [(field, val) for field, vals in invalid_cases for val in vals]
+)
+async def test_add_invalid_fields(ac, field, invalid_value):
+    valid_data = {
+        "title": "Valid Title3",
+        "description": "Valid Description3",
+        "director": "Valid Director3",
+        "release_year": "2012-01-01",
+        "cover_url": "https://www.example.com/meaw/cat.png",
+        "genres_ids": [7, 8, 9],
+        "actors_ids": [1, 2, 3],
+        field: invalid_value,
+    }
+    res = await ac.post("/series", json=valid_data)
+    assert res.status_code == 422
+    assert "detail" in res.json()
+
+
+@pytest.mark.order(2)
+async def test_on_conflict(ac):
+    req_body = {
+        "title": "Valid Title7",
+        "description": "Valid Description7",
+        "director": "Valid Director7",
+        "release_year": "2020-01-01",
+        "cover_url": "https://www.kitten.com/kitty.jpg",  # unique
+    }
+    res = await ac.post("/series", json=req_body)
+    assert res.status_code == 201
+
+    res = await ac.post("/series", json=req_body)
+    assert res.status_code == 409
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "field, value",
     [
-        # Update title
-        ({"title": "Title Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"title": "Title Updated"}, 200, None),
-        # Invalid title
-        ({"title": ""}, 422, None),
-        ({"title": "T" * 256}, 422, None),
-        # Update description
-        ({"description": "Description Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"description": "Description Updated"}, 200, None),
-        # Update genres
-        ({"genres_ids": list(range(1, 4))}, 200, None),
-        ({"genres_ids": list(range(2, 5))}, 200, None),
-        ({"genres_ids": []}, 200, None),
-        ({"genres_ids": list(range(4, 7))}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"genres_ids": list(range(8, 11))}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"genres_ids": []}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"genres_ids": [5]}, 200, None),
-        ({"genres_ids": [5, 7, 8]}, 200, None),
-        ({"genres_ids": []}, 200, None),
-        # Invalid description
-        ({"description": ""}, 422, None),
-        ({"description": "D" * 256}, 422, None),
-        # Update director
-        ({"director": "Director Updated"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"director": "Director Updated"}, 200, None),
-        # Invalid director
-        ({"director": ""}, 422, None),
-        ({"director": "D" * 50}, 422, None),
-        # Update release year
-        ({"release_year": "2021-01-01"}, 200, "bf7264e9-6e93-424a-a1f5-943b55f1e102"),
-        ({"release_year": "2021-01-01"}, 200, None),
-        # Invalid release year
-        ({"release_year": "10-01-01"}, 422, None),
-        ({"release_year": ""}, 422, None),
-        ({"release_year": 1}, 422, None),
-        ({"release_year": "2100-01-01"}, 422, None),  # future year
-        ({"release_year": "999-01-01"}, 422, None),  # too old
-        # Update cover_url
-        (
-            {"cover_url": "https://example.com/updated.jpg"},
-            200,
-            "bf7264e9-6e93-424a-a1f5-943b55f1e102",
-        ),
-        ({"cover_url": "https://example.com/updated.jpg"}, 409, None),  # conflict
-        # Invalid cover url
-        ({"cover_url": ""}, 422, None),
-        ({"cover_url": "invalid-uri"}, 422, None),
-        # Update multiple fields
-        (
-            {"title": "New Title", "description": "New Description", "director": "New Director"},
-            200,
-            "bf7264e9-6e93-424a-a1f5-943b55f1e102",
-        ),
-        (
-            {"title": "New Title", "description": "New Description", "director": "New Director"},
-            200,
-            None,
-        ),
-        (
-            {
-                "release_year": "2022-01-01",
-                "cover_url": "https://example.com/test.jpg",
-            },
-            200,
-            "bf7264e9-6e93-424a-a1f5-943b55f1e102",
-        ),
-        (
-            {
-                "release_year": "2022-01-01",
-                "cover_url": "https://example.com/test.jpg",
-            },
-            409,
-            None,
-        ),  # conflict
-        # Invalid genres ids
-        ({"genres_ids": ["abc"]}, 422, None),
-        ({"genres_ids": ["1", "2"]}, 422, None),
-        ({"genres_ids": [True, False]}, 422, None),
-        ({"genres_ids": [11, 12]}, 404, None),
-        ({"genres_ids": [9.1, 8.7]}, 422, None),
+        ("genres_ids", [99]),
+        ("actors_ids", [str(uuid4())]),
     ],
 )
-async def test_update_series(
-    ac,
-    update_data,
-    status_code,
-    series_id,
-):
-    series_id = series_id or series_ids[0]
-    res = await ac.patch(f"/series/{series_id}", json=update_data)
-    assert res.status_code == status_code
-
-    if res.status_code == 200:
-        res = await ac.get(f"/series/{series_id}")
-        data = res.json()["data"]
-
-        for key, value in update_data.items():
-            if key == "genres_ids":
-                assert len(data["genres"]) == len(value)
-                continue
-            assert data[key] == value
+async def test_not_found(ac, field, value):
+    req_body = {
+        "title": "Valid Title8",
+        "description": "Valid Description8",
+        "director": "Valid Director8",
+        "release_year": "2020-01-01",
+        "cover_url": "https://www.example.com/barbara",
+        field: value,
+    }
+    res = await ac.post("/series", json=req_body)
+    assert res.status_code == 404
 
 
-async def test_delete_series(ac):
-    for series_id in series_ids:
-        assert (await ac.get(f"/series/{series_id}")).status_code == 200
-        assert (await ac.delete(f"/series/{series_id}")).status_code == 204
-        assert (await ac.get(f"/series/{series_id}")).status_code == 404
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("title", "Title Updated 1"),
+        ("title", "Title Updated 2"),
+        ("description", "Description Updated 1"),
+        ("description", "Description Updated 2"),
+        ("director", "Director Updated 1"),
+        ("director", "Director Updated 2"),
+        ("release_year", "1888-01-01"),
+        ("release_year", "1999-07-07"),
+        ("cover_url", "https://example.com/updated.jpg"),
+    ],
+)
+async def test_update_field_valid(ac, get_all_series, field, value):
+    series_id = get_all_series[0]["id"]
+
+    res = await ac.patch(f"/series/{series_id}", json={field: value})
+    assert res.status_code == 200
+
+    data = await get_and_validate(ac, f"/series/{series_id}", expect_list=False)
+    assert data[field] == value
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize("genres_ids", [[7, 8, 9], [2, 3, 7], [], [1, 2, 3]])
+async def test_update_series_genres(ac, get_all_series, genres_ids):
+    series_id = get_all_series[0]["id"]
+
+    res = await ac.patch(f"/series/{series_id}", json={"genres_ids": genres_ids})
+    assert res.status_code == 200
+
+    data = await get_and_validate(ac, f"/series/{series_id}", expect_list=False)
+
+    assert len(data["genres"]) == len(genres_ids)
+    assert all(genre["id"] in genres_ids for genre in data["genres"])
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "actors_indexes", [[0, 1, 2], [2, 3], [], [5, 7, 9], [0, 4, 2], [], [7, 8, 1]]
+)
+async def test_update_series_actors(ac, get_all_actors, get_all_series, actors_indexes):
+    series_id = get_all_series[0]["id"]
+    actors_ids = [str(get_all_actors[i]["id"]) for i in actors_indexes]
+
+    res = await ac.patch(f"/series/{series_id}", json={"actors_ids": actors_ids})
+    assert res.status_code == 200
+
+    data = await get_and_validate(ac, f"/series/{series_id}", expect_list=False)
+
+    assert len(data["actors"]) == len(actors_indexes)
+    assert all(actor["id"] in actors_ids for actor in data["actors"])
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
+    "field,value",
+    [
+        ("title", "t"),
+        ("title", "t" * 256),
+        ("title", 11),
+        ("description", "d"),
+        ("description", "d" * 256),
+        ("description", 11),
+        ("director", "d"),
+        ("director", "d" * 50),
+        ("director", 11),
+        ("release_year", "10-01-01"),
+        ("release_year", "999-07-07"),
+        ("release_year", "2100-07-07"),
+        ("cover_url", "invalid-format"),
+        ("genres_ids", 11),
+        ("genres_ids", ["str"]),
+        ("actors_ids", [11]),
+        ("actors_ids", ["str"]),
+    ],
+)
+async def test_update_field_invalid(ac, get_all_series, field, value):
+    series_id = get_all_series[0]["id"]
+    res = await ac.patch(f"/series/{series_id}", json={field: value})
+    assert res.status_code == 422
+    assert "detail" in res.json()
+
+
+@pytest.mark.order(2)
+async def test_delete_series(ac, created_series):
+    for series in created_series:
+        assert (await ac.get(f"/series/{series['id']}")).status_code == 200
+        assert (await ac.delete(f"/series/{series['id']}")).status_code == 204
+        assert (await ac.get(f"/series/{series['id']}")).status_code == 404

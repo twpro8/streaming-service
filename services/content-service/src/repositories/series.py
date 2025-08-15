@@ -1,16 +1,18 @@
 import logging
 from datetime import date
 from typing import List
+from uuid import UUID
 
 from asyncpg import UniqueViolationError
 from pydantic import BaseModel
-from sqlalchemy import select, func
+from sqlalchemy import select, func, exists
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException
 from src.models import SeriesORM, SeriesGenreORM
+from src.models.actors import SeriesActorORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import SeriesDataMapper, SeriesWithRelsDataMapper
 from src.schemas.series import SeriesDTO
@@ -29,6 +31,7 @@ class SeriesRepository(BaseRepository):
         page: int | None,
         per_page: int | None,
         genres_ids: List[int] | None,
+        actors_ids: List[UUID] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
         **kwargs,
@@ -42,17 +45,21 @@ class SeriesRepository(BaseRepository):
             "year_gt": lambda v: self.model.release_year > date(v, 1, 1),
             "year_lt": lambda v: self.model.release_year < date(v, 1, 1),
             "rating": lambda v: self.model.rating == v,
-            "rating_ge": lambda v: self.model.rating >= v,
-            "rating_le": lambda v: self.model.rating <= v,
+            "rating_gt": lambda v: self.model.rating > v,
+            "rating_lt": lambda v: self.model.rating < v,
         }
 
         query = select(self.model)
         if genres_ids:
-            query = (
-                query.join(SeriesGenreORM)
-                .filter(SeriesGenreORM.genre_id.in_(genres_ids))
-                .distinct()
+            genre_filter = exists().where(
+                SeriesGenreORM.series_id == self.model.id, SeriesGenreORM.genre_id.in_(genres_ids)
             )
+            query = query.filter(genre_filter)
+        if actors_ids:
+            actor_filter = exists().where(
+                SeriesActorORM.series_id == self.model.id, SeriesActorORM.actor_id.in_(actors_ids)
+            )
+            query = query.filter(actor_filter)
 
         for key, value in kwargs.items():
             if key in filters and value is not None:

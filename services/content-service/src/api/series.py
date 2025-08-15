@@ -26,10 +26,12 @@ async def get_series(
     common_params: ContentParamsDep,
     sort: SortDep,
     genres_ids: Annotated[List[int] | None, Query()] = None,
+    actors_ids: Annotated[List[UUID] | None, Query()] = None,
 ):
     series = await SeriesService(db).get_series(
         **common_params.model_dump(),
         genres_ids=genres_ids,
+        actors_ids=actors_ids,
         sort_by=sort.field,
         sort_order=sort.order,
     )
