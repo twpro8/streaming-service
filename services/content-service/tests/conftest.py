@@ -195,3 +195,17 @@ async def get_all_series_with_rels(ac):
         data = res.json()["data"]
         series.append(data)
     return series
+
+
+@pytest.fixture(scope="session")
+async def get_all_seasons():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        seasons = await db_.seasons.get_filtered()
+        return [season.model_dump() for season in seasons]
+
+
+@pytest.fixture(scope="session")
+async def get_all_episodes():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        episodes = await db_.episodes.get_filtered()
+        return [episode.model_dump() for episode in episodes]

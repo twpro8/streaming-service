@@ -70,7 +70,7 @@ class EpisodeORM(Base):
         default=uuid4,
     )
     series_id: Mapped[UUID] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
-    season_id: Mapped[UUID] = mapped_column(ForeignKey("seasons.id"))
+    season_id: Mapped[UUID] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
     duration: Mapped[int]

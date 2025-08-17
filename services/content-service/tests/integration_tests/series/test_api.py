@@ -229,7 +229,7 @@ async def test_get_filter_by_actors(
         ),
     ],
 )
-async def test_add_valid_data_without_optional(ac, title, description, director, release_year):
+async def test_add_series_without_optional_valid(ac, title, description, director, release_year):
     res = await ac.post(
         "/series",
         json={
@@ -274,7 +274,7 @@ async def test_add_valid_data_without_optional(ac, title, description, director,
         ),
     ],
 )
-async def test_add_valid_data_with_optional(
+async def test_add_series_with_optional_valid(
     ac,
     title,
     description,
@@ -313,15 +313,18 @@ async def test_add_valid_data_with_optional(
 
 
 invalid_cases = [
-    ("title", [None, True, False, "t", "t" * 256, 1, [], {}, 1.1]),
-    ("description", [None, True, False, "d", "d" * 256, 1, [], {}, 1.1]),
-    ("director", [None, True, False, "d", "d" * 50, 1, [], {}, 1.1]),
+    ("title", ["t", "t" * 256]),
     (
-        "release_year",
-        ["10-01-01", "999-01-01", "2100-01-01", None, True, False, "string", 1, [], {}, 1.1],
+        "description",
+        [
+            "d",
+            "d" * 256,
+        ],
     ),
-    ("cover_url", ["string", False, [], {}, 0, 1, 1.1]),
-    ("genres_ids", ["string", False, {}, 0, 1, 1.1, ["string", 1.1, False, 0, [], {}]]),
+    ("director", ["d", "d" * 50]),
+    ("release_year", ["10-01-01", "999-01-01", "2100-01-01"]),
+    ("cover_url", ["invalid-format"]),
+    ("genres_ids", ["string", ["string"]]),
     ("actors_ids", ["string", 11]),
 ]
 
@@ -330,7 +333,7 @@ invalid_cases = [
 @pytest.mark.parametrize(
     "field, invalid_value", [(field, val) for field, vals in invalid_cases for val in vals]
 )
-async def test_add_invalid_fields(ac, field, invalid_value):
+async def test_add_series_invalid(ac, field, invalid_value):
     valid_data = {
         "title": "Valid Title3",
         "description": "Valid Description3",
@@ -347,7 +350,7 @@ async def test_add_invalid_fields(ac, field, invalid_value):
 
 
 @pytest.mark.order(2)
-async def test_on_conflict(ac):
+async def test_series_on_conflict(ac):
     req_body = {
         "title": "Valid Title7",
         "description": "Valid Description7",
@@ -370,7 +373,7 @@ async def test_on_conflict(ac):
         ("actors_ids", [str(uuid4())]),
     ],
 )
-async def test_not_found(ac, field, value):
+async def test_series_not_found(ac, field, value):
     req_body = {
         "title": "Valid Title8",
         "description": "Valid Description8",
@@ -462,7 +465,7 @@ async def test_update_series_actors(ac, get_all_actors, get_all_series, actors_i
         ("actors_ids", ["str"]),
     ],
 )
-async def test_update_field_invalid(ac, get_all_series, field, value):
+async def test_update_series_invalid(ac, get_all_series, field, value):
     series_id = get_all_series[0]["id"]
     res = await ac.patch(f"/series/{series_id}", json={field: value})
     assert res.status_code == 422

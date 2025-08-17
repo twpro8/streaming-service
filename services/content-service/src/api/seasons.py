@@ -19,7 +19,7 @@ router = APIRouter(prefix="/seasons", tags=["Seasons"])
 
 
 @router.get("")
-async def get_seasons(db: DBDep, pagination: PaginationDep, series_id: UUID = Query()):
+async def get_seasons(db: DBDep, pagination: PaginationDep, series_id: UUID | None = Query(None)):
     data = await SeasonService(db).get_seasons(
         series_id=series_id,
         page=pagination.page,
