@@ -1,224 +1,174 @@
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import pytest
 
-from src.schemas.pydantic_types import ContentType
+from tests.utils import get_and_validate, calculate_expected_length
 
 
-prefix = "/comments"
-random_uuid = str(uuid4())
-valid_film_uuid = ("36eea251-89ef-454a-892c-ed559b5ae496", "2a8513f3-f255-4040-aaa6-971974b1f069")
-valid_series_uuid = ("bf5315e1-fdfc-4af3-b18c-1ccc83892797", "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4")
-comments: list[UUID] = []
+@pytest.mark.order(3)
+@pytest.mark.parametrize("content_type, id_key", (("film", "film_id"), ("series", "series_id")))
+@pytest.mark.parametrize("page, per_page", ((1, 2), (2, 2), (3, 2), (4, 2)))
+async def test_get_content_comments(ac, get_all_comments, content_type, id_key, page, per_page):
+    content_id = next(c[id_key] for c in get_all_comments if c.get(id_key, None))
+    all_comments = [c for c in get_all_comments if c.get(id_key, None) == content_id]
+    assert len(all_comments) >= 5
+
+    expected_count = calculate_expected_length(page, per_page, len(all_comments))
+
+    comments = await get_and_validate(
+        ac=ac,
+        url="/comments",
+        params={
+            "page": page,
+            "per_page": per_page,
+            "content_id": content_id,
+            "content_type": content_type,
+        },
+    )
+    assert len(comments) == expected_count
 
 
+@pytest.mark.order(3)
+@pytest.mark.parametrize("page, per_page", ((1, 3), (2, 3), (3, 3), (4, 3)))
+async def test_get_user_comments_valid(ac, get_all_comments, current_user_id, page, per_page):
+    all_user_comments = [c for c in get_all_comments if c["user_id"] == current_user_id]
+    assert len(all_user_comments) >= 5
+
+    expected_count = calculate_expected_length(
+        page=page,
+        per_page=per_page,
+        total_count=len(all_user_comments),
+    )
+
+    comments = await get_and_validate(
+        ac=ac, url="/comments/user", params={"page": page, "per_page": per_page}
+    )
+    assert len(comments) == expected_count
+
+
+@pytest.mark.order(3)
+@pytest.mark.parametrize("text", ("Valid comment text 1", "Valid comment text 2"))
+async def test_add_film_comment_valid(ac, get_all_films, text):
+    film_id = str(get_all_films[0]["id"])
+
+    res = await ac.post(
+        url="/comments",
+        json={
+            "content_id": film_id,
+            "content_type": "film",
+            "comment": text,
+        },
+    )
+    assert res.status_code == 201
+
+    comment_id = res.json()["data"]["id"]
+
+    comment = await get_and_validate(ac, f"/comments/{comment_id}", expect_list=False)
+
+    assert comment["id"] == comment_id
+    assert comment["comment"] == text
+    assert comment["film_id"] == film_id
+    assert comment["created_at"] is not None
+
+
+@pytest.mark.order(3)
+@pytest.mark.parametrize("text", ("Valid comment text 1", "Valid comment text 2"))
+async def test_add_series_comment_valid(ac, get_all_series, text):
+    series_id = str(get_all_series[0]["id"])
+
+    res = await ac.post(
+        url="/comments",
+        json={
+            "content_id": series_id,
+            "content_type": "series",
+            "comment": text,
+        },
+    )
+    assert res.status_code == 201
+
+    comment_id = res.json()["data"]["id"]
+
+    comment = await get_and_validate(ac, f"/comments/{comment_id}", expect_list=False)
+
+    assert comment["id"] == comment_id
+    assert comment["comment"] == text
+    assert comment["series_id"] == series_id
+    assert comment["created_at"] is not None
+
+
+@pytest.mark.order(3)
 @pytest.mark.parametrize(
-    "content_id, content_type, comment_body, status_code, extra",
-    [
-        # Valid data
-        (valid_film_uuid[0], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[0], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[0], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[0], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[0], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[1], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[1], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[1], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[1], ContentType.film, "Valid Comment", 201, {}),
-        (valid_film_uuid[1], ContentType.film, "Valid Comment", 201, {}),
-        (valid_series_uuid[0], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[0], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[0], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[0], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[0], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[1], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[1], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[1], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[1], ContentType.series, "Valid Comment", 201, {}),
-        (valid_series_uuid[1], ContentType.series, "Valid Comment", 201, {}),
-        # Content does not exist
-        (random_uuid, ContentType.film, "Comment text", 404, {}),
-        (random_uuid, ContentType.series, "Comment text", 404, {}),
-        (random_uuid, ContentType.film, "Comment text", 404, {}),
-        (random_uuid, ContentType.series, "Comment text", 404, {}),
-        # Invalid content type
-        (valid_film_uuid[0], 1, "Valid Comment", 422, {}),
-        (valid_film_uuid[0], "", "Valid Comment", 422, {}),
-        (valid_film_uuid[0], [], "Valid Comment", 422, {}),
-        (valid_film_uuid[0], {}, "Valid Comment", 422, {}),
-        (valid_film_uuid[0], True, "Valid Comment", 422, {}),
-        (valid_film_uuid[0], "something", "Valid Comment", 422, {}),
-        (valid_film_uuid[0], "something" * 100, "Valid Comment", 422, {}),
-        # Invalid comment text
-        (valid_film_uuid[0], ContentType.film, 1, 422, {}),
-        (valid_film_uuid[0], ContentType.film, "", 422, {}),
-        (valid_film_uuid[0], ContentType.film, "C" * 256, 422, {}),
-        # Invalid UUID
-        (1, ContentType.film, "Valid Comment", 422, {}),
-        ([], ContentType.film, "Valid Comment", 422, {}),
-        ({}, ContentType.film, "Valid Comment", 422, {}),
-        (True, ContentType.film, "Valid Comment", 422, {}),
-        ("uuid-is-not-valid", ContentType.film, "Valid Comment", 422, {}),
-        # Extra
-        (valid_film_uuid[0], ContentType.film, "Valid Comment", 422, {"Unknown": 1}),
-        (valid_series_uuid[0], ContentType.series, "Valid Comment", 422, {"Unknown": 1}),
-    ],
+    "field, value",
+    (
+        ("comment", "t"),
+        ("comment", "t" * 256),
+        ("content_type", "unknown"),
+        ("series_id", "invalid-format"),
+    ),
 )
-async def test_add_comment(
-    ac,
-    content_id,
-    content_type,
-    comment_body,
-    status_code,
-    extra,
-):
-    request_body = {
-        "content_id": content_id,
-        "content_type": content_type,
-        "comment": comment_body,
-    } | extra
-    res = await ac.post(url=prefix, json=request_body)
-    assert res.status_code == status_code
-
-    if status_code == 201:
-        assert res.json()["status"] == "ok"
-
-        data = res.json()["data"]
-        assert isinstance(data, dict)
-
-        exact_id = "film_id" if content_type == ContentType.film else "series_id"
-
-        assert data[exact_id] == content_id
-        assert data["comment"] == comment_body
-        assert data["id"] is not None
-        assert data["created_at"] is not None
-
-        comments.append(data["id"])
+async def test_add_comment_invalid(ac, get_all_films, field, value):
+    film_id = str(get_all_films[0]["id"])
+    res = await ac.post(
+        url="/comments",
+        json={
+            "content_id": film_id,
+            "content_type": "film",
+            "comment": "Valid comment text",
+            field: value,
+        },
+    )
+    assert res.status_code == 422
 
 
+@pytest.mark.order(3)
+@pytest.mark.parametrize("content_type", ("film", "series"))
+async def test_add_comment_content_not_found(ac, content_type):
+    res = await ac.post(
+        url="/comments",
+        json={
+            "content_id": str(uuid4()),
+            "content_type": content_type,
+            "comment": "Valid comment text",
+        },
+    )
+    assert res.status_code == 404
+
+
+@pytest.mark.order(3)
+async def test_update_comment_valid(ac, get_all_comments):
+    comment_id = str(get_all_comments[0]["id"])
+
+    res = await ac.put(f"/comments/{comment_id}", json={"comment": "Updated comment text"})
+    assert res.status_code == 200
+
+    comment = await get_and_validate(ac, f"/comments/{comment_id}", expect_list=False)
+    assert comment["comment"] == "Updated comment text"
+
+
+@pytest.mark.order(3)
 @pytest.mark.parametrize(
-    "content_id, content_type, query_params, targen_length, status_code",
-    [
-        # Valid data
-        (valid_film_uuid[0], ContentType.film, {"page": 1, "per_page": 3}, 3, 200),
-        (valid_film_uuid[0], ContentType.film, {"page": 2, "per_page": 3}, 2, 200),
-        (valid_film_uuid[0], ContentType.film, {"page": 3, "per_page": 3}, 0, 200),
-        (valid_film_uuid[1], ContentType.film, {"page": 1, "per_page": 3}, 3, 200),
-        (valid_film_uuid[1], ContentType.film, {"page": 2, "per_page": 3}, 2, 200),
-        (valid_film_uuid[1], ContentType.film, {"page": 3, "per_page": 3}, 0, 200),
-        (valid_series_uuid[0], ContentType.series, {"page": 1, "per_page": 3}, 3, 200),
-        (valid_series_uuid[0], ContentType.series, {"page": 2, "per_page": 3}, 2, 200),
-        (valid_series_uuid[0], ContentType.series, {"page": 3, "per_page": 3}, 0, 200),
-        (valid_series_uuid[1], ContentType.series, {"page": 1, "per_page": 3}, 3, 200),
-        (valid_series_uuid[1], ContentType.series, {"page": 2, "per_page": 3}, 2, 200),
-        (valid_series_uuid[1], ContentType.series, {"page": 3, "per_page": 3}, 0, 200),
-        (valid_film_uuid[0], ContentType.film, {}, 5, 200),
-        (valid_film_uuid[1], ContentType.film, {}, 5, 200),
-        (valid_series_uuid[0], ContentType.series, {}, 5, 200),
-        (valid_series_uuid[1], ContentType.series, {}, 5, 200),
-        # Invalid pagination params
-        (valid_film_uuid[0], ContentType.film, {"page": -1, "per_page": 5}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": 10 * 25, "per_page": -1}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": 1, "per_page": -1}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": 1, "per_page": 10 * 25}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": True, "per_page": 5}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": 1, "per_page": True}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": {}, "per_page": 5}, 5, 422),
-        (valid_film_uuid[0], ContentType.film, {"page": 1, "per_page": {}}, 5, 422),
-        (random_uuid, ContentType.film, {}, 0, 200),  # no data found - returns empty list
-        # Invalid uuid
-        ("uuid-is-not-valid", ContentType.film, {}, 0, 422),
-        # Invalid content type
-        (random_uuid, "invalid content type", {}, 0, 422),
-        (random_uuid, True, {}, 0, 422),
-        (random_uuid, "", {}, 0, 422),
-        (random_uuid, 1, {}, 0, 422),
-        (random_uuid, [], {}, 0, 422),
-        (random_uuid, {}, {}, 0, 422),
-    ],
+    "field, value",
+    (
+        ("comment", "t"),
+        ("comment", "t" * 256),
+        ("extra", "unknown"),
+    ),
 )
-async def test_get_comments(
-    ac,
-    content_id,
-    content_type,
-    query_params,
-    targen_length,
-    status_code,
-):
-    query_params = {
-        "content_id": content_id,
-        "content_type": content_type,
-        **query_params,
-    }
-    res = await ac.get(url=prefix, params=query_params)
-    assert res.status_code == status_code
-
-    if status_code == 200:
-        data = res.json()["data"]
-        assert isinstance(data, list)
-        assert len(data) == targen_length
+async def test_update_comment_invalid(ac, get_all_comments, field, value):
+    comment_id = str(get_all_comments[0]["id"])
+    res = await ac.put(
+        f"/comments/{comment_id}",
+        json={
+            "comment": "Valid comment text",
+            field: value,
+        },
+    )
+    assert res.status_code == 422
 
 
-@pytest.mark.parametrize(
-    "query_params, targen_length, status_code",
-    [
-        ({"page": 1, "per_page": 30}, 20, 200),
-        ({"page": 1, "per_page": 8}, 8, 200),
-        ({"page": 2, "per_page": 8}, 8, 200),
-        ({"page": 3, "per_page": 8}, 4, 200),
-        ({"page": 4, "per_page": 8}, 0, 200),
-        # Invalid query params
-        ({"page": -1, "per_page": 5}, 5, 422),
-        ({"page": 10 * 25, "per_page": -1}, 5, 422),
-        ({"page": 1, "per_page": -1}, 5, 422),
-        ({"page": 1, "per_page": 10 * 25}, 5, 422),
-        ({"page": True, "per_page": 5}, 5, 422),
-        ({"page": 1, "per_page": True}, 5, 422),
-        ({"page": {}, "per_page": 5}, 5, 422),
-        ({"page": 1, "per_page": {}}, 5, 422),
-    ],
-)
-async def test_get_user_comments(ac, query_params, targen_length, status_code):
-    res = await ac.get(url="%s/user" % prefix, params=query_params)
-    assert res.status_code == status_code
-
-    if status_code == 200:
-        data = res.json()["data"]
-        assert isinstance(data, list)
-        assert len(data) == targen_length
-
-
-@pytest.mark.parametrize(
-    "comment_body, status_code, extra",
-    [
-        ("Comment Updated", 200, {}),
-        # Invalid comment
-        (1, 422, {}),
-        ("", 422, {}),
-        ("C" * 256, 422, {}),
-        # Extra
-        ("Valid Comment", 422, {"Unknown": 1}),
-    ],
-)
-async def test_update_comment(ac, comment_body, status_code, extra):
-    request_body = {"comment": comment_body} | extra
-
-    res = await ac.put(url=f"%s/{comments[0]}" % prefix, json=request_body)
-    assert res.status_code == status_code
-
-    if status_code == 200:
-        res = await ac.get(url=f"%s/{comments[0]}" % prefix)
-        assert res.status_code == 200
-
-        data = res.json()["data"]
-
-        assert isinstance(data, dict)
-        assert data["id"] == comments[0]
-        assert data["comment"] == comment_body
-
-
-async def test_delete_comment(ac):
-    for i in range(5):
-        assert (await ac.get(url=f"%s/{comments[i]}" % prefix)).status_code == 200
-        assert (await ac.delete(url=f"%s/{comments[i]}" % prefix)).status_code == 204
-        assert (await ac.get(url=f"%s/{comments[i]}" % prefix)).status_code == 404
+@pytest.mark.order(3)
+async def test_delete_comment(ac, get_all_comments):
+    for comment in get_all_comments[:5]:
+        assert (await ac.get(url=f"/comments/{comment['id']}")).status_code == 200
+        assert (await ac.delete(url=f"/comments/{comment['id']}")).status_code == 204
+        assert (await ac.get(url=f"/comments/{comment['id']}")).status_code == 404

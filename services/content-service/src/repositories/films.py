@@ -9,7 +9,6 @@ from sqlalchemy import select, func, exists
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
-from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException, UniqueVideoURLException
 from src.models import FilmORM, FilmGenreORM
 from src.models.actors import FilmActorORM
@@ -32,8 +31,8 @@ class FilmRepository(BaseRepository):
         per_page: int | None,
         genres_ids: List[int] | None,
         actors_ids: List[UUID] | None,
-        sort_by: SortBy | None,
-        sort_order: SortOrder | None,
+        sort_by: str | None,
+        sort_order: str | None,
         **kwargs,
     ):
         filters = {
@@ -64,6 +63,8 @@ class FilmRepository(BaseRepository):
         for key, value in kwargs.items():
             if key in filters and value is not None:
                 query = query.filter(filters[key](value))
+
+        sort_by = "release_year" if sort_by == "year" else sort_by
 
         # apply sorting and pagination
         query = self._apply_sorting_and_pagination(

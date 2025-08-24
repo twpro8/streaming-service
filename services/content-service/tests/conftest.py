@@ -11,12 +11,16 @@ from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
 from src.schemas.actors import ActorAddDTO, FilmActorDTO, SeriesActorDTO
+from src.schemas.comments import CommentAddDTO
 from src.schemas.episodes import EpisodeDTO
 from src.schemas.films import FilmDTO
 from src.schemas.genres import GenreAddDTO, FilmGenreDTO, SeriesGenreDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.series import SeriesDTO
 from tests.utils import read_json
+
+
+user_id = 1
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -37,7 +41,7 @@ async def db() -> AsyncGenerator[Any, Any]:
 
 app.dependency_overrides[get_db] = get_db_null_pool  # noqa
 app.dependency_overrides[get_admin] = lambda: None  # noqa
-app.dependency_overrides[get_current_user_id] = lambda: 1  # The number is a user_id | # noqa
+app.dependency_overrides[get_current_user_id] = lambda: user_id  # The number is a user_id | # noqa
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -56,6 +60,7 @@ async def setup_database(check_test_mode):
     actors_data = [ActorAddDTO.model_validate(ad) for ad in read_json("actors")]
     films_actors_data = [FilmActorDTO.model_validate(fa) for fa in read_json("films_actors")]
     series_actors_data = [SeriesActorDTO.model_validate(sa) for sa in read_json("series_actors")]
+    comments_data = [CommentAddDTO.model_validate(c) for c in read_json("comments")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.films.add_bulk(films_data)
@@ -68,6 +73,7 @@ async def setup_database(check_test_mode):
         await db_.actors.add_bulk(actors_data)
         await db_.films_actors.add_bulk(films_actors_data)
         await db_.series_actors.add_bulk(series_actors_data)
+        await db_.comments.add_bulk(comments_data)
         await db_.commit()
 
 
@@ -158,6 +164,13 @@ async def created_series(ac):
             await ac.delete(f"/series/{s['id']}")
 
 
+@pytest.fixture(scope="function")
+async def get_all_comments():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        comments = await db_.comments.get_filtered()
+        return [comment.model_dump() for comment in comments]
+
+
 @pytest.fixture(scope="session")
 async def get_all_films():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
@@ -209,3 +222,8 @@ async def get_all_episodes():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         episodes = await db_.episodes.get_filtered()
         return [episode.model_dump() for episode in episodes]
+
+
+@pytest.fixture(scope="session")
+async def current_user_id() -> int:
+    return user_id

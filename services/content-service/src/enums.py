@@ -9,7 +9,7 @@ class StrEnum(str, Enum):
 class SortBy(StrEnum):
     id = "id"
     title = "title"
-    release_year = "release_year"
+    year = "year"
     rating = "rating"
 
 

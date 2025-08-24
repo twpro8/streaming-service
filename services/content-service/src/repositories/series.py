@@ -65,6 +65,8 @@ class SeriesRepository(BaseRepository):
             if key in filters and value is not None:
                 query = query.filter(filters[key](value))
 
+        sort_by = "release_year" if sort_by == "year" else sort_by
+
         # apply sorting and pagination
         query = self._apply_sorting_and_pagination(
             query=query,

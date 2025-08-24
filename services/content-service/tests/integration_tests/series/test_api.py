@@ -24,6 +24,39 @@ async def test_pagination(ac, page, per_page, get_all_series):
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
+    "field, order",
+    [
+        ("id", "asc"),
+        ("id", "desc"),
+        ("title", "asc"),
+        ("title", "desc"),
+        ("year", "asc"),
+        ("year", "desc"),
+        ("rating", "asc"),
+        ("rating", "desc"),
+    ],
+)
+async def test_series_sorting(ac, field, order, max_pagination):
+    data = await get_and_validate(
+        ac, "/series", params={"sort": f"{field}:{order}", **max_pagination}
+    )
+    # Extract field values for sorting
+    if field == "year":
+        values = [int(film["release_year"][:4]) for film in data]
+    elif field == "id":
+        values = [film["id"] for film in data]
+    elif field == "rating":
+        values = [float(film["rating"]) for film in data]
+    elif field == "title":
+        values = [film["title"] for film in data]
+    else:
+        raise AssertionError(f"Unknown field: {field}")
+    sorted_values = sorted(values, reverse=(order == "desc"))
+    assert values == sorted_values
+
+
+@pytest.mark.order(2)
+@pytest.mark.parametrize(
     "title",
     [
         "Bad",

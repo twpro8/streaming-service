@@ -99,7 +99,7 @@ class SortParams(BaseModel):
                 "sort_year_asc": Example(
                     summary="Sort by year ascending",
                     description='Sort items by their release year. Use "asc" for oldest to newest or "desc" for newest to oldest. Default is "asc" if not specified.',
-                    value="release_year:asc",
+                    value="year:asc",
                 ),
                 "sort_year_desc": Example(
                     summary="Sort by year descending",

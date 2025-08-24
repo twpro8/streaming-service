@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound
 
-from src.enums import SortBy, SortOrder
+from src.enums import SortOrder
 from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 from src.repositories.utils import normalize_for_insert
@@ -84,7 +84,10 @@ class BaseRepository:
 
     @staticmethod
     def _apply_sorting(
-        query, model, sort_by: SortBy = SortBy.id, sort_order: SortOrder = SortOrder.asc
+        query,
+        model,
+        sort_by: str = "id",
+        sort_order: str = "desc",
     ):
         """Applies sorting to query."""
         if sort_by:
@@ -99,10 +102,10 @@ class BaseRepository:
         self,
         query,
         model,
+        sort_by: str,
+        sort_order: str,
         page: int = None,
         per_page: int = None,
-        sort_by: SortBy = SortBy.id,
-        sort_order: SortOrder = SortOrder.asc,
     ):
         query = self._apply_sorting(query, model, sort_by, sort_order)
         query = self._paginate(query, page, per_page)
