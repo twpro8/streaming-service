@@ -12,6 +12,7 @@ class CommentAddRequestDTO(BaseSchema):
 
 
 class CommentAddDTO(BaseSchema):
+    id: UUID
     film_id: UUID | None = None
     series_id: UUID | None = None
     user_id: IDInt
@@ -23,5 +24,4 @@ class CommentPutRequestDTO(BaseSchema):
 
 
 class CommentDTO(CommentAddDTO):
-    id: UUID
     created_at: datetime

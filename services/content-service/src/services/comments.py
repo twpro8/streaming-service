@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from src.exceptions import ContentNotFoundException, CommentNotFoundException
 from src.schemas.comments import CommentAddRequestDTO, CommentAddDTO, CommentPutRequestDTO
@@ -36,16 +36,22 @@ class CommentService(BaseService):
             raise CommentNotFoundException
         return comment
 
-    async def add_comment(self, user_id: int, data: CommentAddRequestDTO):
+    async def add_comment(self, user_id: int, data: CommentAddRequestDTO) -> UUID:
         if not await self.check_content_exists(data.content_id, data.content_type):
             raise ContentNotFoundException
 
+        comment_id = uuid4()
         key = self.get_content_type_key(data.content_type)
-        new_comment = CommentAddDTO(user_id=user_id, **{key: data.content_id}, comment=data.comment)
-        comment = await self.db.comments.add(data=new_comment)
+        new_comment = CommentAddDTO(
+            id=comment_id,
+            user_id=user_id,
+            **{key: data.content_id},
+            comment=data.comment,
+        )
+        await self.db.comments.add(data=new_comment)
 
         await self.db.commit()
-        return comment
+        return comment_id
 
     async def update_comment(self, user_id: int, comment_id: UUID, data: CommentPutRequestDTO):
         if not await self.check_comment_exists(id=comment_id, user_id=user_id):

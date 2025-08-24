@@ -17,6 +17,7 @@ from src.schemas.pydantic_types import (
 
 
 class FilmAddDTO(BaseModel):
+    id: UUID
     title: TitleStr
     description: DescriptionStr
     director: DirectorStr
@@ -25,7 +26,13 @@ class FilmAddDTO(BaseModel):
     cover_url: AnyUrl | None = None
 
 
-class FilmAddRequestDTO(BaseSchema, FilmAddDTO):
+class FilmAddRequestDTO(BaseSchema):
+    title: TitleStr
+    description: DescriptionStr
+    director: DirectorStr
+    release_year: ReleaseYearDate
+    duration: DurationInt
+    cover_url: AnyUrl | None = None
     genres_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
         examples=[
@@ -41,7 +48,6 @@ class FilmAddRequestDTO(BaseSchema, FilmAddDTO):
 
 
 class FilmDTO(FilmAddDTO):
-    id: UUID
     rating: RatingDecimal
     video_url: AnyUrl | None = None
 

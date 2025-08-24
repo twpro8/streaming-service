@@ -14,13 +14,8 @@ class ActorAddRequestDTO(BaseSchema):
     bio: Str128 | None = None
 
 
-class ActorAddDTO(BaseSchema):
+class ActorAddDTO(ActorAddRequestDTO):
     id: UUID
-    first_name: Str48
-    last_name: Str48
-    birth_date: BirthDate
-    zodiac_sign: ZodiacSign | None = None
-    bio: Str128 | None = None
 
 
 class ActorDTO(ActorAddDTO):

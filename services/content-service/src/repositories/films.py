@@ -90,9 +90,9 @@ class FilmRepository(BaseRepository):
             return None
         return FilmWithRelsDataMapper.map_to_domain_entity(model)
 
-    async def add_film(self, data: BaseModel):
+    async def add_film(self, data: BaseModel) -> None:
         try:
-            data = await self.add(data)
+            await self.add(data)
         except IntegrityError as exc:
             cause = getattr(exc.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
@@ -102,7 +102,6 @@ class FilmRepository(BaseRepository):
                         raise UniqueCoverURLException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
-        return data
 
     async def update_film(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         try:

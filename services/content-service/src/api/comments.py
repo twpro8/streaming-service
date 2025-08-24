@@ -56,10 +56,10 @@ async def get_comment(db: DBDep, comment_id: UUID):
 @router.post("", status_code=201)
 async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
     try:
-        comment = await CommentService(db).add_comment(user_id=user_id, data=data)
+        comment_id = await CommentService(db).add_comment(user_id=user_id, data=data)
     except ContentNotFoundException:
         raise ContentNotFoundHTTPException
-    return {"status": "ok", "data": comment}
+    return {"status": "ok", "data": {"id": comment_id}}
 
 
 @router.put("/{comment_id}")

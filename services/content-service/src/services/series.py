@@ -1,6 +1,6 @@
 from decimal import Decimal
 from typing import List
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from src.enums import SortBy, SortOrder
 from src.schemas.actors import SeriesActorDTO
@@ -64,16 +64,17 @@ class SeriesService(BaseService):
             raise SeriesNotFoundException
         return series
 
-    async def add_series(self, series_data: SeriesAddRequestDTO):
-        _series_data = SeriesAddDTO(**series_data.model_dump())
+    async def add_series(self, series_data: SeriesAddRequestDTO) -> UUID:
+        series_id = uuid4()
+        _series_data = SeriesAddDTO(id=series_id, **series_data.model_dump())
         try:
-            series = await self.db.series.add_series(_series_data)
+            await self.db.series.add_series(_series_data)
         except UniqueCoverURLException:
             raise
 
         if series_data.genres_ids:
             _series_genres_data = [
-                SeriesGenreDTO(series_id=series.id, genre_id=genre_id)
+                SeriesGenreDTO(series_id=series_id, genre_id=genre_id)
                 for genre_id in series_data.genres_ids
             ]
             try:
@@ -82,7 +83,7 @@ class SeriesService(BaseService):
                 raise
         if series_data.actors_ids:
             _series_actors_data = [
-                SeriesActorDTO(series_id=series.id, actor_id=actor_id)
+                SeriesActorDTO(series_id=series_id, actor_id=actor_id)
                 for actor_id in series_data.actors_ids
             ]
             try:
@@ -91,7 +92,7 @@ class SeriesService(BaseService):
                 raise
 
         await self.db.commit()
-        return series
+        return series_id
 
     async def update_series(self, series_id: UUID, series_data: SeriesPatchRequestDTO):
         if not await self.check_series_exists(id=series_id):

@@ -91,9 +91,9 @@ class SeriesRepository(BaseRepository):
             return None
         return SeriesWithRelsDataMapper.map_to_domain_entity(model)
 
-    async def add_series(self, data: BaseModel):
+    async def add_series(self, data: BaseModel) -> None:
         try:
-            data = await self.add(data)
+            await self.add(data)
         except IntegrityError as exc:
             cause = getattr(exc.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
@@ -103,7 +103,6 @@ class SeriesRepository(BaseRepository):
                         raise UniqueCoverURLException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
-        return data
 
     async def update_series(
         self,

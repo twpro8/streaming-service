@@ -50,11 +50,11 @@ class EpisodeRepository(BaseRepository):
         episodes = res.scalars().all()
         return [EpisodeDataMapper.map_to_domain_entity(ep) for ep in episodes]
 
-    async def add(self, data: BaseModel):
+    async def add(self, data: BaseModel) -> None:
         data = normalize_for_insert(data.model_dump())
-        stmt = insert(self.model).values(**data).returning(self.model)
+        stmt = insert(self.model).values(**data)
         try:
-            res = await self.session.execute(stmt)
+            await self.session.execute(stmt)
         except IntegrityError as exc:
             if isinstance(exc.orig.__cause__, UniqueViolationError):
                 cause = getattr(exc.orig, "__cause__", None)
@@ -68,8 +68,6 @@ class EpisodeRepository(BaseRepository):
                         raise UniqueFileURLException
                 raise
             raise
-        model = res.scalars().one()
-        return self.mapper.map_to_domain_entity(model)
 
     async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))

@@ -21,14 +21,19 @@ class RatingRepository(BaseRepository):
         content_id: UUID,
         content_type: ContentType,
         value: Decimal,
-    ):
+    ) -> None:
         delta_sum = value
         delta_count = 1
         need_update = False
 
         # checking an existing rating
         query = (
-            select(RatingORM).filter_by(user_id=user_id, content_id=content_id).with_for_update()
+            select(RatingORM)
+            .filter_by(
+                user_id=user_id,
+                content_id=content_id,
+            )
+            .with_for_update()
         )
         res = await self.session.execute(query)
         rating = res.scalar_one_or_none()

@@ -36,10 +36,10 @@ async def get_genre(db: DBDep, genre_id: IDInt):
 @router.post("", dependencies=[AdminDep], status_code=201)
 async def add_genre(db: DBDep, genre_data: GenreAddDTO):
     try:
-        genre = await GenreService(db).add_genre(genre_data=genre_data)
+        genre_id = await GenreService(db).add_genre(genre_data=genre_data)
     except GenreAlreadyExistsException:
         raise GenreAlreadyExistsHTTPException
-    return {"status": "ok", "data": genre}
+    return {"status": "ok", "data": {"id": genre_id}}
 
 
 @router.delete("/{genre_id}", dependencies=[AdminDep], status_code=204)

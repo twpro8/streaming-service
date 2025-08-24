@@ -10,7 +10,7 @@ from src.exceptions import (
     UniqueSeasonPerSeriesException,
     SeasonAlreadyExistsHTTPException,
 )
-from src.schemas.seasons import SeasonAddDTO, SeasonPatchRequestDTO
+from src.schemas.seasons import SeasonPatchRequestDTO, SeasonAddRequestDTO
 from src.services.seasons import SeasonService
 from src.api.dependencies import DBDep, AdminDep, PaginationDep
 
@@ -38,14 +38,14 @@ async def get_season(db: DBDep, season_id: UUID):
 
 
 @router.post("", dependencies=[AdminDep], status_code=201)
-async def add_season(db: DBDep, season_data: SeasonAddDTO):
+async def add_season(db: DBDep, season_data: SeasonAddRequestDTO):
     try:
-        data = await SeasonService(db).add_season(season_data=season_data)
+        season_id = await SeasonService(db).add_season(season_data=season_data)
     except SeriesNotFoundException:
         raise SeriesNotFoundHTTPException
     except UniqueSeasonPerSeriesException:
         raise SeasonAlreadyExistsHTTPException
-    return {"status": "ok", "data": data}
+    return {"status": "ok", "data": {"id": season_id}}
 
 
 @router.patch("/{season_id}", dependencies=[AdminDep])

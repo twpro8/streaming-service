@@ -20,9 +20,9 @@ class SeasonRepository(BaseRepository):
     schema = SeasonDTO
     mapper = SeasonDataMapper
 
-    async def add_season(self, data: BaseModel):
+    async def add_season(self, data: BaseModel) -> None:
         try:
-            data = await self.add(data)
+            await self.add(data)
         except IntegrityError as exc:
             cause = getattr(exc.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
@@ -32,7 +32,6 @@ class SeasonRepository(BaseRepository):
                         raise UniqueSeasonPerSeriesException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
-        return data
 
     async def update_season(self, season_id: UUID, data: BaseModel, exclude_unset: bool = False):
         try:

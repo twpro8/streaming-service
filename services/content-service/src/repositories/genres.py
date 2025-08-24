@@ -12,6 +12,7 @@ from src.repositories.mappers.mappers import (
     FilmGenreDataMapper,
     SeriesGenreDataMapper,
 )
+from src.repositories.utils import normalize_for_insert
 from src.schemas.genres import GenreDTO, FilmGenreDTO, SeriesGenreDTO
 
 
@@ -19,6 +20,12 @@ class GenreRepository(BaseRepository):
     model = GenreORM
     schema = GenreDTO
     mapper = GenreDataMapper
+
+    async def add_genre(self, data: BaseModel) -> int:
+        data = normalize_for_insert(data.model_dump())
+        stmt = insert(self.model).values(**data).returning(self.model.id)
+        res = await self.session.execute(stmt)
+        return res.scalars().one()
 
 
 class FilmGenreRepository(BaseRepository):

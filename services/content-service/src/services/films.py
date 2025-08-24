@@ -1,7 +1,6 @@
 from decimal import Decimal
 from typing import List
-from uuid import UUID
-
+from uuid import UUID, uuid4
 
 from src.enums import SortBy, SortOrder
 from src.schemas.actors import FilmActorDTO
@@ -61,16 +60,17 @@ class FilmService(BaseService):
             raise FilmNotFoundException
         return film
 
-    async def add_film(self, film_data: FilmAddRequestDTO):
-        _film_data = FilmAddDTO(**film_data.model_dump())
+    async def add_film(self, film_data: FilmAddRequestDTO) -> UUID:
+        film_id = uuid4()
+        _film_data = FilmAddDTO(id=film_id, **film_data.model_dump())
         try:
-            film = await self.db.films.add_film(_film_data)
+            await self.db.films.add_film(_film_data)
         except UniqueCoverURLException:
             raise
 
         if film_data.genres_ids:
             _film_genres_data = [
-                FilmGenreDTO(film_id=film.id, genre_id=genre_id)
+                FilmGenreDTO(film_id=film_id, genre_id=genre_id)
                 for genre_id in film_data.genres_ids
             ]
             try:
@@ -79,7 +79,7 @@ class FilmService(BaseService):
                 raise
         if film_data.actors_ids:
             _film_actors_data = [
-                FilmActorDTO(film_id=film.id, actor_id=actor_id)
+                FilmActorDTO(film_id=film_id, actor_id=actor_id)
                 for actor_id in film_data.actors_ids
             ]
             try:
@@ -88,7 +88,7 @@ class FilmService(BaseService):
                 raise
 
         await self.db.commit()
-        return film
+        return film_id
 
     async def update_film(self, film_id: UUID, film_data: FilmPatchRequestDTO):
         if not await self.check_film_exists(id=film_id):

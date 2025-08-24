@@ -22,25 +22,31 @@ class BaseRepository:
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered(self, page: int = None, per_page: int = None, *filter, **filter_by):
+    async def get_filtered(
+        self,
+        page: int = None,
+        per_page: int = None,
+        *filter,
+        **filter_by,
+    ) -> list[BaseModel]:
         query = select(self.model).filter(*filter).filter_by(**filter_by)
         query = self._paginate(query, page, per_page)
         return await self._execute_and_map_all(query)
 
-    async def get_one(self, **filter_by):
+    async def get_one(self, **filter_by) -> BaseModel:
         query = select(self.model).filter_by(**filter_by)
         return await self._execute_and_map_one(query)
 
-    async def get_one_or_none(self, **filter_by):
+    async def get_one_or_none(self, **filter_by) -> BaseModel | None:
         query = select(self.model).filter_by(**filter_by)
         return await self._execute_and_map_one_or_none(query)
 
-    async def add(self, data: BaseModel):
+    async def add(self, data: BaseModel) -> None:
         data = normalize_for_insert(data.model_dump())
-        stmt = insert(self.model).values(**data).returning(self.model)
-        return await self._execute_and_map_one(stmt)
+        stmt = insert(self.model).values(**data)
+        await self.session.execute(stmt)
 
-    async def add_bulk(self, data: list[BaseModel]):
+    async def add_bulk(self, data: list[BaseModel]) -> None:
         stmt = insert(self.model).values([item.model_dump() for item in data])
         await self.session.execute(stmt)
 
@@ -56,7 +62,7 @@ class BaseRepository:
         stmt = delete(self.model).filter_by(**filter_by)
         await self.session.execute(stmt)
 
-    async def _execute_and_map_one(self, query):
+    async def _execute_and_map_one(self, query) -> BaseModel:
         res = await self.session.execute(query)
         try:
             model = res.scalars().one()
@@ -64,14 +70,14 @@ class BaseRepository:
             raise ObjectNotFoundException
         return self.mapper.map_to_domain_entity(model)
 
-    async def _execute_and_map_one_or_none(self, query):
+    async def _execute_and_map_one_or_none(self, query) -> BaseModel | None:
         res = await self.session.execute(query)
         model = res.scalars().one_or_none()
         if model is None:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def _execute_and_map_all(self, query):
+    async def _execute_and_map_all(self, query) -> list[BaseModel]:
         res = await self.session.execute(query)
         return [self.mapper.map_to_domain_entity(m) for m in res.scalars().all()]
 

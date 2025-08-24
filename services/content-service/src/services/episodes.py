@@ -1,8 +1,9 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from src.schemas.episodes import (
     EpisodePatchRequestDTO,
     EpisodeAddDTO,
+    EpisodeAddRequestDTO,
 )
 from src.services.base import BaseService
 from src.exceptions import (
@@ -50,22 +51,27 @@ class EpisodeService(BaseService):
             raise EpisodeNotFoundException
         return episode
 
-    async def add_episode(self, data: EpisodeAddDTO):
+    async def add_episode(self, episode_data: EpisodeAddRequestDTO) -> UUID:
         """
         Add new episode.
         """
-        if not await self.check_series_exists(id=data.series_id):
+        if not await self.check_series_exists(id=episode_data.series_id):
             raise SeriesNotFoundException
-        if not await self.check_season_exists(id=data.season_id):
+        if not await self.check_season_exists(id=episode_data.season_id):
             raise SeasonNotFoundException
+
+        episode_id = uuid4()
+        _episode_data = EpisodeAddDTO(id=episode_id, **episode_data.model_dump())
+
         try:
-            new_episode = await self.db.episodes.add(data)
+            await self.db.episodes.add(_episode_data)
         except UniqueEpisodePerSeasonException:
             raise UniqueEpisodePerSeasonException
         except UniqueFileURLException:
             raise UniqueFileURLException
+
         await self.db.commit()
-        return new_episode
+        return episode_id
 
     async def update_episode(self, episode_id: UUID, data: EpisodePatchRequestDTO):
         """

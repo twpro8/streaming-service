@@ -4,7 +4,7 @@ from src.services.base import BaseService
 
 
 class RatingService(BaseService):
-    async def rate(self, user_id: int, data: RatingAddRequestDTO):
+    async def rate(self, user_id: int, data: RatingAddRequestDTO) -> None:
         if not await self.check_content_exists(data.content_id, data.content_type):
             raise ContentNotFoundException
 

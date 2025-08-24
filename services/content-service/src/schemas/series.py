@@ -16,6 +16,7 @@ from src.schemas.pydantic_types import (
 
 
 class SeriesAddDTO(BaseModel):
+    id: UUID
     title: TitleStr
     description: DescriptionStr
     director: DirectorStr
@@ -23,7 +24,12 @@ class SeriesAddDTO(BaseModel):
     cover_url: AnyUrl | None = None
 
 
-class SeriesAddRequestDTO(BaseSchema, SeriesAddDTO):
+class SeriesAddRequestDTO(BaseSchema):
+    title: TitleStr
+    description: DescriptionStr
+    director: DirectorStr
+    release_year: ReleaseYearDate
+    cover_url: AnyUrl | None = None
     genres_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
         examples=[
@@ -39,7 +45,6 @@ class SeriesAddRequestDTO(BaseSchema, SeriesAddDTO):
 
 
 class SeriesDTO(SeriesAddDTO):
-    id: UUID
     rating: RatingDecimal
 
 

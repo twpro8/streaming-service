@@ -15,10 +15,10 @@ from src.repositories.mappers.mappers import (
 )
 from src.schemas.actors import (
     ActorDTO,
-    ActorAddRequestDTO,
     ActorPatchDTO,
     FilmActorDTO,
     SeriesActorDTO,
+    ActorAddDTO,
 )
 
 
@@ -27,12 +27,11 @@ class ActorRepository(BaseRepository):
     schema = ActorDTO
     mapper = ActorDataMapper
 
-    async def add_actor(self, actor_data: ActorAddRequestDTO):
+    async def add_actor(self, actor_data: ActorAddDTO) -> None:
         try:
-            actor = await self.add(data=actor_data)
+            await self.add(data=actor_data)
         except IntegrityError as exc:
             raise ActorAlreadyExistsException from exc
-        return actor
 
     async def update_actor(
         self, actor_id: UUID, actor_data: ActorPatchDTO, exclude_unset: bool = False

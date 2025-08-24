@@ -4,7 +4,7 @@ from fastapi import APIRouter, Path
 
 from src.services.episodes import EpisodeService
 from src.api.dependencies import AdminDep, DBDep, EpisodesParamsDep
-from src.schemas.episodes import EpisodeAddDTO, EpisodePatchRequestDTO
+from src.schemas.episodes import EpisodePatchRequestDTO, EpisodeAddRequestDTO
 
 from src.exceptions import (
     SeriesNotFoundException,
@@ -41,9 +41,9 @@ async def get_episode(db: DBDep, episode_id: UUID):
 
 
 @router.post("", dependencies=[AdminDep], status_code=201)
-async def add_episode(db: DBDep, episode_data: EpisodeAddDTO):
+async def add_episode(db: DBDep, episode_data: EpisodeAddRequestDTO):
     try:
-        episode = await EpisodeService(db).add_episode(episode_data)
+        episode_id = await EpisodeService(db).add_episode(episode_data)
     except SeriesNotFoundException:
         raise SeriesNotFoundHTTPException
     except SeasonNotFoundException:
@@ -54,7 +54,7 @@ async def add_episode(db: DBDep, episode_data: EpisodeAddDTO):
         raise UniqueEpisodePerSeasonHTTPException
     except UniqueFileURLException:
         raise UniqueFileURLHTTPException
-    return {"status": "ok", "data": episode}
+    return {"status": "ok", "data": {"id": episode_id}}
 
 
 @router.patch("/{episode_id}", dependencies=[AdminDep])

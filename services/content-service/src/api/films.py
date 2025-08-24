@@ -53,14 +53,14 @@ async def get_film(db: DBDep, film_id: UUID):
 @router.post("", dependencies=[AdminDep], status_code=201)
 async def add_film(db: DBDep, film_data: FilmAddRequestDTO):
     try:
-        film = await FilmService(db).add_film(film_data)
+        film_id = await FilmService(db).add_film(film_data)
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
-    return {"status": "ok", "data": film}
+    return {"status": "ok", "data": {"id": film_id}}
 
 
 @router.patch("/{film_id}", dependencies=[AdminDep])

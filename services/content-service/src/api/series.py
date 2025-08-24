@@ -50,14 +50,14 @@ async def get_one_series(db: DBDep, series_id: UUID):
 @router.post("", dependencies=[AdminDep], status_code=201)
 async def add_series(db: DBDep, series_data: SeriesAddRequestDTO):
     try:
-        series = await SeriesService(db).add_series(series_data)
+        series_id = await SeriesService(db).add_series(series_data)
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
-    return {"status": "ok", "data": series}
+    return {"status": "ok", "data": {"id": series_id}}
 
 
 @router.patch("/{series_id}", dependencies=[AdminDep])
