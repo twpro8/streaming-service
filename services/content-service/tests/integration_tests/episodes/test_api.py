@@ -21,7 +21,7 @@ from tests.utils import calculate_expected_length, get_and_validate, count_conte
 )
 async def test_episode_pagination(ac, get_all_episodes, page, per_page):
     expected_count = calculate_expected_length(page, per_page, len(get_all_episodes))
-    episodes = await get_and_validate(ac, "/episodes", params={"page": page, "per_page": per_page})
+    episodes = await get_and_validate(ac, "/v1/episodes", params={"page": page, "per_page": per_page})
     assert len(episodes) == expected_count
 
 
@@ -41,14 +41,14 @@ async def test_episode_pagination(ac, get_all_episodes, page, per_page):
     ),
 )
 async def test_get_filter_by_title(ac, get_all_episodes, title, max_pagination):
-    episodes = await get_and_validate(ac, "/episodes", params={"title": title, **max_pagination})
+    episodes = await get_and_validate(ac, "/v1/episodes", params={"title": title, **max_pagination})
     assert len(episodes) == count_content(get_all_episodes, "title", title)
 
 
 @pytest.mark.parametrize("episode_number", (1, 2, 3))
 async def test_get_filter_by_episode_number(ac, get_all_episodes, episode_number, max_pagination):
     episodes = await get_and_validate(
-        ac, "/episodes", params={"episode_number": episode_number, **max_pagination}
+        ac, "/v1/episodes", params={"episode_number": episode_number, **max_pagination}
     )
     expected_count = sum(1 for ep in get_all_episodes if ep["episode_number"] == episode_number)
     assert len(episodes) == expected_count
@@ -58,7 +58,7 @@ async def test_get_filter_by_series_id(ac, get_all_series, max_pagination):
     for series in get_all_series:
         series_id = str(series["id"])
         episodes = await get_and_validate(
-            ac, "/episodes", params={"series_id": series_id, **max_pagination}
+            ac, "/v1/episodes", params={"series_id": series_id, **max_pagination}
         )
         expected_count = sum(1 for ep in episodes if ep["series_id"] == series_id)
         assert len(episodes) == expected_count
@@ -68,7 +68,7 @@ async def test_get_filter_by_season_id(ac, get_all_seasons, max_pagination):
     for season in get_all_seasons:
         season_id = str(season["id"])
         episodes = await get_and_validate(
-            ac, "/episodes", params={"season_id": season_id, **max_pagination}
+            ac, "/v1/episodes", params={"season_id": season_id, **max_pagination}
         )
         expected_count = sum(1 for ep in episodes if ep["season_id"] == season_id)
         assert len(episodes) == expected_count
@@ -87,7 +87,7 @@ async def test_add_episode_valid(ac, get_all_seasons, title, episode_number):
         season_id = str(get_all_seasons[i]["id"])
 
         res = await ac.post(
-            "/episodes",
+            "/v1/episodes",
             json={
                 "series_id": series_id,
                 "season_id": season_id,
@@ -98,7 +98,7 @@ async def test_add_episode_valid(ac, get_all_seasons, title, episode_number):
         )
         assert res.status_code == 201
         episode_id = res.json()["data"]["id"]
-        season = await get_and_validate(ac, f"/episodes/{episode_id}", expect_list=False)
+        season = await get_and_validate(ac, f"/v1/episodes/{episode_id}", expect_list=False)
         assert season["title"] == title
         assert season["episode_number"] == episode_number
 
@@ -108,7 +108,7 @@ async def test_add_valid_episode_with_video_url(ac, get_all_seasons):
     season_id = str(get_all_seasons[0]["id"])
     video_url = "https://www.example.com/video.avi"
     res = await ac.post(
-        "/episodes",
+        "/v1/episodes",
         json={
             "series_id": series_id,
             "season_id": season_id,
@@ -120,7 +120,7 @@ async def test_add_valid_episode_with_video_url(ac, get_all_seasons):
     )
     assert res.status_code == 201
     episode_id = res.json()["data"]["id"]
-    season = await get_and_validate(ac, f"/episodes/{episode_id}", expect_list=False)
+    season = await get_and_validate(ac, f"/v1/episodes/{episode_id}", expect_list=False)
     assert season["video_url"] == video_url
 
 
@@ -142,7 +142,7 @@ async def test_add_episode_invalid(ac, get_all_seasons, field, value):
     season_id = str(get_all_seasons[0]["id"])
 
     res = await ac.post(
-        "/episodes",
+        "/v1/episodes",
         json={
             "series_id": series_id,
             "season_id": season_id,
@@ -177,13 +177,13 @@ async def test_add_episode_on_conflict(ac, get_all_seasons, episode_number, vide
         "video_url": None,
     }
 
-    res = await ac.post("/episodes", json=req_body)
+    res = await ac.post("/v1/episodes", json=req_body)
     assert res.status_code == 201
 
     if not episode_number:
         ep_num += 1
 
-    res = await ac.post("/episodes", json={"episode_number": ep_num, **req_body})
+    res = await ac.post("/v1/episodes", json={"episode_number": ep_num, **req_body})
     assert res.status_code == 409
 
 
@@ -199,7 +199,7 @@ async def test_add_episode_not_found(ac, get_all_episodes, series_id, season_id)
     season_id_val = season_id or str(get_all_episodes[0]["season_id"])
 
     res = await ac.post(
-        "/episodes",
+        "/v1/episodes",
         json={
             "series_id": series_id_val,
             "season_id": season_id_val,
@@ -228,10 +228,10 @@ async def test_add_episode_not_found(ac, get_all_episodes, series_id, season_id)
 )
 async def test_update_episode_valid(ac, get_all_episodes, field, value):
     episode_id = str(get_all_episodes[0]["id"])
-    res = await ac.patch(f"/episodes/{episode_id}", json={field: value})
+    res = await ac.patch(f"/v1/episodes/{episode_id}", json={field: value})
     assert res.status_code == 200
 
-    episode = await get_and_validate(ac, f"/episodes/{episode_id}", expect_list=False)
+    episode = await get_and_validate(ac, f"/v1/episodes/{episode_id}", expect_list=False)
     assert episode[field] == value
 
 
@@ -249,7 +249,7 @@ async def test_update_episode_valid(ac, get_all_episodes, field, value):
 )
 async def test_update_episode_invalid(ac, get_all_episodes, field, value):
     episode_id = str(get_all_episodes[0]["id"])
-    res = await ac.patch(f"/episodes/{episode_id}", json={field: value})
+    res = await ac.patch(f"/v1/episodes/{episode_id}", json={field: value})
     assert res.status_code == 422
 
 
@@ -262,19 +262,19 @@ async def test_update_episode_invalid(ac, get_all_episodes, field, value):
 )
 async def test_update_episode_on_conflict(ac, get_all_seasons, field, value):
     season_id = str(get_all_seasons[0]["id"])
-    episodes = await get_and_validate(ac, "/episodes", params={"season_id": season_id})
+    episodes = await get_and_validate(ac, "/v1/episodes", params={"season_id": season_id})
     assert len(episodes) >= 2
 
-    res = await ac.patch(f"/episodes/{episodes[0]['id']}", json={field: value})
+    res = await ac.patch(f"/v1/episodes/{episodes[0]['id']}", json={field: value})
     assert res.status_code == 200
 
-    res = await ac.patch(f"/episodes/{episodes[1]['id']}", json={field: value})
+    res = await ac.patch(f"/v1/episodes/{episodes[1]['id']}", json={field: value})
     assert res.status_code == 409
 
 
 async def test_update_episode_not_found(ac):
     res = await ac.patch(
-        f"/episodes/{str(uuid4())}",
+        f"/v1/episodes/{str(uuid4())}",
         json={
             "title": "Valid Title",
             "episode_number": 22,
@@ -289,6 +289,6 @@ async def test_update_episode_not_found(ac):
 
 async def test_delete_episode(ac, get_all_episodes):
     for episode in get_all_episodes[:5]:
-        assert (await ac.get(f"/episodes/{episode['id']}")).status_code == 200
-        assert (await ac.delete(f"/episodes/{episode['id']}")).status_code == 204
-        assert (await ac.get(f"/episodes/{episode['id']}")).status_code == 404
+        assert (await ac.get(f"/v1/episodes/{episode['id']}")).status_code == 200
+        assert (await ac.delete(f"/v1/episodes/{episode['id']}")).status_code == 204
+        assert (await ac.get(f"/v1/episodes/{episode['id']}")).status_code == 404

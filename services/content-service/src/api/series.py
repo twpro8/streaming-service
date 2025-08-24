@@ -17,10 +17,11 @@ from src.schemas.series import SeriesAddRequestDTO, SeriesPatchRequestDTO
 from src.services.series import SeriesService
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep, SortDep
 
-router = APIRouter(prefix="/series", tags=["Series"])
+
+v1_router = APIRouter(prefix="/v1/series", tags=["Series"])
 
 
-@router.get("")
+@v1_router.get("")
 async def get_series(
     db: DBDep,
     common_params: ContentParamsDep,
@@ -38,7 +39,7 @@ async def get_series(
     return {"status": "ok", "data": series}
 
 
-@router.get("/{series_id}")
+@v1_router.get("/{series_id}")
 async def get_one_series(db: DBDep, series_id: UUID):
     try:
         series = await SeriesService(db).get_one_series(series_id)
@@ -47,7 +48,7 @@ async def get_one_series(db: DBDep, series_id: UUID):
     return {"status": "ok", "data": series}
 
 
-@router.post("", dependencies=[AdminDep], status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_series(db: DBDep, series_data: SeriesAddRequestDTO):
     try:
         series_id = await SeriesService(db).add_series(series_data)
@@ -60,7 +61,7 @@ async def add_series(db: DBDep, series_data: SeriesAddRequestDTO):
     return {"status": "ok", "data": {"id": series_id}}
 
 
-@router.patch("/{series_id}", dependencies=[AdminDep])
+@v1_router.patch("/{series_id}", dependencies=[AdminDep])
 async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequestDTO):
     try:
         await SeriesService(db).update_series(series_id, series_data)
@@ -75,6 +76,6 @@ async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequ
     return {"status": "ok"}
 
 
-@router.delete("/{series_id}", dependencies=[AdminDep], status_code=204)
+@v1_router.delete("/{series_id}", dependencies=[AdminDep], status_code=204)
 async def delete_series(db: DBDep, series_id: UUID):
     await SeriesService(db).delete_series(series_id)

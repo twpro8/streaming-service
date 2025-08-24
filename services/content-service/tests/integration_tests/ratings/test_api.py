@@ -37,7 +37,7 @@ async def test_add_film_rating_valid(ac, get_all_films, get_all_series, user_id,
     content_id = get_all_films[0]["id"] if content_type == "film" else get_all_series[0]["id"]
 
     res = await ac.post(
-        "/ratings",
+        "/v1/ratings",
         json={
             "content_id": str(content_id),
             "content_type": content_type,
@@ -50,7 +50,7 @@ async def test_add_film_rating_valid(ac, get_all_films, get_all_series, user_id,
     users_ratings[content_type][user_id] = val
     expected_avg = calculate_expected_rating(users_ratings[content_type])
 
-    endpoint = "/films" if content_type == "film" else "/series"
+    endpoint = "/v1/films" if content_type == "film" else "/v1/series"
     res = await ac.get(f"{endpoint}/{content_id}")
     assert res.status_code == 200
 
@@ -78,7 +78,7 @@ async def test_add_rating_invalid(ac, get_all_films, field, value):
     )
 
     res = await ac.post(
-        "/ratings",
+        "/v1/ratings",
         json=req_body,
     )
 
@@ -91,7 +91,7 @@ async def test_add_rating_invalid(ac, get_all_films, field, value):
 async def test_add_rating_not_found(ac, content_type):
     content_id = str(uuid4())
     res = await ac.post(
-        "/ratings",
+        "/v1/ratings",
         json={
             "content_id": content_id,
             "content_type": content_type,

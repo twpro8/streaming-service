@@ -18,18 +18,18 @@ from tests.utils import get_and_validate, calculate_expected_length
 )
 async def test_actors_pagination(ac, page, per_page, get_all_actors):
     expected_length = calculate_expected_length(page, per_page, len(get_all_actors))
-    data = await get_and_validate(ac, "/actors", params={"page": page, "per_page": per_page})
+    data = await get_and_validate(ac, "/v1/actors", params={"page": page, "per_page": per_page})
     assert len(data) == expected_length
 
 
 async def test_get_existing_actor(ac, get_all_actors):
     for actor in get_all_actors:
-        data = await get_and_validate(ac, f"/actors/{actor['id']}", expect_list=False)
+        data = await get_and_validate(ac, f"/v1/actors/{actor['id']}", expect_list=False)
         assert isinstance(data, dict)
 
 
 async def test_get_nonexistent_actor(ac):
-    res = await ac.get(f"/actors/{uuid4()}")
+    res = await ac.get(f"/v1/actors/{uuid4()}")
     assert res.status_code == 404
     assert "detail" in res.json()
 
@@ -49,12 +49,12 @@ async def test_add_actor_valid(ac, first_name, last_name, birth_date, zodiac_sig
         "zodiac_sign": zodiac_sign,
         "bio": bio,
     }
-    res = await ac.post("/actors", json=req_body)
+    res = await ac.post("/v1/actors", json=req_body)
     assert res.status_code == 201
 
     actor_id = res.json()["data"]["id"]
 
-    actor = await get_and_validate(ac, f"/actors/{actor_id}", expect_list=False)
+    actor = await get_and_validate(ac, f"/v1/actors/{actor_id}", expect_list=False)
 
     assert actor["first_name"] == first_name
     assert actor["last_name"] == last_name
@@ -85,7 +85,7 @@ async def test_add_actor_invalid(ac, field, invalid_value):
         "bio": "Likes kittens...",
         field: invalid_value,
     }
-    res = await ac.post("/actors", json=data)
+    res = await ac.post("/v1/actors", json=data)
     assert res.status_code == 422
     assert "detail" in res.json()
 
@@ -108,10 +108,10 @@ async def test_add_actor_invalid(ac, field, invalid_value):
 async def test_update_actor_valid(ac, field, value, get_all_actors):
     actor_id = get_all_actors[0]["id"]
 
-    res = await ac.patch(f"/actors/{actor_id}", json={field: value})
+    res = await ac.patch(f"/v1/actors/{actor_id}", json={field: value})
     assert res.status_code == 200
 
-    actor = await get_and_validate(ac, f"/actors/{actor_id}", expect_list=False)
+    actor = await get_and_validate(ac, f"/v1/actors/{actor_id}", expect_list=False)
     assert actor[field] == value
 
 
@@ -132,13 +132,13 @@ async def test_update_actor_valid(ac, field, value, get_all_actors):
 async def test_update_actor_invalid(ac, field, value, get_all_actors):
     actor_id = get_all_actors[0]["id"]
 
-    res = await ac.patch(f"/actors/{actor_id}", json={field: value})
+    res = await ac.patch(f"/v1/actors/{actor_id}", json={field: value})
     assert res.status_code == 422
     assert "detail" in res.json()
 
 
 async def test_delete_actor(ac, get_all_actors):
     for actor in get_all_actors:
-        assert (await ac.get(f"/actors/{actor['id']}")).status_code == 200
-        assert (await ac.delete(f"/actors/{actor['id']}")).status_code == 204
-        assert (await ac.get(f"/actors/{actor['id']}")).status_code == 404
+        assert (await ac.get(f"/v1/actors/{actor['id']}")).status_code == 200
+        assert (await ac.delete(f"/v1/actors/{actor['id']}")).status_code == 204
+        assert (await ac.get(f"/v1/actors/{actor['id']}")).status_code == 404

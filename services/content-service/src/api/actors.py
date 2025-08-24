@@ -13,10 +13,10 @@ from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO
 from src.services.actors import ActorService
 
 
-router = APIRouter(prefix="/actors", tags=["Actors"])
+v1_router = APIRouter(prefix="/v1/actors", tags=["Actors"])
 
 
-@router.get("")
+@v1_router.get("")
 async def get_actors(db: DBDep, pagination: PaginationDep):
     actors = await ActorService(db).get_actors(
         page=pagination.page,
@@ -25,7 +25,7 @@ async def get_actors(db: DBDep, pagination: PaginationDep):
     return {"status": "ok", "data": actors}
 
 
-@router.get("/{actor_id}")
+@v1_router.get("/{actor_id}")
 async def get_actor(db: DBDep, actor_id: UUID):
     try:
         actor = await ActorService(db).get_actor(actor_id=actor_id)
@@ -34,7 +34,7 @@ async def get_actor(db: DBDep, actor_id: UUID):
     return {"status": "ok", "data": actor}
 
 
-@router.post("", dependencies=[AdminDep], status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_actor(db: DBDep, actor_data: ActorAddRequestDTO):
     try:
         actor_id = await ActorService(db).add_actor(actor_data=actor_data)
@@ -43,7 +43,7 @@ async def add_actor(db: DBDep, actor_data: ActorAddRequestDTO):
     return {"status": "ok", "data": {"id": actor_id}}
 
 
-@router.patch("/{actor_id}", dependencies=[AdminDep])
+@v1_router.patch("/{actor_id}", dependencies=[AdminDep])
 async def update_actor(db: DBDep, actor_id: UUID, actor_data: ActorPatchDTO):
     try:
         await ActorService(db).update_actor(actor_id=actor_id, actor_data=actor_data)
@@ -52,6 +52,6 @@ async def update_actor(db: DBDep, actor_id: UUID, actor_data: ActorPatchDTO):
     return {"status": "ok"}
 
 
-@router.delete("/{actor_id}", status_code=204, dependencies=[AdminDep])
+@v1_router.delete("/{actor_id}", status_code=204, dependencies=[AdminDep])
 async def delete_actor(db: DBDep, actor_id: UUID):
     await ActorService(db).delete_actor(actor_id=actor_id)

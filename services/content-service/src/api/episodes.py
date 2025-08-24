@@ -22,16 +22,16 @@ from src.exceptions import (
 )
 
 
-router = APIRouter(prefix="/episodes", tags=["Episodes"])
+v1_router = APIRouter(prefix="/v1/episodes", tags=["Episodes"])
 
 
-@router.get("", summary="Get episodes")
+@v1_router.get("", summary="Get episodes")
 async def get_episodes(db: DBDep, episodes_params: EpisodesParamsDep):
     episodes = await EpisodeService(db).get_episodes(**episodes_params.model_dump())
     return {"status": "ok", "data": episodes}
 
 
-@router.get("/{episode_id}")
+@v1_router.get("/{episode_id}")
 async def get_episode(db: DBDep, episode_id: UUID):
     try:
         episode = await EpisodeService(db).get_episode(episode_id=episode_id)
@@ -40,7 +40,7 @@ async def get_episode(db: DBDep, episode_id: UUID):
     return {"status": "ok", "data": episode}
 
 
-@router.post("", dependencies=[AdminDep], status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_episode(db: DBDep, episode_data: EpisodeAddRequestDTO):
     try:
         episode_id = await EpisodeService(db).add_episode(episode_data)
@@ -57,7 +57,7 @@ async def add_episode(db: DBDep, episode_data: EpisodeAddRequestDTO):
     return {"status": "ok", "data": {"id": episode_id}}
 
 
-@router.patch("/{episode_id}", dependencies=[AdminDep])
+@v1_router.patch("/{episode_id}", dependencies=[AdminDep])
 async def update_episode(
     db: DBDep,
     episode_data: EpisodePatchRequestDTO,
@@ -74,6 +74,6 @@ async def update_episode(
     return {"status": "ok"}
 
 
-@router.delete("/{episode_id}", dependencies=[AdminDep], status_code=204)
+@v1_router.delete("/{episode_id}", dependencies=[AdminDep], status_code=204)
 async def delete_episode(db: DBDep, episode_id: UUID = Path()):
     await EpisodeService(db).delete_episode(episode_id=episode_id)

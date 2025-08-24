@@ -15,10 +15,10 @@ from src.services.comments import CommentService
 from src.api.dependencies import DBDep, UserDep, PaginationDep
 
 
-router = APIRouter(prefix="/comments", tags=["Comments"])
+v1_router = APIRouter(prefix="/v1/comments", tags=["Comments"])
 
 
-@router.get("")
+@v1_router.get("")
 async def get_comments(
     db: DBDep,
     pagination: PaginationDep,
@@ -34,7 +34,7 @@ async def get_comments(
     return {"status": "ok", "data": comments}
 
 
-@router.get("/user")
+@v1_router.get("/user")
 async def get_user_comments(db: DBDep, pagination: PaginationDep, user_id: UserDep):
     comments = await CommentService(db).get_user_comments(
         user_id=user_id,
@@ -44,7 +44,7 @@ async def get_user_comments(db: DBDep, pagination: PaginationDep, user_id: UserD
     return {"status": "ok", "data": comments}
 
 
-@router.get("/{comment_id}")
+@v1_router.get("/{comment_id}")
 async def get_comment(db: DBDep, comment_id: UUID):
     try:
         comment = await CommentService(db).get_comment(comment_id=comment_id)
@@ -53,7 +53,7 @@ async def get_comment(db: DBDep, comment_id: UUID):
     return {"status": "ok", "data": comment}
 
 
-@router.post("", status_code=201)
+@v1_router.post("", status_code=201)
 async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
     try:
         comment_id = await CommentService(db).add_comment(user_id=user_id, data=data)
@@ -62,7 +62,7 @@ async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
     return {"status": "ok", "data": {"id": comment_id}}
 
 
-@router.put("/{comment_id}")
+@v1_router.put("/{comment_id}")
 async def update_comment(
     db: DBDep,
     user_id: UserDep,
@@ -80,6 +80,6 @@ async def update_comment(
     return {"status": "ok"}
 
 
-@router.delete("/{comment_id}", status_code=204)
+@v1_router.delete("/{comment_id}", status_code=204)
 async def delete_comment(db: DBDep, user_id: UserDep, comment_id: UUID):
     await CommentService(db).remove_comment(comment_id=comment_id, user_id=user_id)

@@ -15,10 +15,10 @@ from src.services.seasons import SeasonService
 from src.api.dependencies import DBDep, AdminDep, PaginationDep
 
 
-router = APIRouter(prefix="/seasons", tags=["Seasons"])
+v1_router = APIRouter(prefix="/v1/seasons", tags=["Seasons"])
 
 
-@router.get("")
+@v1_router.get("")
 async def get_seasons(db: DBDep, pagination: PaginationDep, series_id: UUID | None = Query(None)):
     data = await SeasonService(db).get_seasons(
         series_id=series_id,
@@ -28,7 +28,7 @@ async def get_seasons(db: DBDep, pagination: PaginationDep, series_id: UUID | No
     return {"status": "ok", "data": data}
 
 
-@router.get("/{season_id}")
+@v1_router.get("/{season_id}")
 async def get_season(db: DBDep, season_id: UUID):
     try:
         data = await SeasonService(db).get_season(season_id=season_id)
@@ -37,7 +37,7 @@ async def get_season(db: DBDep, season_id: UUID):
     return {"status": "ok", "data": data}
 
 
-@router.post("", dependencies=[AdminDep], status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_season(db: DBDep, season_data: SeasonAddRequestDTO):
     try:
         season_id = await SeasonService(db).add_season(season_data=season_data)
@@ -48,7 +48,7 @@ async def add_season(db: DBDep, season_data: SeasonAddRequestDTO):
     return {"status": "ok", "data": {"id": season_id}}
 
 
-@router.patch("/{season_id}", dependencies=[AdminDep])
+@v1_router.patch("/{season_id}", dependencies=[AdminDep])
 async def update_season(db: DBDep, season_id: UUID, season_data: SeasonPatchRequestDTO):
     try:
         await SeasonService(db).update_season(season_id=season_id, season_data=season_data)
@@ -59,6 +59,6 @@ async def update_season(db: DBDep, season_id: UUID, season_data: SeasonPatchRequ
     return {"status": "ok"}
 
 
-@router.delete("/{season_id}", dependencies=[AdminDep], status_code=204)
+@v1_router.delete("/{season_id}", dependencies=[AdminDep], status_code=204)
 async def delete_season(db: DBDep, season_id: UUID):
     await SeasonService(db).delete_season(season_id=season_id)

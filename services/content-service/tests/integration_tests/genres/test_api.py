@@ -14,7 +14,7 @@ from tests.utils import calculate_expected_length
     ],
 )
 async def test_get_genres(ac, params, get_all_genres):
-    res = await ac.get("/genres", params=params)
+    res = await ac.get("/v1/genres", params=params)
     assert res.status_code == 200
 
     data = res.json()["data"]
@@ -32,38 +32,38 @@ async def test_get_genres(ac, params, get_all_genres):
 
 async def test_get_existing_genre(ac, created_genres):
     for genre_id in created_genres:
-        res = await ac.get(f"/genres/{genre_id}")
+        res = await ac.get(f"/v1/genres/{genre_id}")
         assert res.status_code == 200
         assert res.json()["data"]["id"] == genre_id
 
 
 async def test_get_nonexistent_genre(ac):
-    res = await ac.get("/genres/999999")
+    res = await ac.get("/v1/genres/999999")
     assert res.status_code == 404
 
 
 @pytest.mark.parametrize("name", ["Valid1", "Valid2", "Valid4"])
 async def test_add_genre_valid(ac, name):
-    res = await ac.post("/genres", json={"name": "TempGenre"})
+    res = await ac.post("/v1/genres", json={"name": "TempGenre"})
     assert res.status_code == 201
     genre_id = res.json()["data"]["id"]
 
-    res = await ac.get(f"/genres/{genre_id}")
+    res = await ac.get(f"/v1/genres/{genre_id}")
     assert res.status_code == 200
     assert res.json()["data"]["name"] == "TempGenre"
 
-    await ac.delete(f"/genres/{genre_id}")
+    await ac.delete(f"/v1/genres/{genre_id}")
 
 
 @pytest.mark.parametrize("name", ["N" * 50, "N", 1, False])
 async def test_add_genre_invalid(ac, name):
-    res = await ac.post("/genres", json={"name": name})
+    res = await ac.post("/v1/genres", json={"name": name})
     assert res.status_code == 422
     assert "detail" in res.json()
 
 
 async def test_delete_genre(ac, created_genres):
     for genre_id in created_genres:
-        assert (await ac.get(f"/genres/{genre_id}")).status_code == 200
-        assert (await ac.delete(f"/genres/{genre_id}")).status_code == 204
-        assert (await ac.get(f"/genres/{genre_id}")).status_code == 404
+        assert (await ac.get(f"/v1/genres/{genre_id}")).status_code == 200
+        assert (await ac.delete(f"/v1/genres/{genre_id}")).status_code == 204
+        assert (await ac.get(f"/v1/genres/{genre_id}")).status_code == 404

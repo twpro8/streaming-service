@@ -20,10 +20,10 @@ from src.exceptions import (
 )
 
 
-router = APIRouter(prefix="/films", tags=["Films"])
+v1_router = APIRouter(prefix="/v1/films", tags=["Films"])
 
 
-@router.get("")
+@v1_router.get("")
 async def get_films(
     db: DBDep,
     common_params: ContentParamsDep,
@@ -41,7 +41,7 @@ async def get_films(
     return {"status": "ok", "data": films}
 
 
-@router.get("/{film_id}")
+@v1_router.get("/{film_id}")
 async def get_film(db: DBDep, film_id: UUID):
     try:
         film = await FilmService(db).get_film(film_id=film_id)
@@ -50,7 +50,7 @@ async def get_film(db: DBDep, film_id: UUID):
     return {"status": "ok", "data": film}
 
 
-@router.post("", dependencies=[AdminDep], status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_film(db: DBDep, film_data: FilmAddRequestDTO):
     try:
         film_id = await FilmService(db).add_film(film_data)
@@ -63,7 +63,7 @@ async def add_film(db: DBDep, film_data: FilmAddRequestDTO):
     return {"status": "ok", "data": {"id": film_id}}
 
 
-@router.patch("/{film_id}", dependencies=[AdminDep])
+@v1_router.patch("/{film_id}", dependencies=[AdminDep])
 async def update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
     try:
         await FilmService(db).update_film(film_id, film_data)
@@ -80,6 +80,6 @@ async def update_film(db: DBDep, film_id: UUID, film_data: FilmPatchRequestDTO):
     return {"status": "ok"}
 
 
-@router.delete("/{film_id}", status_code=204, dependencies=[AdminDep])
+@v1_router.delete("/{film_id}", status_code=204, dependencies=[AdminDep])
 async def delete_film(db: DBDep, film_id: UUID):
     await FilmService(db).remove_film(film_id)

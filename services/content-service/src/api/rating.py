@@ -6,10 +6,10 @@ from src.services.rating import RatingService
 from src.api.dependencies import DBDep, UserDep
 
 
-router = APIRouter(prefix="/ratings", tags=["Ratings"])
+v1_router = APIRouter(prefix="/v1/ratings", tags=["Ratings"])
 
 
-@router.post("")
+@v1_router.post("")
 async def rate_content(db: DBDep, user_id: UserDep, rating_data: RatingAddRequestDTO):
     try:
         await RatingService(db).rate(user_id=user_id, data=rating_data)

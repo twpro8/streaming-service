@@ -93,12 +93,12 @@ async def get_series_ids():
 async def created_genres(ac):
     ids = []
     for name in ["TestGenre1", "TestGenre2", "TestGenre3"]:
-        res = await ac.post("/genres", json={"name": name})
+        res = await ac.post("/v1/genres", json={"name": name})
         assert res.status_code == 201
         ids.append(res.json()["data"]["id"])
     yield ids
     for genre_id in ids:
-        await ac.delete(f"/genres/{genre_id}")
+        await ac.delete(f"/v1/genres/{genre_id}")
 
 
 @pytest.fixture(scope="session")
@@ -110,7 +110,7 @@ async def max_pagination():
 async def get_all_films_with_rels(ac):
     films = []
     for film in read_json("films"):
-        res = await ac.get(f"/films/{film['id']}")
+        res = await ac.get(f"/v1/films/{film['id']}")
         assert res.status_code == 200
         data = res.json()["data"]
         films.append(data)
@@ -123,7 +123,7 @@ async def created_films(ac):
     try:
         for i in range(700, 703):
             res = await ac.post(
-                "/films",
+                "/v1/films",
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
@@ -138,7 +138,7 @@ async def created_films(ac):
         yield films
     finally:
         for film in films:
-            await ac.delete(f"/films/{film['id']}")
+            await ac.delete(f"/v1/films/{film['id']}")
 
 
 @pytest.fixture
@@ -147,7 +147,7 @@ async def created_series(ac):
     try:
         for i in range(704, 707):
             res = await ac.post(
-                "/series",
+                "/v1/series",
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
@@ -161,7 +161,7 @@ async def created_series(ac):
         yield series
     finally:
         for s in series:
-            await ac.delete(f"/series/{s['id']}")
+            await ac.delete(f"/v1/series/{s['id']}")
 
 
 @pytest.fixture(scope="function")
@@ -203,7 +203,7 @@ async def get_all_actors():
 async def get_all_series_with_rels(ac):
     series = []
     for s in read_json("series"):
-        res = await ac.get(f"/series/{s['id']}")
+        res = await ac.get(f"/v1/series/{s['id']}")
         assert res.status_code == 200
         data = res.json()["data"]
         series.append(data)

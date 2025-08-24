@@ -17,7 +17,7 @@ async def test_get_content_comments(ac, get_all_comments, content_type, id_key, 
 
     comments = await get_and_validate(
         ac=ac,
-        url="/comments",
+        url="/v1/comments",
         params={
             "page": page,
             "per_page": per_page,
@@ -41,7 +41,7 @@ async def test_get_user_comments_valid(ac, get_all_comments, current_user_id, pa
     )
 
     comments = await get_and_validate(
-        ac=ac, url="/comments/user", params={"page": page, "per_page": per_page}
+        ac=ac, url="/v1/comments/user", params={"page": page, "per_page": per_page}
     )
     assert len(comments) == expected_count
 
@@ -52,7 +52,7 @@ async def test_add_film_comment_valid(ac, get_all_films, text):
     film_id = str(get_all_films[0]["id"])
 
     res = await ac.post(
-        url="/comments",
+        url="/v1/comments",
         json={
             "content_id": film_id,
             "content_type": "film",
@@ -63,7 +63,7 @@ async def test_add_film_comment_valid(ac, get_all_films, text):
 
     comment_id = res.json()["data"]["id"]
 
-    comment = await get_and_validate(ac, f"/comments/{comment_id}", expect_list=False)
+    comment = await get_and_validate(ac, f"/v1/comments/{comment_id}", expect_list=False)
 
     assert comment["id"] == comment_id
     assert comment["comment"] == text
@@ -77,7 +77,7 @@ async def test_add_series_comment_valid(ac, get_all_series, text):
     series_id = str(get_all_series[0]["id"])
 
     res = await ac.post(
-        url="/comments",
+        url="/v1/comments",
         json={
             "content_id": series_id,
             "content_type": "series",
@@ -88,7 +88,7 @@ async def test_add_series_comment_valid(ac, get_all_series, text):
 
     comment_id = res.json()["data"]["id"]
 
-    comment = await get_and_validate(ac, f"/comments/{comment_id}", expect_list=False)
+    comment = await get_and_validate(ac, f"/v1/comments/{comment_id}", expect_list=False)
 
     assert comment["id"] == comment_id
     assert comment["comment"] == text
@@ -109,7 +109,7 @@ async def test_add_series_comment_valid(ac, get_all_series, text):
 async def test_add_comment_invalid(ac, get_all_films, field, value):
     film_id = str(get_all_films[0]["id"])
     res = await ac.post(
-        url="/comments",
+        url="/v1/comments",
         json={
             "content_id": film_id,
             "content_type": "film",
@@ -124,7 +124,7 @@ async def test_add_comment_invalid(ac, get_all_films, field, value):
 @pytest.mark.parametrize("content_type", ("film", "series"))
 async def test_add_comment_content_not_found(ac, content_type):
     res = await ac.post(
-        url="/comments",
+        url="/v1/comments",
         json={
             "content_id": str(uuid4()),
             "content_type": content_type,
@@ -138,10 +138,10 @@ async def test_add_comment_content_not_found(ac, content_type):
 async def test_update_comment_valid(ac, get_all_comments):
     comment_id = str(get_all_comments[0]["id"])
 
-    res = await ac.put(f"/comments/{comment_id}", json={"comment": "Updated comment text"})
+    res = await ac.put(f"/v1/comments/{comment_id}", json={"comment": "Updated comment text"})
     assert res.status_code == 200
 
-    comment = await get_and_validate(ac, f"/comments/{comment_id}", expect_list=False)
+    comment = await get_and_validate(ac, f"/v1/comments/{comment_id}", expect_list=False)
     assert comment["comment"] == "Updated comment text"
 
 
@@ -157,7 +157,7 @@ async def test_update_comment_valid(ac, get_all_comments):
 async def test_update_comment_invalid(ac, get_all_comments, field, value):
     comment_id = str(get_all_comments[0]["id"])
     res = await ac.put(
-        f"/comments/{comment_id}",
+        f"/v1/comments/{comment_id}",
         json={
             "comment": "Valid comment text",
             field: value,
@@ -169,6 +169,6 @@ async def test_update_comment_invalid(ac, get_all_comments, field, value):
 @pytest.mark.order(3)
 async def test_delete_comment(ac, get_all_comments):
     for comment in get_all_comments[:5]:
-        assert (await ac.get(url=f"/comments/{comment['id']}")).status_code == 200
-        assert (await ac.delete(url=f"/comments/{comment['id']}")).status_code == 204
-        assert (await ac.get(url=f"/comments/{comment['id']}")).status_code == 404
+        assert (await ac.get(url=f"/v1/comments/{comment['id']}")).status_code == 200
+        assert (await ac.delete(url=f"/v1/comments/{comment['id']}")).status_code == 204
+        assert (await ac.get(url=f"/v1/comments/{comment['id']}")).status_code == 404
