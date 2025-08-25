@@ -22,9 +22,6 @@ class RatingORM(Base):
     user_id: Mapped[int]
     content_id: Mapped[UUID]
     value: Mapped[Decimal] = mapped_column(DECIMAL(3, 1))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime, server_default=text("TIMEZONE('UTC', now())")
-    )
 
     __table_args__ = (
         UniqueConstraint("user_id", "content_id"),

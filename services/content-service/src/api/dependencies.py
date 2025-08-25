@@ -117,6 +117,26 @@ class SortParams(BaseModel):
                     description='Sort items by rating score. Use "asc" for lowest to highest or "desc" for highest to lowest. Default is "asc" if not specified.',
                     value="rating:desc",
                 ),
+                "sort_created_at_asc": Example(
+                    summary="Sort by creation date ascending",
+                    description='Sort items by their creation date from oldest to newest. Default is "asc" if not specified.',
+                    value="created_at:asc",
+                ),
+                "sort_created_at_desc": Example(
+                    summary="Sort by creation date descending",
+                    description='Sort items by their creation date from newest to oldest. Default is "asc" if not specified.',
+                    value="created_at:desc",
+                ),
+                "sort_updated_at_asc": Example(
+                    summary="Sort by update date ascending",
+                    description='Sort items by their last update date from oldest to newest. Default is "asc" if not specified.',
+                    value="updated_at:asc",
+                ),
+                "sort_updated_at_desc": Example(
+                    summary="Sort by update date descending",
+                    description='Sort items by their last update date from newest to oldest. Default is "asc" if not specified.',
+                    value="updated_at:desc",
+                ),
             },
         ),
     ):

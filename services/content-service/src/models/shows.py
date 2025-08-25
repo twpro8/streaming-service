@@ -2,10 +2,10 @@
 
 from typing import List
 from uuid import UUID, uuid4
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import String, DECIMAL, ForeignKey, UniqueConstraint, CheckConstraint
+from sqlalchemy import String, DECIMAL, ForeignKey, UniqueConstraint, CheckConstraint, DateTime, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -30,6 +30,14 @@ class ShowORM(Base):
         default=Decimal("0.0"),
     )
     cover_url: Mapped[str | None] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
 
     # Relationships
     seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="show")
@@ -55,6 +63,14 @@ class SeasonORM(Base):
     show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(255))
     season_number: Mapped[int]
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
 
     # Relationships
     show: Mapped["ShowORM"] = relationship(back_populates="seasons")
@@ -77,6 +93,14 @@ class EpisodeORM(Base):
     episode_number: Mapped[int]
     duration: Mapped[int]
     video_url: Mapped[str | None] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
 
     # Relationships
     show: Mapped["ShowORM"] = relationship()

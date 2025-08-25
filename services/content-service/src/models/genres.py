@@ -36,10 +36,12 @@ class MovieGenreORM(Base):
     __tablename__ = "movie_genre_associations"
 
     movie_id: Mapped[UUID] = mapped_column(
-        ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("movies.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     genre_id: Mapped[int] = mapped_column(
-        ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("genres.id", ondelete="CASCADE"),
+        primary_key=True,
     )
 
 
@@ -47,8 +49,10 @@ class ShowGenreORM(Base):
     __tablename__ = "show_genre_associations"
 
     show_id: Mapped[UUID] = mapped_column(
-        ForeignKey("shows.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("shows.id", ondelete="CASCADE"),
+        primary_key=True,
     )
     genre_id: Mapped[int] = mapped_column(
-        ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True
+        ForeignKey("genres.id", ondelete="CASCADE"),
+        primary_key=True,
     )

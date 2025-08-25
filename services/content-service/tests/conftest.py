@@ -13,11 +13,11 @@ from src.models import *  # noqa
 from src.main import app
 from src.schemas.actors import ActorAddDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentAddDTO
-from src.schemas.episodes import EpisodeDTO
-from src.schemas.movies import MovieDTO
+from src.schemas.episodes import EpisodeAddDTO
+from src.schemas.movies import MovieAddDTO
 from src.schemas.genres import GenreAddDTO, MovieGenreDTO, ShowGenreDTO
-from src.schemas.seasons import SeasonDTO
-from src.schemas.shows import ShowDTO
+from src.schemas.seasons import SeasonAddDTO
+from src.schemas.shows import ShowAddDTO
 from tests.utils import read_json
 
 
@@ -51,10 +51,10 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    movies_data = [MovieDTO.model_validate(f) for f in read_json("movies")]
-    shows_data = [ShowDTO.model_validate(s) for s in read_json("shows")]
-    seasons_data = [SeasonDTO.model_validate(s) for s in read_json("seasons")]
-    episodes_data = [EpisodeDTO.model_validate(e) for e in read_json("episodes")]
+    movies_data = [MovieAddDTO.model_validate(f) for f in read_json("movies")]
+    shows_data = [ShowAddDTO.model_validate(s) for s in read_json("shows")]
+    seasons_data = [SeasonAddDTO.model_validate(s) for s in read_json("seasons")]
+    episodes_data = [EpisodeAddDTO.model_validate(e) for e in read_json("episodes")]
     genres_data = [GenreAddDTO.model_validate(g) for g in read_json("genres")]
     movies_genres_data = [MovieGenreDTO.model_validate(fg) for fg in read_json("movies_genres")]
     shows_genres_data = [ShowGenreDTO.model_validate(sg) for sg in read_json("shows_genres")]

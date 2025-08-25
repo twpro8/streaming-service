@@ -3,9 +3,9 @@
 from typing import List
 from uuid import UUID, uuid4
 from decimal import Decimal
-from datetime import date
+from datetime import date, datetime
 
-from sqlalchemy import String, DECIMAL, CheckConstraint
+from sqlalchemy import String, DECIMAL, CheckConstraint, DateTime, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -32,6 +32,14 @@ class MovieORM(Base):
     duration: Mapped[int]
     video_url: Mapped[str | None] = mapped_column(unique=True)
     cover_url: Mapped[str | None] = mapped_column(unique=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
 
     # Relationships
     comments: Mapped[List["CommentORM"]] = relationship(back_populates="movie")

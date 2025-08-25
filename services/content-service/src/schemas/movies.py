@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
 
@@ -50,6 +51,8 @@ class MovieAddRequestDTO(BaseSchema):
 class MovieDTO(MovieAddDTO):
     rating: RatingDecimal
     video_url: AnyUrl | None = None
+    created_at: datetime
+    updated_at: datetime
 
 
 class MoviePatchDTO(BaseModel):

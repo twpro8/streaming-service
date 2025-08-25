@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 from uuid import UUID
 
@@ -46,6 +47,8 @@ class ShowAddRequestDTO(BaseSchema):
 
 class ShowDTO(ShowAddDTO):
     rating: RatingDecimal
+    created_at: datetime
+    updated_at: datetime
 
 
 class ShowPatchDTO(BaseModel):

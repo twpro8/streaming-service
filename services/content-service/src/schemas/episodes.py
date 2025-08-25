@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import Field, AnyUrl
@@ -26,4 +27,6 @@ class EpisodePatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     video_url: AnyUrl | None = None
 
 
-class EpisodeDTO(EpisodeAddDTO): ...
+class EpisodeDTO(EpisodeAddDTO):
+    created_at: datetime
+    updated_at: datetime

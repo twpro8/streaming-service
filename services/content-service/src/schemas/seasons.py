@@ -1,3 +1,4 @@
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import Field
@@ -21,4 +22,6 @@ class SeasonPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
     season_number: int | None = Field(default=None, ge=1, le=500, title="Season Number")
 
 
-class SeasonDTO(SeasonAddDTO): ...
+class SeasonDTO(SeasonAddDTO):
+    created_at: datetime
+    updated_at: datetime

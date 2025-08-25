@@ -258,3 +258,4 @@ def downgrade() -> None:
     op.drop_table("movies")
     op.drop_table("genres")
     op.drop_table("actors")
+    op.execute("DROP TYPE IF EXISTS zodiacsign;")

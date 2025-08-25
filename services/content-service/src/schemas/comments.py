@@ -26,3 +26,4 @@ class CommentPutRequestDTO(BaseSchema):
 
 class CommentDTO(CommentAddDTO):
     created_at: datetime
+    updated_at: datetime

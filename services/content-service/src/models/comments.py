@@ -24,7 +24,12 @@ class CommentORM(Base):
     show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"), nullable=True)
     comment: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
-        DateTime, server_default=text("TIMEZONE('UTC', now())")
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=text("TIMEZONE('UTC', now())"),
     )
 
     # Relationships

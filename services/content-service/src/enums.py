@@ -11,6 +11,8 @@ class SortBy(StrEnum):
     title = "title"
     year = "year"
     rating = "rating"
+    created_at = "created_at"
+    updated_at = "updated_at"
 
 
 class SortOrder(StrEnum):
