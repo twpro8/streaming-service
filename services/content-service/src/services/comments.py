@@ -2,7 +2,7 @@ from uuid import UUID, uuid4
 
 from src.exceptions import ContentNotFoundException, CommentNotFoundException
 from src.schemas.comments import CommentAddRequestDTO, CommentAddDTO, CommentPutRequestDTO
-from src.schemas.pydantic_types import ContentType
+from src.enums import ContentType
 from src.services.base import BaseService
 
 
@@ -59,6 +59,6 @@ class CommentService(BaseService):
         await self.db.comments.update(id=comment_id, user_id=user_id, data=data)
         await self.db.commit()
 
-    async def remove_comment(self, comment_id: UUID, user_id: int):
+    async def delete_comment(self, comment_id: UUID, user_id: int):
         await self.db.comments.delete(id=comment_id, user_id=user_id)
         await self.db.commit()

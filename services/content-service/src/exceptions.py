@@ -74,28 +74,28 @@ class PermissionDeniedHTTPException(MasterHTTPException):
     detail = "You do not have permission to access this resource"
 
 
-class FilmNotFoundException(ObjectNotFoundException):
-    detail = "Film not found"
+class MovieNotFoundException(ObjectNotFoundException):
+    detail = "Movie not found"
 
 
-class FilmNotFoundHTTPException(ObjectNotFoundHTTPException):
-    detail = "Film not found"
+class MovieNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Movie not found"
 
 
-class SeriesNotFoundException(ObjectNotFoundException):
-    detail = "Series not found"
+class ShowNotFoundException(ObjectNotFoundException):
+    detail = "Show not found"
 
 
-class FilmAlreadyExistsException(ObjectAlreadyExistsException):
-    detail = "Film already exists"
+class MovieAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Movie already exists"
 
 
-class FilmAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    detail = "Film with the provided data already exists"
+class MovieAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Movie with the provided data already exists"
 
 
-class SeriesNotFoundHTTPException(ObjectNotFoundHTTPException):
-    detail = "Series not found"
+class ShowNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Show not found"
 
 
 class EpisodeNotFoundException(ObjectNotFoundException):
@@ -107,7 +107,7 @@ class ContentNotFoundException(ObjectNotFoundException):
 
 
 class ContentNotFoundHTTPException(ObjectNotFoundHTTPException):
-    detail = "Film or TV Series not found"
+    detail = "Movie or TV Show not found"
 
 
 class EpisodeNotFoundHTTPException(ObjectNotFoundHTTPException):
@@ -168,8 +168,8 @@ class UniqueEpisodePerSeasonException(UniqueViolationException):
     detail = "Unique episode per season already exists"
 
 
-class UniqueSeasonPerSeriesException(UniqueViolationException):
-    detail = "Unique episode per season already exists"
+class UniqueSeasonPerShowException(UniqueViolationException):
+    detail = "Unique season per show already exists"
 
 
 class UniqueFileURLException(UniqueViolationException):

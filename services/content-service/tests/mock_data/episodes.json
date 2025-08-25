@@ -1,7 +1,7 @@
 [
   {
     "id": "36f863f9-616c-412e-8f48-e63d758cc9d0",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "season_id":  "d5ed6e69-5d07-474f-81e4-86627a576d45",
     "title": "Serial 1 Season 1 Episode 1",
     "episode_number":  1,
@@ -9,7 +9,7 @@
   },
   {
     "id": "d2d887fa-ac59-4be1-b92e-eb1fb0d4260f",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "season_id":  "d5ed6e69-5d07-474f-81e4-86627a576d45",
     "title": "Serial 1 Season 1 Episode 2",
     "episode_number":  2,
@@ -17,7 +17,7 @@
   },
   {
     "id": "b2b85024-3cdf-40be-9f3c-b2121ebfe074",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "season_id":  "81c29ee1-db3e-4d81-a257-d05e29773deb",
     "title": "Serial 1 Season 2 Episode 1",
     "episode_number":  1,
@@ -25,7 +25,7 @@
   },
   {
     "id": "735d6e12-fe7d-47b8-82c6-c4fddc005791",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "season_id":  "81c29ee1-db3e-4d81-a257-d05e29773deb",
     "title": "Serial 1 Season 2 Episode 2",
     "episode_number":  2,
@@ -33,7 +33,7 @@
   },
   {
     "id": "a6b73d38-3974-44c6-802a-344d0ff62735",
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "season_id":  "abb704d5-da18-4d6a-942e-58f1b6172109",
     "title": "Serial 2 Season 1 Episode 1",
     "episode_number":  1,
@@ -41,7 +41,7 @@
   },
   {
     "id": "9f6ce458-b36f-44bf-a00a-48294435284d",
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "season_id":  "abb704d5-da18-4d6a-942e-58f1b6172109",
     "title": "Serial 2 Season 1 Episode 2",
     "episode_number":  2,
@@ -49,7 +49,7 @@
   },
   {
     "id": "516f0988-69ab-4cec-bffd-68333b4f7033",
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "season_id":  "99edd9cc-cd08-4a9d-8809-93b86ab06d28",
     "title": "Serial 2 Season 2 Episode 1",
     "episode_number":  1,
@@ -57,7 +57,7 @@
   },
   {
     "id": "afa4d6f4-57b3-4512-93e4-25570a54fe82",
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "season_id":  "99edd9cc-cd08-4a9d-8809-93b86ab06d28",
     "title": "Serial 2 Season 2 Episode 2",
     "episode_number":  2,
@@ -65,7 +65,7 @@
   },
   {
     "id": "66827725-e438-4bcb-8a7b-922bae2d340b",
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "season_id":  "00200739-4730-42ac-8a5a-bad5112558ee",
     "title": "Serial 3 Season 1 Episode 1",
     "episode_number":  1,
@@ -73,7 +73,7 @@
   },
   {
     "id": "9aa0be48-21b4-428e-8a26-3046f8c79011",
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "season_id":  "00200739-4730-42ac-8a5a-bad5112558ee",
     "title": "Serial 3 Season 1 Episode 2",
     "episode_number":  2,
@@ -81,7 +81,7 @@
   },
   {
     "id": "0070d7b4-2f57-413c-847e-fdb0b546a125",
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "season_id":  "839e3c16-f646-4d3e-a23a-28767330e753",
     "title": "Serial 3 Season 2 Episode 1",
     "episode_number":  1,
@@ -89,7 +89,7 @@
   },
   {
     "id": "a2005e61-83f6-4fae-acd0-744f1a8a8ce6",
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "season_id":  "839e3c16-f646-4d3e-a23a-28767330e753",
     "title": "Serial 3 Season 2 Episode 2",
     "episode_number":  2,
@@ -97,7 +97,7 @@
   },
   {
     "id": "a1418bf9-ba2f-4278-b0ae-93fe514627d3",
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "season_id":  "e6220848-9b53-4c62-bd58-96f07e3cf15a",
     "title": "Serial 4 Season 1 Episode 1",
     "episode_number":  1,
@@ -105,7 +105,7 @@
   },
   {
     "id": "9bfcbd08-995c-46c9-adfc-c0f960854f2a",
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "season_id":  "e6220848-9b53-4c62-bd58-96f07e3cf15a",
     "title": "Serial 4 Season 1 Episode 2",
     "episode_number":  2,
@@ -113,7 +113,7 @@
   },
   {
     "id": "0e25cc6e-8820-40c2-9b4c-4a89c3b47df4",
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "season_id":  "1ed127d0-d7f6-4bd3-936b-7c47c6acee01",
     "title": "Serial 4 Season 2 Episode 1",
     "episode_number":  1,
@@ -121,7 +121,7 @@
   },
   {
     "id": "a5b5b39d-779a-4fea-8bf4-aafa47166b71",
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "season_id":  "1ed127d0-d7f6-4bd3-936b-7c47c6acee01",
     "title": "Serial 4 Season 2 Episode 2",
     "episode_number":  2,
@@ -129,7 +129,7 @@
   },
   {
     "id": "32f4b615-c769-413e-9243-428d640a0182",
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "season_id":  "a1970665-0eb4-4375-a569-6c6ed71ba58c",
     "title": "Serial 5 Season 1 Episode 1",
     "episode_number":  1,
@@ -137,7 +137,7 @@
   },
   {
     "id": "ca0e796e-e28e-4cbb-9561-1e89122e3572",
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "season_id":  "a1970665-0eb4-4375-a569-6c6ed71ba58c",
     "title": "Serial 5 Season 1 Episode 2",
     "episode_number":  2,
@@ -145,7 +145,7 @@
   },
   {
     "id": "fc865d9d-b06c-4907-916b-f7a04371c633",
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "season_id":  "5fb8260f-3c43-436b-a264-ca37aa931a9c",
     "title": "Serial 5 Season 2 Episode 1",
     "episode_number":  1,
@@ -153,7 +153,7 @@
   },
   {
     "id": "89314656-ef19-4ae0-83bf-713149c94955",
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "season_id":  "5fb8260f-3c43-436b-a264-ca37aa931a9c",
     "title": "Serial 5 Season 2 Episode 2",
     "episode_number":  2,

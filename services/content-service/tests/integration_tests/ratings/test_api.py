@@ -8,8 +8,8 @@ from src.api.dependencies import get_current_user_id
 
 
 users_ratings = {
-    "film": {},
-    "series": {},
+    "movie": {},
+    "show": {},
 }
 
 
@@ -19,7 +19,7 @@ def calculate_expected_rating(ratings: dict[int, float]) -> str:
 
 
 @pytest.mark.order(3)
-@pytest.mark.parametrize("content_type", ("film", "series"))
+@pytest.mark.parametrize("content_type", ("movie", "show"))
 @pytest.mark.parametrize(
     "user_id, val",
     (
@@ -31,10 +31,12 @@ def calculate_expected_rating(ratings: dict[int, float]) -> str:
         (3, 9.5),
     ),
 )
-async def test_add_film_rating_valid(ac, get_all_films, get_all_series, user_id, content_type, val):
+async def test_add_movie_rating_valid(
+    ac, get_all_movies, get_all_shows, user_id, content_type, val
+):
     app.dependency_overrides[get_current_user_id] = lambda: user_id  # noqa
 
-    content_id = get_all_films[0]["id"] if content_type == "film" else get_all_series[0]["id"]
+    content_id = get_all_movies[0]["id"] if content_type == "movie" else get_all_shows[0]["id"]
 
     res = await ac.post(
         "/v1/ratings",
@@ -50,7 +52,7 @@ async def test_add_film_rating_valid(ac, get_all_films, get_all_series, user_id,
     users_ratings[content_type][user_id] = val
     expected_avg = calculate_expected_rating(users_ratings[content_type])
 
-    endpoint = "/v1/films" if content_type == "film" else "/v1/series"
+    endpoint = "/v1/movies" if content_type == "movie" else "/v1/shows"
     res = await ac.get(f"{endpoint}/{content_id}")
     assert res.status_code == 200
 
@@ -66,12 +68,12 @@ async def test_add_film_rating_valid(ac, get_all_films, get_all_series, user_id,
         ("content_type", "unknown"),
     ],
 )
-async def test_add_rating_invalid(ac, get_all_films, field, value):
-    film_id = str(get_all_films[0]["id"])
+async def test_add_rating_invalid(ac, get_all_movies, field, value):
+    movie_id = str(get_all_movies[0]["id"])
     req_body = (
         {
-            "content_id": film_id,
-            "content_type": "film",
+            "content_id": movie_id,
+            "content_type": "movie",
             "value": 7.0,
             field: value,
         },
@@ -87,7 +89,7 @@ async def test_add_rating_invalid(ac, get_all_films, field, value):
     assert "detail" in data
 
 
-@pytest.mark.parametrize("content_type", ["film", "series"])
+@pytest.mark.parametrize("content_type", ["movie", "show"])
 async def test_add_rating_not_found(ac, content_type):
     content_id = str(uuid4())
     res = await ac.post(

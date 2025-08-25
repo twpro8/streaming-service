@@ -6,17 +6,18 @@ from httpx import AsyncClient, ASGITransport
 
 from src.config import settings
 from src.api.dependencies import get_db, get_admin, get_current_user_id
-from src.db import null_pool_engine, null_pool_session_maker, DBManager
+from src.db import null_pool_engine, null_pool_session_maker
+from src.managers.db import DBManager
 from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
-from src.schemas.actors import ActorAddDTO, FilmActorDTO, SeriesActorDTO
+from src.schemas.actors import ActorAddDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentAddDTO
 from src.schemas.episodes import EpisodeDTO
-from src.schemas.films import FilmDTO
-from src.schemas.genres import GenreAddDTO, FilmGenreDTO, SeriesGenreDTO
+from src.schemas.movies import MovieDTO
+from src.schemas.genres import GenreAddDTO, MovieGenreDTO, ShowGenreDTO
 from src.schemas.seasons import SeasonDTO
-from src.schemas.series import SeriesDTO
+from src.schemas.shows import ShowDTO
 from tests.utils import read_json
 
 
@@ -50,29 +51,29 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    films_data = [FilmDTO.model_validate(f) for f in read_json("films")]
-    series_data = [SeriesDTO.model_validate(s) for s in read_json("series")]
+    movies_data = [MovieDTO.model_validate(f) for f in read_json("movies")]
+    shows_data = [ShowDTO.model_validate(s) for s in read_json("shows")]
     seasons_data = [SeasonDTO.model_validate(s) for s in read_json("seasons")]
     episodes_data = [EpisodeDTO.model_validate(e) for e in read_json("episodes")]
     genres_data = [GenreAddDTO.model_validate(g) for g in read_json("genres")]
-    films_genres_data = [FilmGenreDTO.model_validate(fg) for fg in read_json("films_genres")]
-    series_genres_data = [SeriesGenreDTO.model_validate(sg) for sg in read_json("series_genres")]
+    movies_genres_data = [MovieGenreDTO.model_validate(fg) for fg in read_json("movies_genres")]
+    shows_genres_data = [ShowGenreDTO.model_validate(sg) for sg in read_json("shows_genres")]
     actors_data = [ActorAddDTO.model_validate(ad) for ad in read_json("actors")]
-    films_actors_data = [FilmActorDTO.model_validate(fa) for fa in read_json("films_actors")]
-    series_actors_data = [SeriesActorDTO.model_validate(sa) for sa in read_json("series_actors")]
+    movies_actors_data = [MovieActorDTO.model_validate(fa) for fa in read_json("movies_actors")]
+    shows_actors_data = [ShowActorDTO.model_validate(sa) for sa in read_json("shows_actors")]
     comments_data = [CommentAddDTO.model_validate(c) for c in read_json("comments")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
-        await db_.films.add_bulk(films_data)
-        await db_.series.add_bulk(series_data)
+        await db_.movies.add_bulk(movies_data)
+        await db_.shows.add_bulk(shows_data)
         await db_.seasons.add_bulk(seasons_data)
         await db_.episodes.add_bulk(episodes_data)
         await db_.genres.add_bulk(genres_data)
-        await db_.films_genres.add_bulk(films_genres_data)
-        await db_.series_genres.add_bulk(series_genres_data)
+        await db_.movies_genres.add_bulk(movies_genres_data)
+        await db_.shows_genres.add_bulk(shows_genres_data)
         await db_.actors.add_bulk(actors_data)
-        await db_.films_actors.add_bulk(films_actors_data)
-        await db_.series_actors.add_bulk(series_actors_data)
+        await db_.movies_actors.add_bulk(movies_actors_data)
+        await db_.shows_actors.add_bulk(shows_actors_data)
         await db_.comments.add_bulk(comments_data)
         await db_.commit()
 
@@ -84,9 +85,9 @@ async def ac() -> AsyncGenerator[AsyncClient, Any]:
 
 
 @pytest.fixture(scope="session")
-async def get_series_ids():
-    data = read_json("series")
-    return [series_id["id"] for series_id in data]
+async def get_shows_ids():
+    data = read_json("shows")
+    return [show_id["id"] for show_id in data]
 
 
 @pytest.fixture
@@ -107,23 +108,23 @@ async def max_pagination():
 
 
 @pytest.fixture
-async def get_all_films_with_rels(ac):
-    films = []
-    for film in read_json("films"):
-        res = await ac.get(f"/v1/films/{film['id']}")
+async def get_all_movies_with_rels(ac):
+    movies = []
+    for movie in read_json("movies"):
+        res = await ac.get(f"/v1/movies/{movie['id']}")
         assert res.status_code == 200
         data = res.json()["data"]
-        films.append(data)
-    return films
+        movies.append(data)
+    return movies
 
 
 @pytest.fixture
-async def created_films(ac):
-    films = []
+async def created_movies(ac):
+    movies = []
     try:
         for i in range(700, 703):
             res = await ac.post(
-                "/v1/films",
+                "/v1/movies",
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
@@ -133,21 +134,21 @@ async def created_films(ac):
                 },
             )
             assert res.status_code == 201
-            film = res.json()["data"]
-            films.append(film)
-        yield films
+            movie = res.json()["data"]
+            movies.append(movie)
+        yield movies
     finally:
-        for film in films:
-            await ac.delete(f"/v1/films/{film['id']}")
+        for movie in movies:
+            await ac.delete(f"/v1/movies/{movie['id']}")
 
 
 @pytest.fixture
-async def created_series(ac):
-    series = []
+async def created_shows(ac):
+    shows = []
     try:
         for i in range(704, 707):
             res = await ac.post(
-                "/v1/series",
+                "/v1/shows",
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
@@ -156,12 +157,12 @@ async def created_series(ac):
                 },
             )
             assert res.status_code == 201
-            one_series = res.json()["data"]
-            series.append(one_series)
-        yield series
+            show = res.json()["data"]
+            shows.append(show)
+        yield shows
     finally:
-        for s in series:
-            await ac.delete(f"/v1/series/{s['id']}")
+        for s in shows:
+            await ac.delete(f"/v1/shows/{s['id']}")
 
 
 @pytest.fixture(scope="function")
@@ -172,17 +173,17 @@ async def get_all_comments():
 
 
 @pytest.fixture(scope="session")
-async def get_all_films():
+async def get_all_movies():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
-        films = await db_.films.get_filtered()
-        return [film.model_dump() for film in films]
+        movies = await db_.movies.get_filtered()
+        return [movie.model_dump() for movie in movies]
 
 
 @pytest.fixture(scope="session")
-async def get_all_series():
+async def get_all_shows():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
-        series = await db_.series.get_filtered()
-        return [series.model_dump() for series in series]
+        shows = await db_.shows.get_filtered()
+        return [show.model_dump() for show in shows]
 
 
 @pytest.fixture(scope="session")
@@ -200,14 +201,14 @@ async def get_all_actors():
 
 
 @pytest.fixture(scope="session")
-async def get_all_series_with_rels(ac):
-    series = []
-    for s in read_json("series"):
-        res = await ac.get(f"/v1/series/{s['id']}")
+async def get_all_shows_with_rels(ac):
+    shows = []
+    for s in read_json("shows"):
+        res = await ac.get(f"/v1/shows/{s['id']}")
         assert res.status_code == 200
         data = res.json()["data"]
-        series.append(data)
-    return series
+        shows.append(data)
+    return shows
 
 
 @pytest.fixture(scope="session")

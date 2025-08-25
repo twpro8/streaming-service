@@ -15,14 +15,14 @@ from tests.utils import calculate_expected_length, get_and_validate
         (2, 2),
     ],
 )
-async def test_get_seasons(ac, get_all_series, get_all_seasons, page, per_page):
-    for series in get_all_series:
-        seasons_in_series_count = sum(
-            1 for season in get_all_seasons if season["series_id"] == series["id"]
+async def test_get_seasons(ac, get_all_shows, get_all_seasons, page, per_page):
+    for show in get_all_shows:
+        seasons_in_shows_count = sum(
+            1 for season in get_all_seasons if season["show_id"] == show["id"]
         )
-        expected_count = calculate_expected_length(page, per_page, seasons_in_series_count)
+        expected_count = calculate_expected_length(page, per_page, seasons_in_shows_count)
         data = await get_and_validate(
-            ac, "/v1/seasons", params={"series_id": series["id"], "page": page, "per_page": per_page}
+            ac, "/v1/seasons", params={"show_id": show["id"], "page": page, "per_page": per_page}
         )
         assert len(data) == expected_count
 
@@ -34,14 +34,14 @@ async def test_get_seasons(ac, get_all_series, get_all_seasons, page, per_page):
         ("Valid Season Title 2", 11),
     ],
 )
-async def test_add_season_valid(ac, get_all_series, title, season_number):
+async def test_add_season_valid(ac, get_all_shows, title, season_number):
     for i in range(2):
-        series_id = str(get_all_series[i]["id"])
+        show_id = str(get_all_shows[i]["id"])
 
         res = await ac.post(
             "/v1/seasons",
             json={
-                "series_id": series_id,
+                "show_id": show_id,
                 "title": title,
                 "season_number": season_number,
             },
@@ -66,10 +66,10 @@ async def test_add_season_valid(ac, get_all_series, title, season_number):
         ("episode_number", 501),
     ],
 )
-async def test_add_season_invalid(ac, get_all_series, field, value):
-    series_id = str(get_all_series[0]["id"])
+async def test_add_season_invalid(ac, get_all_shows, field, value):
+    show_id = str(get_all_shows[0]["id"])
     req_body = {
-        "series_id": series_id,
+        "show_id": show_id,
         "title": "Valid Season Title 3",
         "episode_number": 12,
         field: value,
@@ -79,15 +79,15 @@ async def test_add_season_invalid(ac, get_all_series, field, value):
 
 
 @pytest.mark.parametrize("season_number", (10, 11))
-async def test_add_season_on_conflict(ac, get_all_series, season_number):
+async def test_add_season_on_conflict(ac, get_all_shows, season_number):
     for i in range(2):
-        series_id = str(get_all_series[i]["id"])
+        show_id = str(get_all_shows[i]["id"])
         res = await ac.post(
             "/v1/seasons",
             json={
-                "series_id": series_id,
+                "show_id": show_id,
                 "title": "Valid Season Title 4",
-                "season_number": season_number,  # unique season number per series
+                "season_number": season_number,  # unique season number per show
             },
         )
         assert res.status_code == 409
@@ -98,7 +98,7 @@ async def test_add_season_not_found(ac):
         res = await ac.post(
             "/v1/seasons",
             json={
-                "series_id": str(uuid4()),
+                "show_id": str(uuid4()),
                 "title": "Valid Season Title 5",
                 "season_number": 13,
             },
@@ -119,11 +119,11 @@ async def test_update_season_title_valid(ac, get_all_seasons, title):
 
 
 @pytest.mark.parametrize("season_number", (14, 15))
-async def test_update_season_number_valid(ac, get_all_series, get_all_seasons, season_number):
+async def test_update_season_number_valid(ac, get_all_shows, get_all_seasons, season_number):
     for i in range(2):
-        series_id = get_all_series[i]["id"]
+        show_id = get_all_shows[i]["id"]
 
-        seasons = await get_and_validate(ac, "/v1/seasons", params={"series_id": series_id})
+        seasons = await get_and_validate(ac, "/v1/seasons", params={"show_id": show_id})
         season_id = seasons[0]["id"]
 
         res = await ac.patch(f"/v1/seasons/{season_id}", json={"season_number": season_number})
@@ -149,10 +149,10 @@ async def test_update_season_invalid(ac, get_all_seasons, field, value):
     assert "detail" in res.json()
 
 
-async def test_update_season_on_conflict(ac, get_all_series):
-    series_id = get_all_series[0]["id"]
+async def test_update_season_on_conflict(ac, get_all_shows):
+    show_id = get_all_shows[0]["id"]
 
-    seasons = await get_and_validate(ac, "/v1/seasons", params={"series_id": series_id})
+    seasons = await get_and_validate(ac, "/v1/seasons", params={"show_id": show_id})
 
     res = await ac.patch(f"/v1/seasons/{seasons[0]['id']}", json={"season_number": 20})
     assert res.status_code == 200

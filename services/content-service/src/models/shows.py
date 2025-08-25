@@ -12,8 +12,9 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from src.models.base import Base
 
 
-class SeriesORM(Base):
-    __tablename__ = "series"
+class ShowORM(Base):
+    __tablename__ = "shows"
+
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         primary_key=True,
@@ -31,45 +32,46 @@ class SeriesORM(Base):
     cover_url: Mapped[str | None] = mapped_column(unique=True)
 
     # Relationships
-    seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="series")
-    comments: Mapped[List["CommentORM"]] = relationship(back_populates="series")
+    seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="show")
+    comments: Mapped[List["CommentORM"]] = relationship(back_populates="show")
     genres: Mapped[List["GenreORM"]] = relationship(
-        secondary="series_genre_associations",
-        back_populates="series",
+        secondary="show_genre_associations",
+        back_populates="shows",
     )
     actors: Mapped[List["ActorORM"]] = relationship(
-        secondary="series_actor_associations", back_populates="series"
+        secondary="show_actor_associations",
+        back_populates="shows",
     )
 
 
 class SeasonORM(Base):
     __tablename__ = "seasons"
+
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         primary_key=True,
         default=uuid4,
     )
-    series_id: Mapped[UUID] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
+    show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(255))
     season_number: Mapped[int]
 
     # Relationships
-    series: Mapped["SeriesORM"] = relationship(back_populates="seasons")
+    show: Mapped["ShowORM"] = relationship(back_populates="seasons")
     episodes: Mapped[List["EpisodeORM"]] = relationship(back_populates="season")
 
-    __table_args__ = (
-        UniqueConstraint("series_id", "season_number", name="unique_season_per_series"),
-    )
+    __table_args__ = (UniqueConstraint("show_id", "season_number", name="unique_season_per_show"),)
 
 
 class EpisodeORM(Base):
     __tablename__ = "episodes"
+
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         primary_key=True,
         default=uuid4,
     )
-    series_id: Mapped[UUID] = mapped_column(ForeignKey("series.id", ondelete="CASCADE"))
+    show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"))
     season_id: Mapped[UUID] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"))
     title: Mapped[str] = mapped_column(String(255))
     episode_number: Mapped[int]
@@ -77,7 +79,7 @@ class EpisodeORM(Base):
     video_url: Mapped[str | None] = mapped_column(unique=True)
 
     # Relationships
-    series: Mapped["SeriesORM"] = relationship()
+    show: Mapped["ShowORM"] = relationship()
     season: Mapped["SeasonORM"] = relationship(back_populates="episodes")
 
     __table_args__ = (

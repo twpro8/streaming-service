@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from src.db import DBManager
-from src.schemas.pydantic_types import ContentType
+from src.managers.db import DBManager
+from src.enums import ContentType
 
 
 class BaseService:
@@ -10,13 +10,13 @@ class BaseService:
     def __init__(self, db: DBManager | None = None) -> None:
         self.db = db
 
-    async def check_film_exists(self, **filter_by) -> bool:
-        film = await self.db.films.get_one_or_none(**filter_by)
-        return film is not None
+    async def check_movie_exists(self, **filter_by) -> bool:
+        movie = await self.db.movies.get_one_or_none(**filter_by)
+        return movie is not None
 
-    async def check_series_exists(self, **filter_by) -> bool:
-        series = await self.db.series.get_one_or_none(**filter_by)
-        return series is not None
+    async def check_show_exists(self, **filter_by) -> bool:
+        show = await self.db.shows.get_one_or_none(**filter_by)
+        return show is not None
 
     async def check_season_exists(self, **filter_by) -> bool:
         season = await self.db.seasons.get_one_or_none(**filter_by)
@@ -37,13 +37,13 @@ class BaseService:
     async def check_content_exists(self, content_id: UUID, content_type: ContentType) -> bool:
         exists = False
 
-        if content_type == ContentType.film:
-            exists |= await self.check_film_exists(id=content_id)
-        if content_type == ContentType.series:
-            exists |= await self.check_series_exists(id=content_id)
+        if content_type == ContentType.movie:
+            exists |= await self.check_movie_exists(id=content_id)
+        if content_type == ContentType.show:
+            exists |= await self.check_show_exists(id=content_id)
 
         return exists
 
     @staticmethod
     def get_content_type_key(content_type: ContentType):
-        return "film_id" if content_type == ContentType.film else "series_id"
+        return "movie_id" if content_type == ContentType.movie else "show_id"

@@ -1,34 +1,37 @@
 from typing import List
 from uuid import UUID
 
-from pydantic import BaseModel, AnyUrl, ConfigDict, Field, conint
+from pydantic import AnyUrl, BaseModel, ConfigDict, Field, conint
 
 from src.schemas.actors import ActorDTO
 from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
 from src.schemas.genres import GenreDTO
 from src.schemas.pydantic_types import (
     TitleStr,
+    DurationInt,
     RatingDecimal,
     DescriptionStr,
-    DirectorStr,
     ReleaseYearDate,
+    DirectorStr,
 )
 
 
-class SeriesAddDTO(BaseModel):
+class MovieAddDTO(BaseModel):
     id: UUID
     title: TitleStr
     description: DescriptionStr
     director: DirectorStr
     release_year: ReleaseYearDate
+    duration: DurationInt
     cover_url: AnyUrl | None = None
 
 
-class SeriesAddRequestDTO(BaseSchema):
+class MovieAddRequestDTO(BaseSchema):
     title: TitleStr
     description: DescriptionStr
     director: DirectorStr
     release_year: ReleaseYearDate
+    duration: DurationInt
     cover_url: AnyUrl | None = None
     genres_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
@@ -44,26 +47,29 @@ class SeriesAddRequestDTO(BaseSchema):
     )
 
 
-class SeriesDTO(SeriesAddDTO):
+class MovieDTO(MovieAddDTO):
     rating: RatingDecimal
+    video_url: AnyUrl | None = None
 
 
-class SeriesPatchDTO(BaseModel):
+class MoviePatchDTO(BaseModel):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
     director: DirectorStr | None = None
     release_year: ReleaseYearDate | None = None
+    duration: DurationInt | None = None
+    video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
 
 
-class SeriesPatchRequestDTO(SeriesPatchDTO, AtLeastOneFieldRequired):
+class MoviePatchRequestDTO(MoviePatchDTO, AtLeastOneFieldRequired):
     genres_ids: List[conint(strict=True, ge=1)] = Field(
         default=None,
         examples=[
             [],
         ],
     )
-    actors_ids: List[UUID] | None = Field(
+    actors_ids: List[UUID] = Field(
         default=None,
         examples=[
             [],
@@ -73,6 +79,6 @@ class SeriesPatchRequestDTO(SeriesPatchDTO, AtLeastOneFieldRequired):
     model_config = ConfigDict(extra="forbid")
 
 
-class SeriesWithRelsDTO(SeriesDTO):
+class MovieWithRelsDTO(MovieDTO):
     genres: List[GenreDTO]
     actors: List[ActorDTO]

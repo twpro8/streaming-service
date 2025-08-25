@@ -5,15 +5,15 @@ from sqlalchemy import select, delete, insert
 from sqlalchemy.exc import IntegrityError
 
 from src.exceptions import GenreNotFoundException
-from src.models import GenreORM, FilmGenreORM, SeriesGenreORM
+from src.models import GenreORM, MovieGenreORM, ShowGenreORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import (
     GenreDataMapper,
-    FilmGenreDataMapper,
-    SeriesGenreDataMapper,
+    MovieGenreDataMapper,
+    ShowGenreDataMapper,
 )
 from src.repositories.utils import normalize_for_insert
-from src.schemas.genres import GenreDTO, FilmGenreDTO, SeriesGenreDTO
+from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
 
 
 class GenreRepository(BaseRepository):
@@ -28,19 +28,19 @@ class GenreRepository(BaseRepository):
         return res.scalars().one()
 
 
-class FilmGenreRepository(BaseRepository):
-    model = FilmGenreORM
-    schema = FilmGenreDTO
-    mapper = FilmGenreDataMapper
+class MovieGenreRepository(BaseRepository):
+    model = MovieGenreORM
+    schema = MovieGenreDTO
+    mapper = MovieGenreDataMapper
 
-    async def add_film_genres(self, data: List[BaseModel]):
+    async def add_movie_genres(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
         except IntegrityError as exc:
             raise GenreNotFoundException from exc
 
-    async def update_film_genres(self, film_id: int, genres_ids: List[int]):
-        query = select(self.model.genre_id).filter_by(film_id=film_id)
+    async def update_movie_genres(self, movie_id: int, genres_ids: List[int]):
+        query = select(self.model.genre_id).filter_by(movie_id=movie_id)
         res = await self.session.execute(query)
 
         existed_ids = set(res.scalars().all())
@@ -52,31 +52,31 @@ class FilmGenreRepository(BaseRepository):
         if to_del:
             await self.session.execute(
                 delete(self.model).filter(
-                    self.model.film_id == film_id,
+                    self.model.movie_id == movie_id,
                     self.model.genre_id.in_(to_del),
                 )
             )
         if to_add:
-            values = [{"film_id": film_id, "genre_id": genre_id} for genre_id in to_add]
+            values = [{"movie_id": movie_id, "genre_id": genre_id} for genre_id in to_add]
             try:
                 await self.session.execute(insert(self.model).values(values))
             except IntegrityError as exc:
                 raise GenreNotFoundException from exc
 
 
-class SeriesGenreRepository(BaseRepository):
-    model = SeriesGenreORM
-    schema = SeriesGenreDTO
-    mapper = SeriesGenreDataMapper
+class ShowGenreRepository(BaseRepository):
+    model = ShowGenreORM
+    schema = ShowGenreDTO
+    mapper = ShowGenreDataMapper
 
-    async def add_series_genres(self, data: List[BaseModel]):
+    async def add_show_genres(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
         except IntegrityError as exc:
             raise GenreNotFoundException from exc
 
-    async def update_series_genres(self, series_id: int, genres_ids: List[int]):
-        query = select(self.model.genre_id).filter_by(series_id=series_id)
+    async def update_show_genres(self, show_id: int, genres_ids: List[int]):
+        query = select(self.model.genre_id).filter_by(show_id=show_id)
         res = await self.session.execute(query)
 
         existed_ids = set(res.scalars().all())
@@ -88,12 +88,12 @@ class SeriesGenreRepository(BaseRepository):
         if to_del:
             await self.session.execute(
                 delete(self.model).filter(
-                    self.model.series_id == series_id,
+                    self.model.show_id == show_id,
                     self.model.genre_id.in_(to_del),
                 )
             )
         if to_add:
-            values = [{"series_id": series_id, "genre_id": genre_id} for genre_id in to_add]
+            values = [{"show_id": show_id, "genre_id": genre_id} for genre_id in to_add]
             try:
                 await self.session.execute(insert(self.model).values(values))
             except IntegrityError as exc:

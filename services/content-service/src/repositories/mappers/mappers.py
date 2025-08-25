@@ -1,25 +1,25 @@
-from src.models import SeriesORM, SeasonORM, EpisodeORM, CommentORM, RatingORM, GenreORM, ActorORM
-from src.models.actors import FilmActorORM, SeriesActorORM
+from src.models import ShowORM, SeasonORM, EpisodeORM, CommentORM, RatingORM, GenreORM, ActorORM
+from src.models.actors import MovieActorORM, ShowActorORM
 from src.repositories.mappers.base import DataMapper
-from src.models.films import FilmORM
-from src.schemas.actors import ActorDTO, FilmActorDTO, SeriesActorDTO
+from src.models.movies import MovieORM
+from src.schemas.actors import ActorDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentDTO
-from src.schemas.films import FilmDTO, FilmWithRelsDTO
-from src.schemas.genres import GenreDTO, FilmGenreDTO, SeriesGenreDTO
+from src.schemas.movies import MovieDTO, MovieWithRelsDTO
+from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
 from src.schemas.rating import RatingDTO
 from src.schemas.seasons import SeasonDTO
-from src.schemas.series import SeriesDTO, SeriesWithRelsDTO
+from src.schemas.shows import ShowDTO, ShowWithRelsDTO
 from src.schemas.episodes import EpisodeDTO
 
 
-class FilmDataMapper(DataMapper):
-    db_model = FilmORM
-    schema = FilmDTO
+class MovieDataMapper(DataMapper):
+    db_model = MovieORM
+    schema = MovieDTO
 
 
-class SeriesDataMapper(DataMapper):
-    db_model = SeriesORM
-    schema = SeriesDTO
+class ShowDataMapper(DataMapper):
+    db_model = ShowORM
+    schema = ShowDTO
 
 
 class SeasonDataMapper(DataMapper):
@@ -47,24 +47,24 @@ class GenreDataMapper(DataMapper):
     schema = GenreDTO
 
 
-class FilmGenreDataMapper(DataMapper):
+class MovieGenreDataMapper(DataMapper):
     db_model = GenreORM
-    schema = FilmGenreDTO
+    schema = MovieGenreDTO
 
 
-class SeriesGenreDataMapper(DataMapper):
-    db_model = SeriesORM
-    schema = SeriesGenreDTO
+class ShowGenreDataMapper(DataMapper):
+    db_model = ShowORM
+    schema = ShowGenreDTO
 
 
-class FilmWithRelsDataMapper(DataMapper):
-    db_model = FilmORM
-    schema = FilmWithRelsDTO
+class MovieWithRelsDataMapper(DataMapper):
+    db_model = MovieORM
+    schema = MovieWithRelsDTO
 
 
-class SeriesWithRelsDataMapper(DataMapper):
-    db_model = SeriesORM
-    schema = SeriesWithRelsDTO
+class ShowWithRelsDataMapper(DataMapper):
+    db_model = ShowORM
+    schema = ShowWithRelsDTO
 
 
 class ActorDataMapper(DataMapper):
@@ -72,11 +72,11 @@ class ActorDataMapper(DataMapper):
     schema = ActorDTO
 
 
-class FilmActorDataMapper(DataMapper):
-    db_model = FilmActorORM
-    schema = FilmActorDTO
+class MovieActorDataMapper(DataMapper):
+    db_model = MovieActorORM
+    schema = MovieActorDTO
 
 
-class SeriesActorDataMapper(DataMapper):
-    db_model = SeriesActorORM
-    schema = SeriesActorDTO
+class ShowActorDataMapper(DataMapper):
+    db_model = ShowActorORM
+    schema = ShowActorDTO

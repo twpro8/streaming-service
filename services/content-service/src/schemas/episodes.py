@@ -7,7 +7,7 @@ from src.schemas.pydantic_types import TitleStr, DurationInt
 
 
 class EpisodeAddRequestDTO(BaseSchema):
-    series_id: UUID
+    show_id: UUID
     season_id: UUID
     title: TitleStr
     episode_number: int = Field(ge=1, le=9999, title="Episode Number")

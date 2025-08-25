@@ -31,11 +31,11 @@ class ActorPatchDTO(BaseSchema, AtLeastOneFieldRequired):
     bio: Str128 | None = None
 
 
-class FilmActorDTO(BaseSchema):
-    film_id: UUID
+class MovieActorDTO(BaseSchema):
+    movie_id: UUID
     actor_id: UUID
 
 
-class SeriesActorDTO(BaseSchema):
-    series_id: UUID
+class ShowActorDTO(BaseSchema):
+    show_id: UUID
     actor_id: UUID

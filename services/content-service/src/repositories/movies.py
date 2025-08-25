@@ -10,22 +10,22 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from src.exceptions import UniqueCoverURLException, UniqueVideoURLException
-from src.models import FilmORM, FilmGenreORM
-from src.models.actors import FilmActorORM
+from src.models import MovieORM, MovieGenreORM
+from src.models.actors import MovieActorORM
 from src.repositories.base import BaseRepository
-from src.repositories.mappers.mappers import FilmDataMapper, FilmWithRelsDataMapper
-from src.schemas.films import FilmDTO
+from src.repositories.mappers.mappers import MovieDataMapper, MovieWithRelsDataMapper
+from src.schemas.movies import MovieDTO
 
 
 log = logging.getLogger(__name__)
 
 
-class FilmRepository(BaseRepository):
-    model = FilmORM
-    schema = FilmDTO
-    mapper = FilmDataMapper
+class MovieRepository(BaseRepository):
+    model = MovieORM
+    schema = MovieDTO
+    mapper = MovieDataMapper
 
-    async def get_filtered_films(
+    async def get_filtered_movies(
         self,
         page: int | None,
         per_page: int | None,
@@ -51,12 +51,14 @@ class FilmRepository(BaseRepository):
         query = select(self.model)
         if genres_ids:
             genre_filter = exists().where(
-                FilmGenreORM.film_id == self.model.id, FilmGenreORM.genre_id.in_(genres_ids)
+                MovieGenreORM.movie_id == self.model.id,
+                MovieGenreORM.genre_id.in_(genres_ids),
             )
             query = query.filter(genre_filter)
         if actors_ids:
             actor_filter = exists().where(
-                FilmActorORM.film_id == self.model.id, FilmActorORM.actor_id.in_(actors_ids)
+                MovieActorORM.movie_id == self.model.id,
+                MovieActorORM.actor_id.in_(actors_ids),
             )
             query = query.filter(actor_filter)
 
@@ -88,9 +90,9 @@ class FilmRepository(BaseRepository):
         model = res.scalars().one_or_none()
         if model is None:
             return None
-        return FilmWithRelsDataMapper.map_to_domain_entity(model)
+        return MovieWithRelsDataMapper.map_to_domain_entity(model)
 
-    async def add_film(self, data: BaseModel) -> None:
+    async def add_movie(self, data: BaseModel) -> None:
         try:
             await self.add(data)
         except IntegrityError as exc:
@@ -98,12 +100,12 @@ class FilmRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "films_cover_url_key":
+                    case "movies_cover_url_key":
                         raise UniqueCoverURLException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
-    async def update_film(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
+    async def update_movie(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         try:
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
         except IntegrityError as exc:
@@ -111,9 +113,9 @@ class FilmRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "films_cover_url_key":
+                    case "movies_cover_url_key":
                         raise UniqueCoverURLException from exc
-                    case "films_video_url_key":
+                    case "movies_video_url_key":
                         raise UniqueVideoURLException from exc
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise

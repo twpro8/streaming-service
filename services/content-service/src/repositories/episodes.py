@@ -7,11 +7,11 @@ from asyncpg.exceptions import UniqueViolationError
 
 from src.exceptions import (
     UniqueEpisodePerSeasonException,
-    UniqueSeasonPerSeriesException,
+    UniqueSeasonPerShowException,
     UniqueFileURLException,
 )
 from src.repositories.base import BaseRepository
-from src.models.series import EpisodeORM
+from src.models.shows import EpisodeORM
 from src.repositories.utils import normalize_for_insert
 from src.schemas.episodes import EpisodeDTO
 from src.repositories.mappers.mappers import EpisodeDataMapper
@@ -27,7 +27,7 @@ class EpisodeRepository(BaseRepository):
 
     async def get_episodes(
         self,
-        series_id: int | None,
+        show_id: int | None,
         season_id: int | None,
         episode_title: str | None,
         episode_number: int | None,
@@ -35,8 +35,8 @@ class EpisodeRepository(BaseRepository):
         offset: int,
     ):
         query = select(EpisodeORM)
-        if series_id is not None:
-            query = query.filter_by(series_id=series_id)
+        if show_id is not None:
+            query = query.filter_by(show_id=show_id)
         if season_id is not None:
             query = query.filter_by(season_id=season_id)
         if episode_title is not None:
@@ -62,8 +62,8 @@ class EpisodeRepository(BaseRepository):
                 match constraint:
                     case "unique_episode_per_season":
                         raise UniqueEpisodePerSeasonException
-                    case "unique_season_per_series":
-                        raise UniqueSeasonPerSeriesException
+                    case "unique_season_per_show":
+                        raise UniqueSeasonPerShowException
                     case "episodes_video_url_key":
                         raise UniqueFileURLException
                 raise

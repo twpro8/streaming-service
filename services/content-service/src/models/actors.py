@@ -41,28 +41,30 @@ class ActorORM(Base):
     )
 
     # Relationships
-    films: Mapped[List["FilmORM"]] = relationship(
-        secondary="film_actor_associations", back_populates="actors"
+    movies: Mapped[List["MovieORM"]] = relationship(
+        secondary="movie_actor_associations", back_populates="actors"
     )
-    series: Mapped[List["SeriesORM"]] = relationship(
-        secondary="series_actor_associations", back_populates="actors"
+    shows: Mapped[List["ShowORM"]] = relationship(
+        secondary="show_actor_associations", back_populates="actors"
     )
 
 
-class FilmActorORM(Base):
-    __tablename__ = "film_actor_associations"
-    film_id: Mapped[UUID] = mapped_column(
-        ForeignKey("films.id", ondelete="CASCADE"), primary_key=True
+class MovieActorORM(Base):
+    __tablename__ = "movie_actor_associations"
+
+    movie_id: Mapped[UUID] = mapped_column(
+        ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True
     )
     actor_id: Mapped[UUID] = mapped_column(
         ForeignKey("actors.id", ondelete="CASCADE"), primary_key=True
     )
 
 
-class SeriesActorORM(Base):
-    __tablename__ = "series_actor_associations"
-    series_id: Mapped[UUID] = mapped_column(
-        ForeignKey("series.id", ondelete="CASCADE"), primary_key=True
+class ShowActorORM(Base):
+    __tablename__ = "show_actor_associations"
+
+    show_id: Mapped[UUID] = mapped_column(
+        ForeignKey("shows.id", ondelete="CASCADE"), primary_key=True
     )
     actor_id: Mapped[UUID] = mapped_column(
         ForeignKey("actors.id", ondelete="CASCADE"), primary_key=True

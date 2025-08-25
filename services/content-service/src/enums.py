@@ -31,3 +31,11 @@ class ZodiacSign(StrEnum):
     capricorn = "Capricorn"
     aquarius = "Aquarius"
     pisces = "Pisces"
+
+
+class ContentType(str, Enum):
+    movie = "movie"
+    show = "show"
+
+    def __str__(self):
+        return self.value

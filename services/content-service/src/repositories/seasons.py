@@ -5,8 +5,8 @@ from asyncpg import UniqueViolationError
 from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
-from src.exceptions import UniqueSeasonPerSeriesException
-from src.models.series import SeasonORM
+from src.exceptions import UniqueSeasonPerShowException
+from src.models.shows import SeasonORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import SeasonDataMapper
 from src.schemas.seasons import SeasonDTO
@@ -28,8 +28,8 @@ class SeasonRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "unique_season_per_series":
-                        raise UniqueSeasonPerSeriesException from exc
+                    case "unique_season_per_show":
+                        raise UniqueSeasonPerShowException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
@@ -41,8 +41,8 @@ class SeasonRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "unique_season_per_series":
-                        raise UniqueSeasonPerSeriesException from exc
+                    case "unique_season_per_show":
+                        raise UniqueSeasonPerShowException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
         return data

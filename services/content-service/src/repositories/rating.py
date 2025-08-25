@@ -3,10 +3,10 @@ from uuid import UUID
 
 from sqlalchemy import select, update
 
-from src.models import RatingORM, SeriesORM, FilmORM, RatingAggregateORM
+from src.models import RatingORM, ShowORM, MovieORM, RatingAggregateORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import RatingDataMapper
-from src.schemas.pydantic_types import ContentType
+from src.enums import ContentType
 from src.schemas.rating import RatingDTO
 
 
@@ -82,11 +82,11 @@ class RatingRepository(BaseRepository):
 
         # updating the required table
         if need_update:
-            if content_type == ContentType.film:
+            if content_type == ContentType.movie:
                 await self.session.execute(
-                    update(FilmORM).filter_by(id=content_id).values(rating=new_avg)
+                    update(MovieORM).filter_by(id=content_id).values(rating=new_avg)
                 )
-            elif content_type == ContentType.series:
+            elif content_type == ContentType.show:
                 await self.session.execute(
-                    update(SeriesORM).filter_by(id=content_id).values(rating=new_avg)
+                    update(ShowORM).filter_by(id=content_id).values(rating=new_avg)
                 )

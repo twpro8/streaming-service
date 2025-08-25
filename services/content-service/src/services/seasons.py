@@ -2,17 +2,17 @@ from uuid import UUID, uuid4
 
 from src.exceptions import (
     SeasonNotFoundException,
-    SeriesNotFoundException,
-    UniqueSeasonPerSeriesException,
+    ShowNotFoundException,
+    UniqueSeasonPerShowException,
 )
 from src.schemas.seasons import SeasonPatchRequestDTO, SeasonAddDTO, SeasonAddRequestDTO
 from src.services.base import BaseService
 
 
 class SeasonService(BaseService):
-    async def get_seasons(self, series_id: UUID | None, page: int, per_page: int):
+    async def get_seasons(self, show_id: UUID | None, page: int, per_page: int):
         seasons = await self.db.seasons.get_filtered(
-            series_id=series_id,
+            show_id=show_id,
             page=page,
             per_page=per_page,
         )
@@ -25,15 +25,15 @@ class SeasonService(BaseService):
         return season
 
     async def add_season(self, season_data: SeasonAddRequestDTO) -> UUID:
-        if not await self.check_series_exists(id=season_data.series_id):
-            raise SeriesNotFoundException
+        if not await self.check_show_exists(id=season_data.show_id):
+            raise ShowNotFoundException
 
         season_id = uuid4()
         _season_data = SeasonAddDTO(id=season_id, **season_data.model_dump())
 
         try:
             await self.db.seasons.add_season(data=_season_data)
-        except UniqueSeasonPerSeriesException:
+        except UniqueSeasonPerShowException:
             raise
 
         await self.db.commit()
@@ -49,7 +49,7 @@ class SeasonService(BaseService):
                 data=season_data,
                 exclude_unset=True,
             )
-        except UniqueSeasonPerSeriesException:
+        except UniqueSeasonPerShowException:
             raise
         await self.db.commit()
 

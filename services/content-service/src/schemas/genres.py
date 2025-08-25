@@ -14,11 +14,11 @@ class GenreDTO(GenreAddDTO):
     id: IDInt
 
 
-class FilmGenreDTO(BaseSchema):
-    film_id: UUID
+class MovieGenreDTO(BaseSchema):
+    movie_id: UUID
     genre_id: IDInt
 
 
-class SeriesGenreDTO(BaseSchema):
-    series_id: UUID
+class ShowGenreDTO(BaseSchema):
+    show_id: UUID
     genre_id: IDInt

@@ -8,7 +8,7 @@ from src.schemas.episodes import (
 from src.services.base import BaseService
 from src.exceptions import (
     EpisodeNotFoundException,
-    SeriesNotFoundException,
+    ShowNotFoundException,
     SeasonNotFoundException,
     UniqueEpisodePerSeasonException,
     UniqueFileURLException,
@@ -22,7 +22,7 @@ class EpisodeService(BaseService):
 
     async def get_episodes(
         self,
-        series_id: UUID | None,
+        show_id: UUID | None,
         season_id: UUID | None,
         title: str | None,
         episode_number: int | None,
@@ -30,10 +30,10 @@ class EpisodeService(BaseService):
         per_page: int,
     ):
         """
-        Get episodes by series ID. And optional by season ID.
+        Get episodes by show ID. And optional by season ID.
         """
         episodes = await self.db.episodes.get_episodes(
-            series_id=series_id,
+            show_id=show_id,
             season_id=season_id,
             episode_title=title,
             episode_number=episode_number,
@@ -55,8 +55,8 @@ class EpisodeService(BaseService):
         """
         Add new episode.
         """
-        if not await self.check_series_exists(id=episode_data.series_id):
-            raise SeriesNotFoundException
+        if not await self.check_show_exists(id=episode_data.show_id):
+            raise ShowNotFoundException
         if not await self.check_season_exists(id=episode_data.season_id):
             raise SeasonNotFoundException
 

@@ -18,15 +18,15 @@ class CommentORM(Base):
         default=uuid4,
     )
     user_id: Mapped[int]
-    film_id: Mapped[UUID] = mapped_column(ForeignKey("films.id", ondelete="CASCADE"), nullable=True)
-    series_id: Mapped[UUID] = mapped_column(
-        ForeignKey("series.id", ondelete="CASCADE"), nullable=True
+    movie_id: Mapped[UUID] = mapped_column(
+        ForeignKey("movies.id", ondelete="CASCADE"), nullable=True
     )
+    show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"), nullable=True)
     comment: Mapped[str] = mapped_column(String(255))
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=text("TIMEZONE('UTC', now())")
     )
 
     # Relationships
-    film: Mapped["FilmORM"] = relationship(back_populates="comments")
-    series: Mapped["SeriesORM"] = relationship(back_populates="comments")
+    movie: Mapped["MovieORM"] = relationship(back_populates="comments")
+    show: Mapped["ShowORM"] = relationship(back_populates="comments")

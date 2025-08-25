@@ -6,7 +6,7 @@ from tests.utils import get_and_validate, calculate_expected_length
 
 
 @pytest.mark.order(3)
-@pytest.mark.parametrize("content_type, id_key", (("film", "film_id"), ("series", "series_id")))
+@pytest.mark.parametrize("content_type, id_key", (("movie", "movie_id"), ("show", "show_id")))
 @pytest.mark.parametrize("page, per_page", ((1, 2), (2, 2), (3, 2), (4, 2)))
 async def test_get_content_comments(ac, get_all_comments, content_type, id_key, page, per_page):
     content_id = next(c[id_key] for c in get_all_comments if c.get(id_key, None))
@@ -48,14 +48,14 @@ async def test_get_user_comments_valid(ac, get_all_comments, current_user_id, pa
 
 @pytest.mark.order(3)
 @pytest.mark.parametrize("text", ("Valid comment text 1", "Valid comment text 2"))
-async def test_add_film_comment_valid(ac, get_all_films, text):
-    film_id = str(get_all_films[0]["id"])
+async def test_add_movie_comment_valid(ac, get_all_movies, text):
+    movie_id = str(get_all_movies[0]["id"])
 
     res = await ac.post(
         url="/v1/comments",
         json={
-            "content_id": film_id,
-            "content_type": "film",
+            "content_id": movie_id,
+            "content_type": "movie",
             "comment": text,
         },
     )
@@ -67,20 +67,20 @@ async def test_add_film_comment_valid(ac, get_all_films, text):
 
     assert comment["id"] == comment_id
     assert comment["comment"] == text
-    assert comment["film_id"] == film_id
+    assert comment["movie_id"] == movie_id
     assert comment["created_at"] is not None
 
 
 @pytest.mark.order(3)
 @pytest.mark.parametrize("text", ("Valid comment text 1", "Valid comment text 2"))
-async def test_add_series_comment_valid(ac, get_all_series, text):
-    series_id = str(get_all_series[0]["id"])
+async def test_add_show_comment_valid(ac, get_all_shows, text):
+    show_id = str(get_all_shows[0]["id"])
 
     res = await ac.post(
         url="/v1/comments",
         json={
-            "content_id": series_id,
-            "content_type": "series",
+            "content_id": show_id,
+            "content_type": "show",
             "comment": text,
         },
     )
@@ -92,7 +92,7 @@ async def test_add_series_comment_valid(ac, get_all_series, text):
 
     assert comment["id"] == comment_id
     assert comment["comment"] == text
-    assert comment["series_id"] == series_id
+    assert comment["show_id"] == show_id
     assert comment["created_at"] is not None
 
 
@@ -103,16 +103,16 @@ async def test_add_series_comment_valid(ac, get_all_series, text):
         ("comment", "t"),
         ("comment", "t" * 256),
         ("content_type", "unknown"),
-        ("series_id", "invalid-format"),
+        ("show_id", "invalid-format"),
     ),
 )
-async def test_add_comment_invalid(ac, get_all_films, field, value):
-    film_id = str(get_all_films[0]["id"])
+async def test_add_comment_invalid(ac, get_all_movies, field, value):
+    movie_id = str(get_all_movies[0]["id"])
     res = await ac.post(
         url="/v1/comments",
         json={
-            "content_id": film_id,
-            "content_type": "film",
+            "content_id": movie_id,
+            "content_type": "movie",
             "comment": "Valid comment text",
             field: value,
         },
@@ -121,7 +121,7 @@ async def test_add_comment_invalid(ac, get_all_films, field, value):
 
 
 @pytest.mark.order(3)
-@pytest.mark.parametrize("content_type", ("film", "series"))
+@pytest.mark.parametrize("content_type", ("movie", "show"))
 async def test_add_comment_content_not_found(ac, content_type):
     res = await ac.post(
         url="/v1/comments",

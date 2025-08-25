@@ -2,7 +2,8 @@ from datetime import datetime
 from uuid import UUID
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import ContentType, IDInt, TextStr255
+from src.schemas.pydantic_types import IDInt, TextStr255
+from src.enums import ContentType
 
 
 class CommentAddRequestDTO(BaseSchema):
@@ -13,8 +14,8 @@ class CommentAddRequestDTO(BaseSchema):
 
 class CommentAddDTO(BaseSchema):
     id: UUID
-    film_id: UUID | None = None
-    series_id: UUID | None = None
+    movie_id: UUID | None = None
+    show_id: UUID | None = None
     user_id: IDInt
     comment: TextStr255
 

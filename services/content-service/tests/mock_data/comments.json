@@ -1,61 +1,61 @@
 [
   {
     "id":"950238ad-980b-47f2-8f91-a031485b51a6",
-    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
     "user_id":1,
     "comment": "Test comment 1"
   },
   {
     "id": "598676bb-786a-46db-98fe-8cb32a64b5f3",
-    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
     "user_id": 1,
     "comment": "Test comment 2"
   },
   {
     "id": "12552a84-5ceb-47f2-ae51-28d391041a83",
-    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
     "user_id": 1,
     "comment": "Test comment 3"
   },
   {
     "id": "aff73220-391a-4381-ae28-0f7e47e3a768",
-    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
     "user_id": 1,
     "comment": "Test comment 4"
   },
   {
     "id": "cabddc10-d31d-456c-bc8d-73a4d347a3ae",
-    "film_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
     "user_id": 1,
     "comment": "Test comment 5"
   },
   {
     "id": "238a23e7-dba6-4371-adf2-08cd1298820a",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "user_id": 1,
     "comment": "Test comment 6"
   },
   {
     "id": "bd524f5d-38ec-45da-86b5-2b7958c7c1dc",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "user_id": 1,
     "comment": "Test comment 7"
   },
   {
     "id": "3e29ed1b-7bfc-40b0-8a77-c154866e5ade",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "user_id": 1,
     "comment": "Test comment 8"
   },
   {
     "id": "ce7371d0-bcd1-417d-a11c-bb1cffb6bd1a",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "user_id": 1,
     "comment": "Test comment 9"
   },
   {
     "id": "7476c2a5-19d7-4d3e-92a1-42e939fd4e0f",
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "user_id": 1,
     "comment": "Test comment 10"
   }

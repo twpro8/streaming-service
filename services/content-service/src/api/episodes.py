@@ -7,11 +7,11 @@ from src.api.dependencies import AdminDep, DBDep, EpisodesParamsDep
 from src.schemas.episodes import EpisodePatchRequestDTO, EpisodeAddRequestDTO
 
 from src.exceptions import (
-    SeriesNotFoundException,
+    ShowNotFoundException,
     SeasonNotFoundException,
     EpisodeNotFoundException,
     EpisodeAlreadyExistsException,
-    SeriesNotFoundHTTPException,
+    ShowNotFoundHTTPException,
     SeasonNotFoundHTTPException,
     EpisodeNotFoundHTTPException,
     EpisodeAlreadyExistsHTTPException,
@@ -44,8 +44,8 @@ async def get_episode(db: DBDep, episode_id: UUID):
 async def add_episode(db: DBDep, episode_data: EpisodeAddRequestDTO):
     try:
         episode_id = await EpisodeService(db).add_episode(episode_data)
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
+    except ShowNotFoundException:
+        raise ShowNotFoundHTTPException
     except SeasonNotFoundException:
         raise SeasonNotFoundHTTPException
     except EpisodeAlreadyExistsException:

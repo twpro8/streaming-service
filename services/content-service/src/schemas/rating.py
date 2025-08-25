@@ -5,7 +5,8 @@ from datetime import datetime
 from pydantic import condecimal
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import IDInt, ContentType
+from src.schemas.pydantic_types import IDInt
+from src.enums import ContentType
 
 
 class RatingAddRequestDTO(BaseSchema):

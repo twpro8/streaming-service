@@ -1,58 +1,58 @@
 [
   {
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "actor_id": "a33cd0cb-4825-4df5-be3c-0463062aafdb"
   },
   {
-    "series_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
+    "show_id": "bf5315e1-fdfc-4af3-b18c-1ccc83892797",
     "actor_id": "700fe73b-d503-4eb1-9bfe-6eb0c15ebfd3"
   },
   {
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "actor_id": "700fe73b-d503-4eb1-9bfe-6eb0c15ebfd3"
   },
   {
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "actor_id": "777b5f00-5a27-49aa-a600-8cef3319e5c0"
   },
   {
-    "series_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
+    "show_id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
     "actor_id": "a5abb191-e78b-4a89-bd99-bee9b3270d8a"
   },
   {
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "actor_id": "a5abb191-e78b-4a89-bd99-bee9b3270d8a"
   },
   {
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "actor_id": "91e653c1-c013-43ba-8cc4-8bf4a8456ca3"
   },
   {
-    "series_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
+    "show_id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
     "actor_id": "ad143eae-2e35-45d2-a68d-249a7a664518"
   },
   {
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "actor_id": "ad143eae-2e35-45d2-a68d-249a7a664518"
   },
   {
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "actor_id": "52053775-af0c-42fd-98b4-a07cd46ad945"
   },
   {
-    "series_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
+    "show_id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
     "actor_id": "a6fa8e19-3355-4955-9814-8372999697c6"
   },
   {
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "actor_id": "a6fa8e19-3355-4955-9814-8372999697c6"
   },
   {
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "actor_id": "7759f88a-28f5-4b12-89c9-e092dd003e65"
   },
   {
-    "series_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
+    "show_id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
     "actor_id": "d620ca8a-1fe1-4a3d-b381-f3984bb74aa1"
   }
 ]

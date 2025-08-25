@@ -13,6 +13,7 @@ from src.models.base import Base
 
 class RatingORM(Base):
     __tablename__ = "ratings"
+
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         primary_key=True,

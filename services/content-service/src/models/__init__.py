@@ -1,20 +1,20 @@
-from src.models.films import FilmORM
-from src.models.series import SeriesORM, SeasonORM, EpisodeORM
+from src.models.movies import MovieORM
+from src.models.shows import ShowORM, SeasonORM, EpisodeORM
 from src.models.comments import CommentORM
 from src.models.rating import RatingORM, RatingAggregateORM
-from src.models.genres import GenreORM, FilmGenreORM, SeriesGenreORM
+from src.models.genres import GenreORM, MovieGenreORM, ShowGenreORM
 from src.models.actors import ActorORM
 
 __all__ = [
-    "FilmORM",
-    "SeriesORM",
+    "MovieORM",
+    "ShowORM",
     "SeasonORM",
     "EpisodeORM",
     "CommentORM",
     "RatingORM",
     "RatingAggregateORM",
     "GenreORM",
-    "FilmGenreORM",
-    "SeriesGenreORM",
+    "MovieGenreORM",
+    "ShowGenreORM",
     "ActorORM",
 ]

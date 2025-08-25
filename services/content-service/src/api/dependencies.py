@@ -6,7 +6,8 @@ from fastapi import Depends, Request, Query
 from fastapi.openapi.models import Example
 from pydantic import BaseModel
 
-from src.db import DBManager, session_maker
+from src.db import session_maker
+from src.managers.db import DBManager
 from src.enums import SortBy, SortOrder
 from src.exceptions import (
     NoTokenHTTPException,
@@ -155,7 +156,7 @@ ContentParamsDep = Annotated[CommonContentParams, Depends()]
 
 class EpisodesParams(PaginationParams):
     title: Annotated[str | None, Query(None)]
-    series_id: Annotated[UUID | None, Query(None)]
+    show_id: Annotated[UUID | None, Query(None)]
     season_id: Annotated[UUID | None, Query(None)]
     episode_number: Annotated[int | None, Query(None, ge=1, le=9999)]
 

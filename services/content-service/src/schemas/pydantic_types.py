@@ -1,7 +1,6 @@
 from datetime import date
 from decimal import Decimal
 
-from enum import Enum
 from typing import Annotated
 
 from pydantic import Field, condecimal
@@ -78,14 +77,3 @@ TextStr255 = Annotated[
         max_length=255,
     ),
 ]
-
-
-# Enum for content type
-
-
-class ContentType(str, Enum):
-    film = "film"
-    series = "series"
-
-    def __str__(self):
-        return self.value

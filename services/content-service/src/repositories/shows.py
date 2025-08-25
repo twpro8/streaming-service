@@ -11,22 +11,22 @@ from sqlalchemy.orm import selectinload
 
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException
-from src.models import SeriesORM, SeriesGenreORM
-from src.models.actors import SeriesActorORM
+from src.models import ShowORM, ShowGenreORM
+from src.models.actors import ShowActorORM
 from src.repositories.base import BaseRepository
-from src.repositories.mappers.mappers import SeriesDataMapper, SeriesWithRelsDataMapper
-from src.schemas.series import SeriesDTO
+from src.repositories.mappers.mappers import ShowDataMapper, ShowWithRelsDataMapper
+from src.schemas.shows import ShowDTO
 
 
 log = logging.getLogger(__name__)
 
 
-class SeriesRepository(BaseRepository):
-    model = SeriesORM
-    schema = SeriesDTO
-    mapper = SeriesDataMapper
+class ShowRepository(BaseRepository):
+    model = ShowORM
+    schema = ShowDTO
+    mapper = ShowDataMapper
 
-    async def get_filtered_series(
+    async def get_filtered_shows(
         self,
         page: int | None,
         per_page: int | None,
@@ -52,12 +52,14 @@ class SeriesRepository(BaseRepository):
         query = select(self.model)
         if genres_ids:
             genre_filter = exists().where(
-                SeriesGenreORM.series_id == self.model.id, SeriesGenreORM.genre_id.in_(genres_ids)
+                ShowGenreORM.show_id == self.model.id,
+                ShowGenreORM.genre_id.in_(genres_ids),
             )
             query = query.filter(genre_filter)
         if actors_ids:
             actor_filter = exists().where(
-                SeriesActorORM.series_id == self.model.id, SeriesActorORM.actor_id.in_(actors_ids)
+                ShowActorORM.show_id == self.model.id,
+                ShowActorORM.actor_id.in_(actors_ids),
             )
             query = query.filter(actor_filter)
 
@@ -89,9 +91,9 @@ class SeriesRepository(BaseRepository):
         model = res.scalars().one_or_none()
         if model is None:
             return None
-        return SeriesWithRelsDataMapper.map_to_domain_entity(model)
+        return ShowWithRelsDataMapper.map_to_domain_entity(model)
 
-    async def add_series(self, data: BaseModel) -> None:
+    async def add_show(self, data: BaseModel) -> None:
         try:
             await self.add(data)
         except IntegrityError as exc:
@@ -99,12 +101,12 @@ class SeriesRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "series_cover_url_key":
+                    case "shows_cover_url_key":
                         raise UniqueCoverURLException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
-    async def update_series(
+    async def update_show(
         self,
         data: BaseModel,
         exclude_unset: bool = False,
@@ -117,7 +119,7 @@ class SeriesRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "series_cover_url_key":
+                    case "shows_cover_url_key":
                         raise UniqueCoverURLException from exc
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise

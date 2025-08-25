@@ -4,8 +4,8 @@ from uuid import UUID
 from fastapi import APIRouter, Query
 
 from src.exceptions import (
-    SeriesNotFoundException,
-    SeriesNotFoundHTTPException,
+    ShowNotFoundException,
+    ShowNotFoundHTTPException,
     UniqueCoverURLException,
     UniqueCoverURLHTTPException,
     GenreNotFoundException,
@@ -13,60 +13,60 @@ from src.exceptions import (
     ActorNotFoundException,
     ActorNotFoundHTTPException,
 )
-from src.schemas.series import SeriesAddRequestDTO, SeriesPatchRequestDTO
-from src.services.series import SeriesService
+from src.schemas.shows import ShowAddRequestDTO, ShowPatchRequestDTO
+from src.services.shows import ShowService
 from src.api.dependencies import DBDep, AdminDep, ContentParamsDep, SortDep
 
 
-v1_router = APIRouter(prefix="/v1/series", tags=["Series"])
+v1_router = APIRouter(prefix="/v1/shows", tags=["shows"])
 
 
 @v1_router.get("")
-async def get_series(
+async def get_shows(
     db: DBDep,
     common_params: ContentParamsDep,
     sort: SortDep,
     genres_ids: Annotated[List[int] | None, Query()] = None,
     actors_ids: Annotated[List[UUID] | None, Query()] = None,
 ):
-    series = await SeriesService(db).get_series(
+    shows = await ShowService(db).get_shows(
         **common_params.model_dump(),
         genres_ids=genres_ids,
         actors_ids=actors_ids,
         sort_by=sort.field,
         sort_order=sort.order,
     )
-    return {"status": "ok", "data": series}
+    return {"status": "ok", "data": shows}
 
 
-@v1_router.get("/{series_id}")
-async def get_one_series(db: DBDep, series_id: UUID):
+@v1_router.get("/{show_id}")
+async def get_show(db: DBDep, show_id: UUID):
     try:
-        series = await SeriesService(db).get_one_series(series_id)
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
-    return {"status": "ok", "data": series}
+        show = await ShowService(db).get_show(show_id)
+    except ShowNotFoundException:
+        raise ShowNotFoundHTTPException
+    return {"status": "ok", "data": show}
 
 
 @v1_router.post("", dependencies=[AdminDep], status_code=201)
-async def add_series(db: DBDep, series_data: SeriesAddRequestDTO):
+async def add_show(db: DBDep, show_data: ShowAddRequestDTO):
     try:
-        series_id = await SeriesService(db).add_series(series_data)
+        show_id = await ShowService(db).add_show(show_data)
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
-    return {"status": "ok", "data": {"id": series_id}}
+    return {"status": "ok", "data": {"id": show_id}}
 
 
-@v1_router.patch("/{series_id}", dependencies=[AdminDep])
-async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequestDTO):
+@v1_router.patch("/{show_id}", dependencies=[AdminDep])
+async def update_show(db: DBDep, show_id: UUID, show_data: ShowPatchRequestDTO):
     try:
-        await SeriesService(db).update_series(series_id, series_data)
-    except SeriesNotFoundException:
-        raise SeriesNotFoundHTTPException
+        await ShowService(db).update_show(show_id, show_data)
+    except ShowNotFoundException:
+        raise ShowNotFoundHTTPException
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:
@@ -76,6 +76,6 @@ async def update_series(db: DBDep, series_id: UUID, series_data: SeriesPatchRequ
     return {"status": "ok"}
 
 
-@v1_router.delete("/{series_id}", dependencies=[AdminDep], status_code=204)
-async def delete_series(db: DBDep, series_id: UUID):
-    await SeriesService(db).delete_series(series_id)
+@v1_router.delete("/{show_id}", dependencies=[AdminDep], status_code=204)
+async def delete_show(db: DBDep, show_id: UUID):
+    await ShowService(db).delete_show(show_id)

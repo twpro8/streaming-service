@@ -16,12 +16,12 @@ class GenreORM(Base):
     name: Mapped[str] = mapped_column(String(255), unique=True)
 
     # Relationships
-    films: Mapped[List["FilmORM"]] = relationship(
-        secondary="film_genre_associations",
+    movies: Mapped[List["MovieORM"]] = relationship(
+        secondary="movie_genre_associations",
         back_populates="genres",
     )
-    series: Mapped[List["SeriesORM"]] = relationship(
-        secondary="series_genre_associations",
+    shows: Mapped[List["ShowORM"]] = relationship(
+        secondary="show_genre_associations",
         back_populates="genres",
     )
 
@@ -32,22 +32,22 @@ class GenreORM(Base):
         return f"{self.name}"
 
 
-class FilmGenreORM(Base):
-    __tablename__ = "film_genre_associations"
+class MovieGenreORM(Base):
+    __tablename__ = "movie_genre_associations"
 
-    film_id: Mapped[UUID] = mapped_column(
-        ForeignKey("films.id", ondelete="CASCADE"), primary_key=True
+    movie_id: Mapped[UUID] = mapped_column(
+        ForeignKey("movies.id", ondelete="CASCADE"), primary_key=True
     )
     genre_id: Mapped[int] = mapped_column(
         ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True
     )
 
 
-class SeriesGenreORM(Base):
-    __tablename__ = "series_genre_associations"
+class ShowGenreORM(Base):
+    __tablename__ = "show_genre_associations"
 
-    series_id: Mapped[UUID] = mapped_column(
-        ForeignKey("series.id", ondelete="CASCADE"), primary_key=True
+    show_id: Mapped[UUID] = mapped_column(
+        ForeignKey("shows.id", ondelete="CASCADE"), primary_key=True
     )
     genre_id: Mapped[int] = mapped_column(
         ForeignKey("genres.id", ondelete="CASCADE"), primary_key=True

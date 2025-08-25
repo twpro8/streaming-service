@@ -10,7 +10,7 @@ from src.exceptions import (
     CommentNotFoundHTTPException,
 )
 from src.schemas.comments import CommentAddRequestDTO, CommentPutRequestDTO
-from src.schemas.pydantic_types import ContentType
+from src.enums import ContentType
 from src.services.comments import CommentService
 from src.api.dependencies import DBDep, UserDep, PaginationDep
 
@@ -82,4 +82,4 @@ async def update_comment(
 
 @v1_router.delete("/{comment_id}", status_code=204)
 async def delete_comment(db: DBDep, user_id: UserDep, comment_id: UUID):
-    await CommentService(db).remove_comment(comment_id=comment_id, user_id=user_id)
+    await CommentService(db).delete_comment(comment_id=comment_id, user_id=user_id)
