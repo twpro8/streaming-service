@@ -74,27 +74,6 @@ async def test_filter_by_title(ac, title, get_all_movies, max_pagination):
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "director",
-    [
-        " GRETA Thorn ",
-        "   Guy   ",
-        "   Quantum",
-        "Lens   ",
-        "   Max",
-        "no match",
-        "who is he?",
-        "Some guy",
-    ],
-)
-async def test_filter_by_director(ac, director, get_all_movies, max_pagination):
-    data = await get_and_validate(
-        ac=ac, url="/v1/movies", params={"director": director, **max_pagination}
-    )
-    assert len(data) == count_content(items=get_all_movies, field="director", value=director)
-
-
-@pytest.mark.order(1)
-@pytest.mark.parametrize(
     "description",
     [
         "    the ",
@@ -301,33 +280,28 @@ async def test_get_filter_by_actors(
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "title, description, director, release_year, duration",
+    "title, description, release_year, duration",
     [
         (
             "Valid Title",
             "Valid Description",
-            "Valid Director",
             "2005-01-01",
             140,
         ),
         (
             "Valid Title2",
             "Valid Description2",
-            "Valid Director2",
             "2006-01-01",
             135,
         ),
     ],
 )
-async def test_add_valid_data_without_optional(
-    ac, title, description, director, release_year, duration
-):
+async def test_add_valid_data_without_optional(ac, title, description, release_year, duration):
     res = await ac.post(
         "/v1/movies",
         json={
             "title": title,
             "description": description,
-            "director": director,
             "release_year": release_year,
             "duration": duration,
         },
@@ -339,19 +313,17 @@ async def test_add_valid_data_without_optional(
 
     assert movie["title"] == title
     assert movie["description"] == description
-    assert movie["director"] == director
     assert movie["release_year"] == release_year
     assert movie["duration"] == duration
 
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "title, description, director, release_year, duration, cover_url, genres_ids, actors_indexes",
+    "title, description, release_year, duration, cover_url, genres_ids, actors_indexes",
     [
         (
             "Valid Title3",
             "Valid Description3",
-            "Valid Director3",
             "2007-01-01",
             135,
             "https://www.example.com/abc",
@@ -361,7 +333,6 @@ async def test_add_valid_data_without_optional(
         (
             "Valid Title4",
             "Valid Description4",
-            "Valid Director4",
             "2008-01-01",
             135,
             "https://www.example.com/def",
@@ -374,7 +345,6 @@ async def test_add_valid_data_with_optional(
     ac,
     title,
     description,
-    director,
     release_year,
     duration,
     cover_url,
@@ -388,7 +358,6 @@ async def test_add_valid_data_with_optional(
         json={
             "title": title,
             "description": description,
-            "director": director,
             "release_year": release_year,
             "duration": duration,
             "cover_url": cover_url,
@@ -403,7 +372,6 @@ async def test_add_valid_data_with_optional(
 
     assert movie["title"] == title
     assert movie["description"] == description
-    assert movie["director"] == director
     assert movie["release_year"] == release_year
     assert movie["duration"] == duration
     assert movie["cover_url"] == cover_url
@@ -414,7 +382,6 @@ async def test_add_valid_data_with_optional(
 invalid_cases = [
     ("title", [None, True, False, "t", "t" * 256, 1, [], {}, 1.1]),
     ("description", [None, True, False, "d", "d" * 256, 1, [], {}, 1.1]),
-    ("director", [None, True, False, "d", "d" * 50, 1, [], {}, 1.1]),
     (
         "release_year",
         ["10-01-01", "999-01-01", "2100-01-01", None, True, False, "string", 1, [], {}, 1.1],
@@ -434,7 +401,6 @@ async def test_add_invalid_fields(ac, field, invalid_value):
     valid_data = {
         "title": "Valid Title5",
         "description": "Valid Description5",
-        "director": "Valid Director5",
         "release_year": "2020-01-01",
         "duration": 135,
         "cover_url": "https://www.example.com/me/image.png",
@@ -452,7 +418,6 @@ async def test_on_conflict(ac, get_all_movies_with_rels):
     req_body = {
         "title": "Valid Title7",
         "description": "Valid Description7",
-        "director": "Valid Director7",
         "release_year": "2020-01-01",
         "duration": 135,
         "cover_url": "https://www.example.com/me/image.png",  # unique
@@ -477,7 +442,6 @@ async def test_not_found(ac, field, value):
     req_body = {
         "title": "Valid Title8",
         "description": "Valid Description8",
-        "director": "Valid Director8",
         "release_year": "2020-01-01",
         "duration": 135,
         "cover_url": "https://www.example.com/barbara",
@@ -495,8 +459,6 @@ async def test_not_found(ac, field, value):
         ("title", "Title Updated 2"),
         ("description", "Description Updated 1"),
         ("description", "Description Updated 2"),
-        ("director", "Director Updated 1"),
-        ("director", "Director Updated 2"),
         ("release_year", "1888-01-01"),
         ("release_year", "1999-07-07"),
         ("duration", 111),
@@ -559,9 +521,6 @@ async def test_update_movies_actors(ac, get_all_actors, get_all_movies, actors_i
         ("description", "d"),
         ("description", "d" * 256),
         ("description", 11),
-        ("director", "d"),
-        ("director", "d" * 50),
-        ("director", 11),
         ("release_year", "10-01-01"),
         ("release_year", "999-07-07"),
         ("release_year", "2100-07-07"),

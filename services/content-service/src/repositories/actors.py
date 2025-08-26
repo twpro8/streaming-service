@@ -6,7 +6,8 @@ from sqlalchemy import select, delete, insert
 from sqlalchemy.exc import IntegrityError
 
 from src.exceptions import ActorAlreadyExistsException, ActorNotFoundException
-from src.models.actors import ActorORM, MovieActorORM, ShowActorORM
+from src.models.actors import ActorORM
+from src.models.associations import MovieActorORM, ShowActorORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import (
     ActorDataMapper,

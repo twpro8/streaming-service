@@ -73,22 +73,6 @@ async def test_filter_by_title(ac, title, get_all_shows, max_pagination):
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "director",
-    [
-        "Johan Renck",
-        "The Duffer",
-        " THE ",
-        "no Guy",
-        "dave",
-    ],
-)
-async def test_filter_by_director(ac, director, get_all_shows, max_pagination):
-    data = await get_and_validate(ac, "/v1/shows", params={"director": director, **max_pagination})
-    assert len(data) == count_content(get_all_shows, field="director", value=director)
-
-
-@pytest.mark.order(2)
-@pytest.mark.parametrize(
     "description",
     [
         "story of the chernobyl",
@@ -250,29 +234,26 @@ async def test_get_filter_by_actors(
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "title, description, director, release_year",
+    "title, description, release_year",
     [
         (
             "Valid Title",
             "Valid Description",
-            "Valid Director",
             "2005-01-01",
         ),
         (
             "Valid Title2",
             "Valid Description2",
-            "Valid Director2",
             "2006-01-01",
         ),
     ],
 )
-async def test_add_show_without_optional_valid(ac, title, description, director, release_year):
+async def test_add_show_without_optional_valid(ac, title, description, release_year):
     res = await ac.post(
         "/v1/shows",
         json={
             "title": title,
             "description": description,
-            "director": director,
             "release_year": release_year,
         },
     )
@@ -283,18 +264,16 @@ async def test_add_show_without_optional_valid(ac, title, description, director,
 
     assert show["title"] == title
     assert show["description"] == description
-    assert show["director"] == director
     assert show["release_year"] == release_year
 
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "title, description, director, release_year, cover_url, genres_ids, actors_indexes",
+    "title, description, release_year, cover_url, genres_ids, actors_indexes",
     [
         (
             "Valid Title",
             "Valid Description",
-            "Valid Director",
             "2005-01-01",
             "https://www.example.com/abc",
             [1, 2, 3],
@@ -303,7 +282,6 @@ async def test_add_show_without_optional_valid(ac, title, description, director,
         (
             "Valid Title2",
             "Valid Description2",
-            "Valid Director2",
             "2006-01-01",
             "https://www.example.com/def",
             [3, 4, 5],
@@ -315,7 +293,6 @@ async def test_add_show_with_optional_valid(
     ac,
     title,
     description,
-    director,
     release_year,
     cover_url,
     genres_ids,
@@ -328,7 +305,6 @@ async def test_add_show_with_optional_valid(
         json={
             "title": title,
             "description": description,
-            "director": director,
             "release_year": release_year,
             "cover_url": cover_url,
             "genres_ids": genres_ids,
@@ -342,7 +318,6 @@ async def test_add_show_with_optional_valid(
 
     assert show["title"] == title
     assert show["description"] == description
-    assert show["director"] == director
     assert show["release_year"] == release_year
     assert show["cover_url"] == cover_url
     assert len(show["genres"]) == len(genres_ids)
@@ -358,7 +333,6 @@ invalid_cases = [
             "d" * 256,
         ],
     ),
-    ("director", ["d", "d" * 50]),
     ("release_year", ["10-01-01", "999-01-01", "2100-01-01"]),
     ("cover_url", ["invalid-format"]),
     ("genres_ids", ["string", ["string"]]),
@@ -374,7 +348,6 @@ async def test_add_show_invalid(ac, field, invalid_value):
     valid_data = {
         "title": "Valid Title3",
         "description": "Valid Description3",
-        "director": "Valid Director3",
         "release_year": "2012-01-01",
         "cover_url": "https://www.example.com/meaw/cat.png",
         "genres_ids": [7, 8, 9],
@@ -391,7 +364,6 @@ async def test_show_on_conflict(ac):
     req_body = {
         "title": "Valid Title7",
         "description": "Valid Description7",
-        "director": "Valid Director7",
         "release_year": "2020-01-01",
         "cover_url": "https://www.kitten.com/kitty.jpg",  # unique
     }
@@ -414,7 +386,6 @@ async def test_show_not_found(ac, field, value):
     req_body = {
         "title": "Valid Title8",
         "description": "Valid Description8",
-        "director": "Valid Director8",
         "release_year": "2020-01-01",
         "cover_url": "https://www.example.com/barbara",
         field: value,
@@ -431,8 +402,6 @@ async def test_show_not_found(ac, field, value):
         ("title", "Title Updated 2"),
         ("description", "Description Updated 1"),
         ("description", "Description Updated 2"),
-        ("director", "Director Updated 1"),
-        ("director", "Director Updated 2"),
         ("release_year", "1888-01-01"),
         ("release_year", "1999-07-07"),
         ("cover_url", "https://example.com/updated.jpg"),
@@ -490,9 +459,6 @@ async def test_update_show_actors(ac, get_all_actors, get_all_shows, actors_inde
         ("description", "d"),
         ("description", "d" * 256),
         ("description", 11),
-        ("director", "d"),
-        ("director", "d" * 50),
-        ("director", 11),
         ("release_year", "10-01-01"),
         ("release_year", "999-07-07"),
         ("release_year", "2100-07-07"),

@@ -155,7 +155,6 @@ SortDep = Annotated[SortParams, Depends(SortParams.from_query)]
 class CommonContentParams(PaginationParams):
     title: Annotated[str | None, Query(None)]
     description: Annotated[str | None, Query(None)]
-    director: Annotated[str | None, Query(None)]
     year: Annotated[int | None, Query(None)]
     year_gt: Annotated[int | None, Query(None)]
     year_lt: Annotated[int | None, Query(None)]

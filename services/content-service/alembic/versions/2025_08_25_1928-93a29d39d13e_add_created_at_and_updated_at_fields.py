@@ -103,6 +103,14 @@ def upgrade() -> None:
             nullable=False,
         ),
     )
+    op.alter_column(
+        "comments",
+        "created_at",
+        existing_type=postgresql.TIMESTAMP(),
+        type_=sa.DateTime(timezone=True),
+        existing_nullable=False,
+        existing_server_default=sa.text("timezone('UTC'::text, now())"),
+    )
     op.execute(sa.text("""
     CREATE TRIGGER update_comments_updated_at
     BEFORE UPDATE ON comments
@@ -142,6 +150,14 @@ def downgrade() -> None:
     op.execute("DROP TRIGGER IF EXISTS update_movies_updated_at ON movies;")
     op.execute("DROP TRIGGER IF EXISTS update_seasons_updated_at ON seasons;")
     op.execute("DROP TRIGGER IF EXISTS update_shows_updated_at ON shows;")
+    op.alter_column(
+        "comments",
+        "created_at",
+        existing_type=sa.DateTime(timezone=True),
+        type_=postgresql.TIMESTAMP(),
+        existing_nullable=False,
+        existing_server_default=sa.text("timezone('UTC'::text, now())"),
+    )
     op.drop_column("shows", "updated_at")
     op.drop_column("shows", "created_at")
     op.drop_column("seasons", "updated_at")

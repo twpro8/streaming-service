@@ -11,7 +11,7 @@ from src.exceptions import (
     UniqueFileURLException,
 )
 from src.repositories.base import BaseRepository
-from src.models.shows import EpisodeORM
+from src.models import EpisodeORM
 from src.repositories.utils import normalize_for_insert
 from src.schemas.episodes import EpisodeDTO
 from src.repositories.mappers.mappers import EpisodeDataMapper

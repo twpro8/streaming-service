@@ -1,19 +1,9 @@
-# ruff: noqa
-
 from typing import List
 from uuid import UUID, uuid4
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import (
-    String,
-    DECIMAL,
-    ForeignKey,
-    UniqueConstraint,
-    CheckConstraint,
-    DateTime,
-    text,
-)
+from sqlalchemy import String, DECIMAL, CheckConstraint, DateTime, text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -30,7 +20,6 @@ class ShowORM(Base):
     )
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(512))
-    director: Mapped[str] = mapped_column(String(255))
     release_year: Mapped[date]
     rating: Mapped[Decimal] = mapped_column(
         DECIMAL(3, 1),
@@ -48,72 +37,21 @@ class ShowORM(Base):
     )
 
     # Relationships
-    seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="show")
-    comments: Mapped[List["CommentORM"]] = relationship(back_populates="show")
-    genres: Mapped[List["GenreORM"]] = relationship(
-        secondary="show_genre_associations",
+    directors: Mapped[List["DirectorORM"]] = relationship(
+        secondary="show_director_associations",
         back_populates="shows",
     )
     actors: Mapped[List["ActorORM"]] = relationship(
         secondary="show_actor_associations",
         back_populates="shows",
     )
-
-
-class SeasonORM(Base):
-    __tablename__ = "seasons"
-
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
+    genres: Mapped[List["GenreORM"]] = relationship(
+        secondary="show_genre_associations",
+        back_populates="shows",
     )
-    show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"))
-    title: Mapped[str] = mapped_column(String(255))
-    season_number: Mapped[int]
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
+    countries: Mapped[List["CountryORM"]] = relationship(
+        secondary="show_country_associations",
+        back_populates="shows",
     )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )
-
-    # Relationships
-    show: Mapped["ShowORM"] = relationship(back_populates="seasons")
-    episodes: Mapped[List["EpisodeORM"]] = relationship(back_populates="season")
-
-    __table_args__ = (UniqueConstraint("show_id", "season_number", name="unique_season_per_show"),)
-
-
-class EpisodeORM(Base):
-    __tablename__ = "episodes"
-
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-    )
-    show_id: Mapped[UUID] = mapped_column(ForeignKey("shows.id", ondelete="CASCADE"))
-    season_id: Mapped[UUID] = mapped_column(ForeignKey("seasons.id", ondelete="CASCADE"))
-    title: Mapped[str] = mapped_column(String(255))
-    episode_number: Mapped[int]
-    duration: Mapped[int]
-    video_url: Mapped[str | None] = mapped_column(unique=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )
-
-    # Relationships
-    show: Mapped["ShowORM"] = relationship()
-    season: Mapped["SeasonORM"] = relationship(back_populates="episodes")
-
-    __table_args__ = (
-        UniqueConstraint("season_id", "episode_number", name="unique_episode_per_season"),
-    )
+    seasons: Mapped[List["SeasonORM"]] = relationship(back_populates="show")
+    comments: Mapped[List["CommentORM"]] = relationship(back_populates="show")

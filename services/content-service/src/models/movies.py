@@ -1,5 +1,3 @@
-# ruff: noqa
-
 from typing import List
 from uuid import UUID, uuid4
 from decimal import Decimal
@@ -22,7 +20,6 @@ class MovieORM(Base):
     )
     title: Mapped[str] = mapped_column(String(255))
     description: Mapped[str] = mapped_column(String(512))
-    director: Mapped[str] = mapped_column(String(255))
     release_year: Mapped[date]
     rating: Mapped[Decimal] = mapped_column(
         DECIMAL(3, 1),
@@ -42,11 +39,20 @@ class MovieORM(Base):
     )
 
     # Relationships
-    comments: Mapped[List["CommentORM"]] = relationship(back_populates="movie")
+    directors: Mapped[List["DirectorORM"]] = relationship(
+        secondary="movie_director_associations",
+        back_populates="movies",
+    )
+    actors: Mapped[List["ActorORM"]] = relationship(
+        secondary="movie_actor_associations",
+        back_populates="movies",
+    )
     genres: Mapped[List["GenreORM"]] = relationship(
         secondary="movie_genre_associations",
         back_populates="movies",
     )
-    actors: Mapped[List["ActorORM"]] = relationship(
-        secondary="movie_actor_associations", back_populates="movies"
+    countries: Mapped[List["CountryORM"]] = relationship(
+        secondary="movie_country_associations",
+        back_populates="movies",
     )
+    comments: Mapped[List["CommentORM"]] = relationship(back_populates="movie")

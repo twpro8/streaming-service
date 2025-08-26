@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.exc import IntegrityError
 
 from src.exceptions import UniqueSeasonPerShowException
-from src.models.shows import SeasonORM
+from src.models import SeasonORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import SeasonDataMapper
 from src.schemas.seasons import SeasonDTO

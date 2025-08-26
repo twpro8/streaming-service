@@ -11,7 +11,7 @@ from sqlalchemy.orm import selectinload
 
 from src.exceptions import UniqueCoverURLException, UniqueVideoURLException
 from src.models import MovieORM, MovieGenreORM
-from src.models.actors import MovieActorORM
+from src.models.associations import MovieActorORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import MovieDataMapper, MovieWithRelsDataMapper
 from src.schemas.movies import MovieDTO
@@ -38,7 +38,6 @@ class MovieRepository(BaseRepository):
         filters = {
             "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
             "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
-            "director": lambda v: func.lower(self.model.director).contains(v.strip().lower()),
             "year": lambda v: (self.model.release_year >= date(v, 1, 1))
             & (self.model.release_year <= date(v, 12, 31)),
             "year_gt": lambda v: self.model.release_year > date(v, 1, 1),

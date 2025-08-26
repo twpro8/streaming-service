@@ -25,4 +25,7 @@ dependencies = [
 
 [tool.ruff]
 line-length = 100
-exclude = ["alembic"]
+exclude = ["alembic", ".venv"]
+
+[tool.ruff.lint]
+exclude = ["src/models/*"]

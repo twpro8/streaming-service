@@ -1,5 +1,5 @@
 from src.models import ShowORM, SeasonORM, EpisodeORM, CommentORM, RatingORM, GenreORM, ActorORM
-from src.models.actors import MovieActorORM, ShowActorORM
+from src.models.associations import MovieActorORM, ShowActorORM
 from src.repositories.mappers.base import DataMapper
 from src.models.movies import MovieORM
 from src.schemas.actors import ActorDTO, MovieActorDTO, ShowActorDTO

@@ -1,10 +1,7 @@
-# ruff: noqa
-
 from uuid import UUID, uuid4
-from datetime import datetime
 from decimal import Decimal
 
-from sqlalchemy import UniqueConstraint, DateTime, text, DECIMAL, CheckConstraint
+from sqlalchemy import UniqueConstraint, DECIMAL, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 

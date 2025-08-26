@@ -13,7 +13,6 @@ from src.schemas.pydantic_types import (
     RatingDecimal,
     DescriptionStr,
     ReleaseYearDate,
-    DirectorStr,
 )
 
 
@@ -21,7 +20,6 @@ class MovieAddDTO(BaseModel):
     id: UUID
     title: TitleStr
     description: DescriptionStr
-    director: DirectorStr
     release_year: ReleaseYearDate
     duration: DurationInt
     cover_url: AnyUrl | None = None
@@ -30,7 +28,6 @@ class MovieAddDTO(BaseModel):
 class MovieAddRequestDTO(BaseSchema):
     title: TitleStr
     description: DescriptionStr
-    director: DirectorStr
     release_year: ReleaseYearDate
     duration: DurationInt
     cover_url: AnyUrl | None = None
@@ -58,7 +55,6 @@ class MovieDTO(MovieAddDTO):
 class MoviePatchDTO(BaseModel):
     title: TitleStr | None = None
     description: DescriptionStr | None = None
-    director: DirectorStr | None = None
     release_year: ReleaseYearDate | None = None
     duration: DurationInt | None = None
     video_url: AnyUrl | None = None

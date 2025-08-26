@@ -128,7 +128,6 @@ async def created_movies(ac):
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
-                    "director": f"Mike Purple{i}",
                     "release_year": "1777-01-01",
                     "duration": 135,
                 },
@@ -152,7 +151,6 @@ async def created_shows(ac):
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
-                    "director": f"Mike Purple{i}",
                     "release_year": "1777-01-01",
                 },
             )

@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException
 from src.models import ShowORM, ShowGenreORM
-from src.models.actors import ShowActorORM
+from src.models.associations import ShowActorORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import ShowDataMapper, ShowWithRelsDataMapper
 from src.schemas.shows import ShowDTO
@@ -39,7 +39,6 @@ class ShowRepository(BaseRepository):
         filters = {
             "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
             "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
-            "director": lambda v: func.lower(self.model.director).contains(v.strip().lower()),
             "year": lambda v: (self.model.release_year >= date(v, 1, 1))
             & (self.model.release_year <= date(v, 12, 31)),
             "year_gt": lambda v: self.model.release_year > date(v, 1, 1),
