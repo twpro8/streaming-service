@@ -5,7 +5,7 @@ from uuid import UUID
 from pydantic import BaseModel, AnyUrl, ConfigDict, Field, conint
 
 from src.schemas.actors import ActorDTO
-from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.genres import GenreDTO
 from src.schemas.pydantic_types import (
     TitleStr,
@@ -59,7 +59,7 @@ class ShowPatchDTO(BaseModel):
     cover_url: AnyUrl | None = None
 
 
-class ShowPatchRequestDTO(ShowPatchDTO, AtLeastOneFieldRequired):
+class ShowPatchRequestDTO(ShowPatchDTO, AtLeastOneFieldMixin):
     genres_ids: List[conint(strict=True, ge=1)] = Field(
         default=None,
         examples=[

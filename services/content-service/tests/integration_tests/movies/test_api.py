@@ -503,6 +503,9 @@ async def test_not_found(ac, field, value):
         ("duration", 222),
         ("duration", 333),
         ("cover_url", "https://example.com/updated.jpg"),
+        ("cover_url", None),
+        ("video_url", "https://example.com/updated.mp4"),
+        ("video_url", None),
     ],
 )
 async def test_update_field_valid(ac, get_all_movies, field, value):
@@ -565,6 +568,7 @@ async def test_update_movies_actors(ac, get_all_actors, get_all_movies, actors_i
         ("duration", -1),
         ("duration", 513),
         ("cover_url", "invalid-format"),
+        ("video_url", "invalid-format"),
         ("genres_ids", 11),
         ("genres_ids", ["str"]),
         ("actors_ids", [11]),

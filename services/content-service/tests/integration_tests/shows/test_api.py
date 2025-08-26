@@ -436,6 +436,7 @@ async def test_show_not_found(ac, field, value):
         ("release_year", "1888-01-01"),
         ("release_year", "1999-07-07"),
         ("cover_url", "https://example.com/updated.jpg"),
+        ("cover_url", None),
     ],
 )
 async def test_update_field_valid(ac, get_all_shows, field, value):

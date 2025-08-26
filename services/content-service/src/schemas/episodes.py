@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import Field, AnyUrl
 
-from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.pydantic_types import TitleStr, DurationInt
 
 
@@ -20,7 +20,7 @@ class EpisodeAddDTO(EpisodeAddRequestDTO):
     id: UUID
 
 
-class EpisodePatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
+class EpisodePatchRequestDTO(BaseSchema, AtLeastOneFieldMixin):
     title: TitleStr | None = None
     episode_number: int | None = Field(None, ge=1, le=9999, title="Episode Number")
     duration: DurationInt | None = None

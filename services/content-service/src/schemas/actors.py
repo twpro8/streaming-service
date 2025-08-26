@@ -2,7 +2,7 @@ from uuid import UUID
 from datetime import datetime
 
 from src.enums import ZodiacSign
-from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.pydantic_types import BirthDate, Str48, Str128
 
 
@@ -23,7 +23,7 @@ class ActorDTO(ActorAddDTO):
     updated_at: datetime
 
 
-class ActorPatchDTO(BaseSchema, AtLeastOneFieldRequired):
+class ActorPatchDTO(BaseSchema, AtLeastOneFieldMixin):
     first_name: Str48 | None = None
     last_name: Str48 | None = None
     birth_date: BirthDate | None = None

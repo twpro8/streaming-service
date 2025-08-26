@@ -226,6 +226,7 @@ async def test_add_episode_not_found(ac, get_all_episodes, show_id, season_id):
         ("episode_number", 20),
         ("duration", 80),
         ("video_url", "https://www.updated.com/updated.avi"),
+        ("video_url", None),
     ],
 )
 async def test_update_episode_valid(ac, get_all_episodes, field, value):

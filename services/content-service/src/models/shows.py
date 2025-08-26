@@ -5,7 +5,15 @@ from uuid import UUID, uuid4
 from datetime import date, datetime
 from decimal import Decimal
 
-from sqlalchemy import String, DECIMAL, ForeignKey, UniqueConstraint, CheckConstraint, DateTime, text
+from sqlalchemy import (
+    String,
+    DECIMAL,
+    ForeignKey,
+    UniqueConstraint,
+    CheckConstraint,
+    DateTime,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 

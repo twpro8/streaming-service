@@ -3,7 +3,7 @@ from uuid import UUID
 
 from pydantic import Field
 
-from src.schemas.base import BaseSchema, AtLeastOneFieldRequired
+from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.pydantic_types import TitleStr
 
 
@@ -17,7 +17,7 @@ class SeasonAddDTO(SeasonAddRequestDTO):
     id: UUID
 
 
-class SeasonPatchRequestDTO(BaseSchema, AtLeastOneFieldRequired):
+class SeasonPatchRequestDTO(BaseSchema, AtLeastOneFieldMixin):
     title: TitleStr | None = None
     season_number: int | None = Field(default=None, ge=1, le=500, title="Season Number")
 

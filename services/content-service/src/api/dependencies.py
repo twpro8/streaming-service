@@ -76,65 +76,58 @@ class SortParams(BaseModel):
         cls,
         sort: str | None = Query(
             None,
+            description="""
+            Sort items by their specific field. 
+            Use "asc" for ascending or "desc" for descending. 
+            Default is "desc" if not specified.
+            """,
             openapi_examples={
-                "sort_id_asc": Example(
+                "1": Example(
                     summary="Sort by ID ascending",
-                    description='Sort items by their ID. Use "asc" for ascending or "desc" for descending. Default is "asc" if not specified.',
                     value="id:asc",
                 ),
-                "sort_id_desc": Example(
+                "2": Example(
                     summary="Sort by ID descending",
-                    description='Sort items by their ID. Use "asc" for ascending or "desc" for descending. Default is "asc" if not specified.',
                     value="id:desc",
                 ),
-                "sort_title_asc": Example(
+                "3": Example(
                     summary="Sort by title ascending",
-                    description='Sort items alphabetically by title. Use "asc" for A→Z or "desc" for Z→A. Default is "asc" if not specified.',
                     value="title:asc",
                 ),
-                "sort_title_desc": Example(
+                "4": Example(
                     summary="Sort by title descending",
-                    description='Sort items alphabetically by title. Use "asc" for A→Z or "desc" for Z→A. Default is "asc" if not specified.',
                     value="title:desc",
                 ),
-                "sort_year_asc": Example(
+                "5": Example(
                     summary="Sort by year ascending",
-                    description='Sort items by their release year. Use "asc" for oldest to newest or "desc" for newest to oldest. Default is "asc" if not specified.',
                     value="year:asc",
                 ),
-                "sort_year_desc": Example(
+                "6": Example(
                     summary="Sort by year descending",
-                    description='Sort items by their release year. Use "asc" for oldest to newest or "desc" for newest to oldest. Default is "asc" if not specified.',
                     value="year:desc",
                 ),
-                "sort_rating_asc": Example(
+                "7": Example(
                     summary="Sort by rating ascending",
-                    description='Sort items by rating score. Use "asc" for lowest to highest or "desc" for highest to lowest. Default is "asc" if not specified.',
                     value="rating:asc",
                 ),
-                "sort_rating_desc": Example(
+                "8": Example(
                     summary="Sort by rating descending",
-                    description='Sort items by rating score. Use "asc" for lowest to highest or "desc" for highest to lowest. Default is "asc" if not specified.',
                     value="rating:desc",
                 ),
-                "sort_created_at_asc": Example(
+                "9": Example(
                     summary="Sort by creation date ascending",
-                    description='Sort items by their creation date from oldest to newest. Default is "asc" if not specified.',
                     value="created_at:asc",
                 ),
-                "sort_created_at_desc": Example(
+                "10": Example(
                     summary="Sort by creation date descending",
-                    description='Sort items by their creation date from newest to oldest. Default is "asc" if not specified.',
                     value="created_at:desc",
                 ),
-                "sort_updated_at_asc": Example(
+                "11": Example(
                     summary="Sort by update date ascending",
-                    description='Sort items by their last update date from oldest to newest. Default is "asc" if not specified.',
                     value="updated_at:asc",
                 ),
-                "sort_updated_at_desc": Example(
+                "12": Example(
                     summary="Sort by update date descending",
-                    description='Sort items by their last update date from newest to oldest. Default is "asc" if not specified.',
                     value="updated_at:desc",
                 ),
             },
@@ -149,7 +142,7 @@ class SortParams(BaseModel):
         if field not in SortBy.__members__:
             raise UnknownSortFieldHTTPException(detail=f"Unknown sort field: {field}")
 
-        order = parts[1].lower() if len(parts) > 1 else "asc"
+        order = parts[1].lower() if len(parts) > 1 else "desc"
         if order not in SortOrder.__members__:
             raise UnknownSortOrderHTTPException(detail=f"Unknown sort order: {order}")
 
