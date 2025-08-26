@@ -44,6 +44,10 @@ class BaseService:
 
         return exists
 
+    async def check_director_exists(self, **filter_by) -> bool:
+        director = await self.db.directors.get_one_or_none(**filter_by)
+        return director is not None
+
     @staticmethod
     def get_content_type_key(content_type: ContentType):
         return "movie_id" if content_type == ContentType.movie else "show_id"

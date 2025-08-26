@@ -28,7 +28,9 @@ class ActorService(BaseService):
     async def update_actor(self, actor_id: UUID, actor_data: ActorPatchDTO):
         try:
             await self.db.actors.update_actor(
-                actor_id=actor_id, actor_data=actor_data, exclude_unset=True
+                actor_id=actor_id,
+                actor_data=actor_data,
+                exclude_unset=True,
             )
         except ActorAlreadyExistsException:
             raise

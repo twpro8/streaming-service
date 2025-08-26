@@ -1,9 +1,17 @@
-from src.models import ShowORM, SeasonORM, EpisodeORM, CommentORM, RatingORM, GenreORM, ActorORM
+from src.models.actors import ActorORM
+from src.models.genres import GenreORM
+from src.models.rating import RatingORM
+from src.models.comments import CommentORM
+from src.models.episodes import EpisodeORM
+from src.models.seasons import SeasonORM
+from src.models.shows import ShowORM
+from src.models.directors import DirectorORM
 from src.models.associations import MovieActorORM, ShowActorORM
 from src.repositories.mappers.base import DataMapper
 from src.models.movies import MovieORM
 from src.schemas.actors import ActorDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentDTO
+from src.schemas.directors import DirectorDTO
 from src.schemas.movies import MovieDTO, MovieWithRelsDTO
 from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
 from src.schemas.rating import RatingDTO
@@ -80,3 +88,8 @@ class MovieActorDataMapper(DataMapper):
 class ShowActorDataMapper(DataMapper):
     db_model = ShowActorORM
     schema = ShowActorDTO
+
+
+class DirectorDataMapper(DataMapper):
+    db_model = DirectorORM
+    schema = DirectorDTO

@@ -1,5 +1,6 @@
 from src.repositories.actors import ActorRepository, MovieActorRepository, ShowActorRepository
 from src.repositories.comments import CommentRepository
+from src.repositories.directors import DirectorRepository
 from src.repositories.episodes import EpisodeRepository
 from src.repositories.movies import MovieRepository
 from src.repositories.genres import GenreRepository, MovieGenreRepository, ShowGenreRepository
@@ -26,6 +27,7 @@ class DBManager:
         self.actors = ActorRepository(self.session)
         self.movies_actors = MovieActorRepository(self.session)
         self.shows_actors = ShowActorRepository(self.session)
+        self.directors = DirectorRepository(self.session)
         return self
 
     async def __aexit__(self, *args):

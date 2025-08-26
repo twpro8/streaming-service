@@ -68,6 +68,7 @@ ReleaseYearDate = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
 BirthDate = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
 Str48 = Annotated[str, Field(min_length=2, max_length=48)]
 Str128 = Annotated[str, Field(min_length=2, max_length=128)]
+Str256 = Annotated[str, Field(min_length=2, max_length=256)]
 
 
 TextStr255 = Annotated[

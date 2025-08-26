@@ -240,3 +240,19 @@ class UnknownSortFieldHTTPException(MasterHTTPException):
 class UnknownSortOrderHTTPException(MasterHTTPException):
     status_code = 422
     detail = "Unknown sort order. Use field:asc|desc"
+
+
+class DirectorNotFoundException(ObjectNotFoundException):
+    detail = "Director not found"
+
+
+class DirectorNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Director not found"
+
+
+class DirectorAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Director already exists"
+
+
+class DirectorAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Director already exists"
