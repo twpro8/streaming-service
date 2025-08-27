@@ -256,3 +256,19 @@ class DirectorAlreadyExistsException(ObjectAlreadyExistsException):
 
 class DirectorAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Director already exists"
+
+
+class CountryNotFoundException(ObjectNotFoundException):
+    detail = "Country not found"
+
+
+class CountryNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Country not found"
+
+
+class CountryAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Country already exists"
+
+
+class CountryAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Country already exists"

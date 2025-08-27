@@ -17,7 +17,9 @@ class DirectorRepository(BaseRepository):
         res = await self.session.execute(stmt)
         return res.scalars().one()
 
-    async def update_director(self, director_id: int, data: BaseModel, exclude_unset: bool = False) -> None:
+    async def update_director(
+        self, director_id: int, data: BaseModel, exclude_unset: bool = False
+    ) -> None:
         try:
             await self.update(id=director_id, data=data, exclude_unset=exclude_unset)
         except IntegrityError as e:

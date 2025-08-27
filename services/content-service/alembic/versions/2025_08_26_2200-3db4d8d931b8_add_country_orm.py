@@ -24,17 +24,13 @@ def upgrade() -> None:
     op.create_table(
         "countries",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("alpha2", sa.String(length=2), nullable=False),
-        sa.Column("alpha3", sa.String(length=3), nullable=True),
+        sa.Column("code", sa.String(length=2), nullable=False),
         sa.Column("name", sa.String(length=100), nullable=False),
-        sa.Column("native_name", sa.String(length=100), nullable=True),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("alpha3"),
         sa.UniqueConstraint("name"),
-        sa.UniqueConstraint("native_name"),
     )
     op.create_index(
-        op.f("ix_countries_alpha2"), "countries", ["alpha2"], unique=True
+        op.f("ix_countries_code"), "countries", ["code"], unique=True
     )
     op.create_table(
         "movie_country_associations",
@@ -64,5 +60,5 @@ def downgrade() -> None:
     """Downgrade schema."""
     op.drop_table("show_country_associations")
     op.drop_table("movie_country_associations")
-    op.drop_index(op.f("ix_countries_alpha2"), table_name="countries")
+    op.drop_index(op.f("ix_countries_code"), table_name="countries")
     op.drop_table("countries")
