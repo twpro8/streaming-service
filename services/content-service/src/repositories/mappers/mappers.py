@@ -8,13 +8,20 @@ from src.models.episodes import EpisodeORM
 from src.models.seasons import SeasonORM
 from src.models.shows import ShowORM
 from src.models.directors import DirectorORM
-from src.models.associations import MovieActorORM, ShowActorORM
+from src.models.associations import (
+    MovieActorORM,
+    ShowActorORM,
+    MovieDirectorORM,
+    ShowDirectorORM,
+    MovieCountryORM,
+    ShowCountryORM,
+)
 from src.repositories.mappers.base import DataMapper
 from src.models.movies import MovieORM
 from src.schemas.actors import ActorDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentDTO
-from src.schemas.countries import CountryDTO
-from src.schemas.directors import DirectorDTO
+from src.schemas.countries import CountryDTO, MovieCountryDTO, ShowCountryDTO
+from src.schemas.directors import DirectorDTO, MovieDirectorDTO, ShowDirectorDTO
 from src.schemas.languages import LanguageDTO
 from src.schemas.movies import MovieDTO, MovieWithRelsDTO
 from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
@@ -107,3 +114,23 @@ class CountryDataMapper(DataMapper):
 class LanguageDataMapper(DataMapper):
     db_model = LanguageORM
     schema = LanguageDTO
+
+
+class MovieDirectorDataMapper(DataMapper):
+    db_model = MovieDirectorORM
+    schema = MovieDirectorDTO
+
+
+class ShowDirectorDataMapper(DataMapper):
+    db_model = ShowDirectorORM
+    schema = ShowDirectorDTO
+
+
+class MovieCountryDataMapper(DataMapper):
+    db_model = MovieCountryORM
+    schema = MovieCountryDTO
+
+
+class ShowCountryDataMapper(DataMapper):
+    db_model = ShowCountryORM
+    schema = ShowCountryDTO

@@ -14,28 +14,23 @@ from src.repositories.mappers.mappers import (
     MovieActorDataMapper,
     ShowActorDataMapper,
 )
-from src.schemas.actors import (
-    ActorDTO,
-    ActorPatchDTO,
-    MovieActorDTO,
-    ShowActorDTO,
-    ActorAddDTO,
-)
 
 
 class ActorRepository(BaseRepository):
     model = ActorORM
-    schema = ActorDTO
     mapper = ActorDataMapper
 
-    async def add_actor(self, actor_data: ActorAddDTO) -> None:
+    async def add_actor(self, actor_data: BaseModel) -> None:
         try:
             await self.add(data=actor_data)
         except IntegrityError as exc:
             raise ActorAlreadyExistsException from exc
 
     async def update_actor(
-        self, actor_id: UUID, actor_data: ActorPatchDTO, exclude_unset: bool = False
+        self,
+        actor_id: UUID,
+        actor_data: BaseModel,
+        exclude_unset: bool = False,
     ):
         try:
             await self.update(id=actor_id, data=actor_data, exclude_unset=exclude_unset)
@@ -45,7 +40,6 @@ class ActorRepository(BaseRepository):
 
 class MovieActorRepository(BaseRepository):
     model = MovieActorORM
-    schema = MovieActorDTO
     mapper = MovieActorDataMapper
 
     async def add_movie_actors(self, data: List[BaseModel]):
@@ -81,7 +75,6 @@ class MovieActorRepository(BaseRepository):
 
 class ShowActorRepository(BaseRepository):
     model = ShowActorORM
-    schema = ShowActorDTO
     mapper = ShowActorDataMapper
 
     async def add_show_actors(self, data: List[BaseModel]):

@@ -1,11 +1,27 @@
-from src.repositories.actors import ActorRepository, MovieActorRepository, ShowActorRepository
+from src.repositories.actors import (
+    ActorRepository,
+    MovieActorRepository,
+    ShowActorRepository,
+)
 from src.repositories.comments import CommentRepository
-from src.repositories.countries import CountryRepository
-from src.repositories.directors import DirectorRepository
+from src.repositories.countries import (
+    CountryRepository,
+    MovieCountryRepository,
+    ShowCountryRepository,
+)
+from src.repositories.directors import (
+    DirectorRepository,
+    MovieDirectorRepository,
+    ShowDirectorRepository,
+)
 from src.repositories.episodes import EpisodeRepository
 from src.repositories.languages import LanguageRepository
 from src.repositories.movies import MovieRepository
-from src.repositories.genres import GenreRepository, MovieGenreRepository, ShowGenreRepository
+from src.repositories.genres import (
+    GenreRepository,
+    MovieGenreRepository,
+    ShowGenreRepository,
+)
 from src.repositories.rating import RatingRepository
 from src.repositories.seasons import SeasonRepository
 from src.repositories.shows import ShowRepository
@@ -30,6 +46,10 @@ class DBManager:
         self.movies_actors = MovieActorRepository(self.session)
         self.shows_actors = ShowActorRepository(self.session)
         self.directors = DirectorRepository(self.session)
+        self.movies_directors = MovieDirectorRepository(self.session)
+        self.shows_directors = ShowDirectorRepository(self.session)
+        self.movies_countries = MovieCountryRepository(self.session)
+        self.shows_countries = ShowCountryRepository(self.session)
         self.countries = CountryRepository(self.session)
         self.languages = LanguageRepository(self.session)
         return self

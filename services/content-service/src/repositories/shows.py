@@ -83,7 +83,12 @@ class ShowRepository(BaseRepository):
     async def get_one_or_none_with_rels(self, **filter_by):
         query = (
             select(self.model)
-            .options(selectinload(self.model.genres), selectinload(self.model.actors))
+            .options(
+                selectinload(self.model.directors),
+                selectinload(self.model.actors),
+                selectinload(self.model.countries),
+                selectinload(self.model.genres),
+            )
             .filter_by(**filter_by)
         )
         res = await self.session.execute(query)

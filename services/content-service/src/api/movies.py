@@ -17,6 +17,10 @@ from src.exceptions import (
     GenreNotFoundHTTPException,
     ActorNotFoundException,
     ActorNotFoundHTTPException,
+    DirectorNotFoundException,
+    DirectorNotFoundHTTPException,
+    CountryNotFoundException,
+    CountryNotFoundHTTPException,
 )
 
 
@@ -60,6 +64,10 @@ async def add_movie(db: DBDep, movie_data: MovieAddRequestDTO):
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
+    except DirectorNotFoundException:
+        raise DirectorNotFoundHTTPException
+    except CountryNotFoundException:
+        raise CountryNotFoundHTTPException
     return {"status": "ok", "data": {"id": movie_id}}
 
 
@@ -77,6 +85,10 @@ async def update_movie(db: DBDep, movie_id: UUID, movie_data: MoviePatchRequestD
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
+    except DirectorNotFoundException:
+        raise DirectorNotFoundHTTPException
+    except CountryNotFoundException:
+        raise CountryNotFoundHTTPException
     return {"status": "ok"}
 
 

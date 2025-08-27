@@ -6,6 +6,8 @@ from pydantic import AnyUrl, BaseModel, ConfigDict, Field, conint
 
 from src.schemas.actors import ActorDTO
 from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
+from src.schemas.countries import CountryDTO
+from src.schemas.directors import DirectorDTO
 from src.schemas.genres import GenreDTO
 from src.schemas.pydantic_types import (
     TitleStr,
@@ -31,13 +33,25 @@ class MovieAddRequestDTO(BaseSchema):
     release_year: ReleaseYearDate
     duration: DurationInt
     cover_url: AnyUrl | None = None
-    genres_ids: List[conint(strict=True, ge=1)] | None = Field(
+    directors_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
         examples=[
             [],
         ],
     )
     actors_ids: List[UUID] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
+    countries_ids: List[conint(strict=True, ge=1)] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
+    genres_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
         examples=[
             [],
@@ -62,7 +76,7 @@ class MoviePatchDTO(BaseModel):
 
 
 class MoviePatchRequestDTO(MoviePatchDTO, AtLeastOneFieldMixin):
-    genres_ids: List[conint(strict=True, ge=1)] = Field(
+    directors_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
         examples=[
             [],
@@ -74,10 +88,24 @@ class MoviePatchRequestDTO(MoviePatchDTO, AtLeastOneFieldMixin):
             [],
         ],
     )
+    countries_ids: List[conint(strict=True, ge=1)] | None = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
+    genres_ids: List[conint(strict=True, ge=1)] = Field(
+        default=None,
+        examples=[
+            [],
+        ],
+    )
 
     model_config = ConfigDict(extra="forbid")
 
 
 class MovieWithRelsDTO(MovieDTO):
-    genres: List[GenreDTO]
+    directors: List[DirectorDTO]
     actors: List[ActorDTO]
+    countries: List[CountryDTO]
+    genres: List[GenreDTO]

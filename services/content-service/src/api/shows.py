@@ -12,6 +12,10 @@ from src.exceptions import (
     GenreNotFoundHTTPException,
     ActorNotFoundException,
     ActorNotFoundHTTPException,
+    DirectorNotFoundException,
+    DirectorNotFoundHTTPException,
+    CountryNotFoundException,
+    CountryNotFoundHTTPException,
 )
 from src.schemas.shows import ShowAddRequestDTO, ShowPatchRequestDTO
 from src.services.shows import ShowService
@@ -58,6 +62,10 @@ async def add_show(db: DBDep, show_data: ShowAddRequestDTO):
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
+    except DirectorNotFoundException:
+        raise DirectorNotFoundHTTPException
+    except CountryNotFoundException:
+        raise CountryNotFoundHTTPException
     return {"status": "ok", "data": {"id": show_id}}
 
 
@@ -73,6 +81,10 @@ async def update_show(db: DBDep, show_id: UUID, show_data: ShowPatchRequestDTO):
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
+    except DirectorNotFoundException:
+        raise DirectorNotFoundHTTPException
+    except CountryNotFoundException:
+        raise CountryNotFoundHTTPException
     return {"status": "ok"}
 
 

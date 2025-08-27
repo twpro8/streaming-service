@@ -4,6 +4,8 @@ from uuid import UUID, uuid4
 
 from src.enums import SortBy, SortOrder
 from src.schemas.actors import ShowActorDTO
+from src.schemas.countries import ShowCountryDTO
+from src.schemas.directors import ShowDirectorDTO
 from src.schemas.genres import ShowGenreDTO
 from src.schemas.shows import (
     ShowAddDTO,
@@ -17,6 +19,8 @@ from src.exceptions import (
     UniqueCoverURLException,
     GenreNotFoundException,
     ActorNotFoundException,
+    DirectorNotFoundException,
+    CountryNotFoundException,
 )
 
 
@@ -88,6 +92,24 @@ class ShowService(BaseService):
                 await self.db.shows_actors.add_show_actors(_show_actors_data)
             except ActorNotFoundException:
                 raise
+        if show_data.directors_ids:
+            _show_directors_data = [
+                ShowDirectorDTO(show_id=show_id, director_id=director_id)
+                for director_id in show_data.directors_ids
+            ]
+            try:
+                await self.db.shows_directors.add_show_directors(_show_directors_data)
+            except DirectorNotFoundException:
+                raise
+        if show_data.countries_ids:
+            _show_country_data = [
+                ShowCountryDTO(show_id=show_id, country_id=country_id)
+                for country_id in show_data.countries_ids
+            ]
+            try:
+                await self.db.shows_countries.add_show_countries(_show_country_data)
+            except CountryNotFoundException:
+                raise
 
         await self.db.commit()
         return show_id
@@ -122,6 +144,22 @@ class ShowService(BaseService):
                     actors_ids=show_data.actors_ids,
                 )
             except ActorNotFoundException:
+                raise
+        if show_data.directors_ids is not None:
+            try:
+                await self.db.shows_directors.update_show_directors(
+                    show_id=show_id,
+                    directors_ids=show_data.directors_ids,
+                )
+            except DirectorNotFoundException:
+                raise
+        if show_data.countries_ids is not None:
+            try:
+                await self.db.shows_countries.update_show_countries(
+                    show_id=show_id,
+                    countries_ids=show_data.countries_ids,
+                )
+            except CountryNotFoundException:
                 raise
 
         await self.db.commit()

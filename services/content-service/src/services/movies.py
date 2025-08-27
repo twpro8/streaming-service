@@ -4,6 +4,8 @@ from uuid import UUID, uuid4
 
 from src.enums import SortBy, SortOrder
 from src.schemas.actors import MovieActorDTO
+from src.schemas.countries import MovieCountryDTO
+from src.schemas.directors import MovieDirectorDTO
 from src.schemas.movies import (
     MovieAddRequestDTO,
     MovieAddDTO,
@@ -18,6 +20,8 @@ from src.exceptions import (
     UniqueVideoURLException,
     GenreNotFoundException,
     ActorNotFoundException,
+    DirectorNotFoundException,
+    CountryNotFoundException,
 )
 
 
@@ -89,6 +93,24 @@ class MovieService(BaseService):
                 await self.db.movies_actors.add_movie_actors(_movie_actors_data)
             except ActorNotFoundException:
                 raise
+        if movie_data.directors_ids:
+            _movie_directors_data = [
+                MovieDirectorDTO(movie_id=movie_id, director_id=director_id)
+                for director_id in movie_data.directors_ids
+            ]
+            try:
+                await self.db.movies_directors.add_movie_directors(_movie_directors_data)
+            except DirectorNotFoundException:
+                raise
+        if movie_data.countries_ids:
+            _movie_countries_data = [
+                MovieCountryDTO(movie_id=movie_id, country_id=country_id)
+                for country_id in movie_data.countries_ids
+            ]
+            try:
+                await self.db.movies_countries.add_movie_countries(_movie_countries_data)
+            except CountryNotFoundException:
+                raise
 
         await self.db.commit()
         return movie_id
@@ -121,6 +143,22 @@ class MovieService(BaseService):
                     actors_ids=movie_data.actors_ids,
                 )
             except ActorNotFoundException:
+                raise
+        if movie_data.directors_ids is not None:
+            try:
+                await self.db.movies_directors.update_movie_directors(
+                    movie_id=movie_id,
+                    directors_ids=movie_data.directors_ids,
+                )
+            except DirectorNotFoundException:
+                raise
+        if movie_data.countries_ids is not None:
+            try:
+                await self.db.movies_countries.update_movie_countries(
+                    movie_id=movie_id,
+                    countries_ids=movie_data.countries_ids,
+                )
+            except CountryNotFoundException:
                 raise
 
         await self.db.commit()
