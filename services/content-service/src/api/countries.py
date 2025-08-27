@@ -7,8 +7,7 @@ from src.exceptions import (
     CountryAlreadyExistsException,
     CountryAlreadyExistsHTTPException,
 )
-from src.schemas.countries import CountryAddRequestDTO, CountryPutDTO
-from src.schemas.pydantic_types import IDInt
+from src.schemas.countries import CountryAddRequestDTO
 from src.services.countries import CountryService
 
 
@@ -40,14 +39,16 @@ async def add_country(db: DBDep, country_data: CountryAddRequestDTO):
 
 
 @v1_router.put("/{country_id}")
-async def update_country(db: DBDep, country_id: IDInt, country_data: CountryPutDTO):
+async def update_country(db: DBDep, country_id: int, country_data: CountryAddRequestDTO):
     try:
         await CountryService(db).update_country(country_id, country_data)
+    except CountryNotFoundException:
+        raise CountryNotFoundHTTPException
     except CountryAlreadyExistsException:
         raise CountryAlreadyExistsHTTPException
     return {"status": "ok"}
 
 
 @v1_router.delete("/{country_id}", status_code=204)
-async def delete_country(db: DBDep, country_id: IDInt):
+async def delete_country(db: DBDep, country_id: int):
     await CountryService(db).delete_country(country_id)

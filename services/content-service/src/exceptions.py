@@ -272,3 +272,19 @@ class CountryAlreadyExistsException(ObjectAlreadyExistsException):
 
 class CountryAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Country already exists"
+
+
+class LanguageNotFoundException(ObjectNotFoundException):
+    detail = "Language not found"
+
+
+class LanguageNotFoundHTTPException(ObjectNotFoundHTTPException):
+    detail = "Language not found"
+
+
+class LanguageAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Language already exists"
+
+
+class LanguageAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Language already exists"

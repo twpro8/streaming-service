@@ -1,5 +1,5 @@
 from src.exceptions import CountryNotFoundException, CountryAlreadyExistsException
-from src.schemas.countries import CountryAddDTO, CountryPutDTO, CountryAddRequestDTO
+from src.schemas.countries import CountryAddDTO, CountryAddRequestDTO
 from src.services.base import BaseService
 
 
@@ -26,11 +26,17 @@ class CountryService(BaseService):
         await self.db.commit()
         return country_id
 
-    async def update_country(self, country_id: int, country_data: CountryPutDTO):
+    async def update_country(self, country_id: int, country_data: CountryAddRequestDTO):
+        if not await self.check_country_exists(id=country_id):
+            raise CountryNotFoundException
+        _country_data = CountryAddDTO(
+            code=country_data.code,
+            name=country_data.name,
+        )
         try:
             await self.db.countries.update_country(
                 country_id=country_id,
-                data=country_data,
+                data=_country_data,
             )
         except CountryAlreadyExistsException:
             raise

@@ -48,6 +48,14 @@ class BaseService:
         director = await self.db.directors.get_one_or_none(**filter_by)
         return director is not None
 
+    async def check_country_exists(self, **filter_by) -> bool:
+        country = await self.db.countries.get_one_or_none(**filter_by)
+        return country is not None
+
+    async def check_language_exists(self, **filter_by) -> bool:
+        lang = await self.db.languages.get_one_or_none(**filter_by)
+        return lang is not None
+
     @staticmethod
     def get_content_type_key(content_type: ContentType):
         return "movie_id" if content_type == ContentType.movie else "show_id"

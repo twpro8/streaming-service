@@ -1,42 +1,33 @@
 from uuid import UUID
 
 import pycountry
-from pydantic_extra_types.country import CountryAlpha2
+from pydantic_extra_types.country import CountryAlpha2, CountryShortName
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import IDInt, Str100
 
 
 class CountryAddRequestDTO(BaseSchema):
     code: CountryAlpha2
 
     @property
-    def name(self) -> str:
-        country = pycountry.countries.get(alpha_2=self.code)
-        if not country:
-            return "Unknown"
-        return country.name
+    def name(self) -> CountryShortName:
+        return pycountry.countries.get(alpha_2=self.code).name
 
 
 class CountryAddDTO(BaseSchema):
     code: CountryAlpha2
-    name: Str100
+    name: CountryShortName
 
 
 class CountryDTO(CountryAddDTO):
-    id: IDInt
-
-
-class CountryPutDTO(BaseSchema):
-    code: CountryAlpha2
-    name: Str100
+    id: int
 
 
 class MovieCountryDTO(BaseSchema):
     movie_id: UUID
-    country_id: IDInt
+    country_id: int
 
 
 class ShowCountryDTO(BaseSchema):
     show_id: UUID
-    country_id: IDInt
+    country_id: int

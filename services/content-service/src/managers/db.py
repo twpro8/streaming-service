@@ -3,6 +3,7 @@ from src.repositories.comments import CommentRepository
 from src.repositories.countries import CountryRepository
 from src.repositories.directors import DirectorRepository
 from src.repositories.episodes import EpisodeRepository
+from src.repositories.languages import LanguageRepository
 from src.repositories.movies import MovieRepository
 from src.repositories.genres import GenreRepository, MovieGenreRepository, ShowGenreRepository
 from src.repositories.rating import RatingRepository
@@ -30,6 +31,7 @@ class DBManager:
         self.shows_actors = ShowActorRepository(self.session)
         self.directors = DirectorRepository(self.session)
         self.countries = CountryRepository(self.session)
+        self.languages = LanguageRepository(self.session)
         return self
 
     async def __aexit__(self, *args):

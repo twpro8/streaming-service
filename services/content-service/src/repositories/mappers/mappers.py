@@ -1,3 +1,4 @@
+from src.models.languages import LanguageORM
 from src.models.countries import CountryORM
 from src.models.actors import ActorORM
 from src.models.genres import GenreORM
@@ -14,6 +15,7 @@ from src.schemas.actors import ActorDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentDTO
 from src.schemas.countries import CountryDTO
 from src.schemas.directors import DirectorDTO
+from src.schemas.languages import LanguageDTO
 from src.schemas.movies import MovieDTO, MovieWithRelsDTO
 from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
 from src.schemas.rating import RatingDTO
@@ -100,3 +102,8 @@ class DirectorDataMapper(DataMapper):
 class CountryDataMapper(DataMapper):
     db_model = CountryORM
     schema = CountryDTO
+
+
+class LanguageDataMapper(DataMapper):
+    db_model = LanguageORM
+    schema = LanguageDTO
