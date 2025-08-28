@@ -15,6 +15,7 @@ from src.exceptions import (
     UnknownSortFieldHTTPException,
     UnknownSortOrderHTTPException,
 )
+from src.protocols.db_manager import DBManagerProtocol
 from src.services.auth import AuthService
 
 
@@ -27,7 +28,7 @@ async def get_db():
         yield db
 
 
-DBDep = Annotated[DBManager, Depends(get_db)]
+DBDep = Annotated[DBManagerProtocol, Depends(get_db)]
 
 
 def get_token(request: Request) -> str:

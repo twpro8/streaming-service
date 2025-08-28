@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from pydantic import BaseModel
 from sqlalchemy import select, delete, insert
@@ -39,7 +40,7 @@ class MovieGenreRepository(BaseRepository):
         except IntegrityError as exc:
             raise GenreNotFoundException from exc
 
-    async def update_movie_genres(self, movie_id: int, genres_ids: List[int]):
+    async def update_movie_genres(self, movie_id: UUID, genres_ids: List[int]):
         query = select(self.model.genre_id).filter_by(movie_id=movie_id)
         res = await self.session.execute(query)
 
@@ -75,7 +76,7 @@ class ShowGenreRepository(BaseRepository):
         except IntegrityError as exc:
             raise GenreNotFoundException from exc
 
-    async def update_show_genres(self, show_id: int, genres_ids: List[int]):
+    async def update_show_genres(self, show_id: UUID, genres_ids: List[int]):
         query = select(self.model.genre_id).filter_by(show_id=show_id)
         res = await self.session.execute(query)
 

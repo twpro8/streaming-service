@@ -1,13 +1,13 @@
 from uuid import UUID
 
-from src.managers.db import DBManager
+from src.protocols.db_manager import DBManagerProtocol
 from src.enums import ContentType
 
 
 class BaseService:
-    db: DBManager = None
+    db: DBManagerProtocol = None
 
-    def __init__(self, db: DBManager | None = None) -> None:
+    def __init__(self, db: DBManagerProtocol | None = None) -> None:
         self.db = db
 
     async def check_movie_exists(self, **filter_by) -> bool:

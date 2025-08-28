@@ -1,4 +1,5 @@
 from typing import List
+from uuid import UUID
 
 from pydantic import BaseModel
 from sqlalchemy import select, insert, delete
@@ -48,7 +49,7 @@ class MovieCountryRepository(BaseRepository):
         except IntegrityError as exc:
             raise CountryNotFoundException from exc
 
-    async def update_movie_countries(self, movie_id: int, countries_ids: List[int]):
+    async def update_movie_countries(self, movie_id: UUID, countries_ids: List[int]):
         query = select(self.model.country_id).filter_by(movie_id=movie_id)
         res = await self.session.execute(query)
 
@@ -89,7 +90,7 @@ class ShowCountryRepository(BaseRepository):
         except IntegrityError as exc:
             raise CountryNotFoundException from exc
 
-    async def update_show_countries(self, show_id: int, countries_ids: List[int]):
+    async def update_show_countries(self, show_id: UUID, countries_ids: List[int]):
         query = select(self.model.country_id).filter_by(show_id=show_id)
         res = await self.session.execute(query)
 

@@ -1,4 +1,5 @@
 import logging
+from uuid import UUID
 
 from pydantic import BaseModel
 from sqlalchemy import select, func, update, insert
@@ -27,7 +28,7 @@ class EpisodeRepository(BaseRepository):
 
     async def get_episodes(
         self,
-        show_id: int | None,
+        show_id: UUID | None,
         season_id: int | None,
         episode_title: str | None,
         episode_number: int | None,

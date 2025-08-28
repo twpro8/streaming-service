@@ -48,7 +48,7 @@ class MovieActorRepository(BaseRepository):
         except IntegrityError as exc:
             raise ActorNotFoundException from exc
 
-    async def update_movie_actors(self, movie_id: int, actors_ids: List[UUID]):
+    async def update_movie_actors(self, movie_id: UUID, actors_ids: List[UUID]):
         query = select(self.model.actor_id).filter_by(movie_id=movie_id)
         res = await self.session.execute(query)
 
@@ -83,7 +83,7 @@ class ShowActorRepository(BaseRepository):
         except IntegrityError as exc:
             raise ActorNotFoundException from exc
 
-    async def update_show_actors(self, show_id: int, actors_ids: List[UUID]):
+    async def update_show_actors(self, show_id: UUID, actors_ids: List[UUID]):
         query = select(self.model.actor_id).filter_by(show_id=show_id)
         res = await self.session.execute(query)
 
