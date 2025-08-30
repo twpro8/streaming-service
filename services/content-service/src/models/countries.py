@@ -1,9 +1,8 @@
 from typing import List
 
-from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.models.base import Base
+from src.models.base import Base, int_pk, str_2, str_64
 
 
 class CountryORM(Base):
@@ -14,9 +13,9 @@ class CountryORM(Base):
 
     __tablename__ = "countries"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String(2), unique=True, index=True)
-    name: Mapped[str] = mapped_column(String(64), unique=True)
+    id: Mapped[int_pk]
+    code: Mapped[str_2] = mapped_column(unique=True, index=True)
+    name: Mapped[str_64] = mapped_column(unique=True)
 
     # Relationships
     movies: Mapped[List["MovieORM"]] = relationship(

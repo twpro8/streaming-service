@@ -1,13 +1,11 @@
-from datetime import datetime, date
+from datetime import date
 from typing import List
-from uuid import UUID, uuid4
 
-from sqlalchemy import String, Date, Enum, DateTime, text, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.orm import Mapped, relationship
 
 from src.enums import ZodiacSign
-from src.models.base import Base
+from src.models.base import Base, uuid_pk, created_at, str_48, str_1024
 
 
 class DirectorORM(Base):
@@ -21,24 +19,14 @@ class DirectorORM(Base):
         ),
     )
 
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-    )
-    first_name: Mapped[str] = mapped_column(String(48))
-    last_name: Mapped[str] = mapped_column(String(48))
-    birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
-    zodiac_sign: Mapped[ZodiacSign | None] = mapped_column(Enum(ZodiacSign), nullable=True)
-    bio: Mapped[str | None] = mapped_column(String(1024), nullable=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )  # Make sure you have added the trigger to the migration.
+    id: Mapped[uuid_pk]
+    first_name: Mapped[str_48]
+    last_name: Mapped[str_48]
+    birth_date: Mapped[date | None]
+    zodiac_sign: Mapped[ZodiacSign | None]
+    bio: Mapped[str_1024 | None]
+    created_at: Mapped[created_at]
+    updated_at: Mapped[created_at]  # Make sure you have added the trigger to the migration.
 
     # Relationships
     movies: Mapped[List["MovieORM"]] = relationship(

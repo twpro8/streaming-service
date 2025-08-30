@@ -1,7 +1,6 @@
-from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base
+from src.models.base import Base, int_pk, str_2, str_64
 
 
 class LanguageORM(Base):
@@ -12,9 +11,9 @@ class LanguageORM(Base):
 
     __tablename__ = "languages"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String(2), unique=True, index=True)
-    name: Mapped[str] = mapped_column(String(64), unique=True)
+    id: Mapped[int_pk]
+    code: Mapped[str_2] = mapped_column(unique=True, index=True)
+    name: Mapped[str_64] = mapped_column(unique=True)
 
     def __repr__(self):
         return f"<LanguageORM(id={self.id!r}, code={self.code!r}, name={self.name!r})>"

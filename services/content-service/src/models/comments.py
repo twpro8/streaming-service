@@ -1,30 +1,17 @@
-from datetime import datetime
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from sqlalchemy import String, DateTime, text
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import Mapped
 
-from src.models.base import Base
+from src.models.base import Base, uuid_pk, created_at, str_32, str_512
 
 
 class CommentORM(Base):
     __tablename__ = "comments"
 
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-    )
-    user_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True))
-    content_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True))
-    content_type: Mapped[str] = mapped_column(String(32))
-    comment: Mapped[str] = mapped_column(String(512))
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )  # Make sure you have added the trigger to the migration.
+    id: Mapped[uuid_pk]
+    user_id: Mapped[UUID]
+    content_id: Mapped[UUID]
+    content_type: Mapped[str_32]
+    comment: Mapped[str_512]
+    created_at: Mapped[created_at]
+    updated_at: Mapped[created_at]  # Make sure you have added the trigger to the migration.

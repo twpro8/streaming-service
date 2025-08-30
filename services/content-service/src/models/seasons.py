@@ -1,11 +1,10 @@
-from datetime import datetime
 from typing import List
-from uuid import UUID, uuid4
+from uuid import UUID
 
-from sqlalchemy import UUID as PG_UUID, ForeignKey, String, DateTime, text, UniqueConstraint
+from sqlalchemy import UUID as PG_UUID, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.models.base import Base
+from src.models.base import Base, uuid_pk, created_at, str_256
 
 
 class SeasonORM(Base):
@@ -18,25 +17,15 @@ class SeasonORM(Base):
         ),
     )
 
-    id: Mapped[UUID] = mapped_column(
-        PG_UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4,
-    )
+    id: Mapped[uuid_pk]
     show_id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         ForeignKey("shows.id", ondelete="CASCADE"),
     )
-    title: Mapped[str] = mapped_column(String(256))
+    title: Mapped[str_256]
     season_number: Mapped[int]
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=text("TIMEZONE('UTC', now())"),
-    )  # Make sure you have added the trigger to the migration.
+    created_at: Mapped[created_at]
+    updated_at: Mapped[created_at]  # Make sure you have added the trigger to the migration.
 
     # Relationships
     show: Mapped["ShowORM"] = relationship(back_populates="seasons")
