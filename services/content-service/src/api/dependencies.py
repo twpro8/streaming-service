@@ -38,12 +38,12 @@ def get_token(request: Request) -> str:
     return token
 
 
-def get_current_user_id(token: str = Depends(get_token)):
+def get_current_user_id(token: str = Depends(get_token)) -> UUID:
     data = AuthService().decode_token(token)
-    return data.get("user_id", None)
+    return data["user_id"]
 
 
-UserDep = Annotated[int, Depends(get_current_user_id)]
+UserDep = Annotated[UUID, Depends(get_current_user_id)]
 
 
 def get_admin(token: str = Depends(get_token)):

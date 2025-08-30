@@ -17,7 +17,7 @@ class RatingRepository(BaseRepository):
 
     async def add_or_update_rating(
         self,
-        user_id: int,
+        user_id: UUID,
         content_id: UUID,
         content_type: ContentType,
         value: Decimal,

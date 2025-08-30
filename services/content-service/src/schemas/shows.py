@@ -1,3 +1,4 @@
+from decimal import Decimal
 from datetime import datetime
 from typing import List
 from uuid import UUID
@@ -9,28 +10,23 @@ from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.countries import CountryDTO
 from src.schemas.directors import DirectorDTO
 from src.schemas.genres import GenreDTO
-from src.schemas.pydantic_types import (
-    TitleStr,
-    RatingDecimal,
-    DescriptionStr,
-    ReleaseYearDate,
-)
+from src.schemas.pydantic_types import Str256, Str1024, Date
 
 
 class ShowAddDTO(BaseModel):
     id: UUID
-    title: TitleStr
-    description: DescriptionStr
-    release_year: ReleaseYearDate
+    title: Str256
+    description: Str1024
+    release_date: Date
     cover_url: AnyUrl | None = None
 
 
 class ShowAddRequestDTO(BaseSchema):
-    title: TitleStr
-    description: DescriptionStr
-    release_year: ReleaseYearDate
+    title: Str256
+    description: Str1024
+    release_date: Date
     cover_url: AnyUrl | None = None
-    directors_ids: List[conint(strict=True, ge=1)] | None = Field(
+    directors_ids: List[UUID] | None = Field(
         default=None,
         examples=[
             [],
@@ -57,15 +53,15 @@ class ShowAddRequestDTO(BaseSchema):
 
 
 class ShowDTO(ShowAddDTO):
-    rating: RatingDecimal
+    rating: Decimal
     created_at: datetime
     updated_at: datetime
 
 
 class ShowPatchDTO(BaseModel):
-    title: TitleStr | None = None
-    description: DescriptionStr | None = None
-    release_year: ReleaseYearDate | None = None
+    title: Str256 | None = None
+    description: Str1024 | None = None
+    release_date: Date | None = None
     cover_url: AnyUrl | None = None
 
 

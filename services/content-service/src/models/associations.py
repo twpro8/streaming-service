@@ -13,7 +13,7 @@ class MovieDirectorORM(Base):
         ForeignKey("movies.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    director_id: Mapped[int] = mapped_column(
+    director_id: Mapped[UUID] = mapped_column(
         ForeignKey("directors.id", ondelete="CASCADE"),
         primary_key=True,
     )
@@ -26,7 +26,7 @@ class ShowDirectorORM(Base):
         ForeignKey("shows.id", ondelete="CASCADE"),
         primary_key=True,
     )
-    director_id: Mapped[int] = mapped_column(
+    director_id: Mapped[UUID] = mapped_column(
         ForeignKey("directors.id", ondelete="CASCADE"),
         primary_key=True,
     )

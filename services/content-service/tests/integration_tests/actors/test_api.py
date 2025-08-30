@@ -68,7 +68,7 @@ invalid_cases = [
     ("last_name", ["l", "l" * 50, None]),
     ("birth_date", ["999-01-01", "2100-01-01", "invalid-format", None]),
     ("zodiac_sign", ["Rat", "Cat", "Boss"]),
-    ("bio", ["b", "b" * 130]),
+    ("bio", ["b", "b" * 1025]),
     ("extra", ["Hello!"]),
 ]
 
@@ -126,7 +126,7 @@ async def test_update_actor_valid(ac, field, value, get_all_actors):
         ("birth_date", "2100-01-01"),
         ("zodiac_sign", "Corn dog"),
         ("bio", "b"),
-        ("bio", "b" * 130),
+        ("bio", "b" * 1025),
     ],
 )
 async def test_update_actor_invalid(ac, field, value, get_all_actors):

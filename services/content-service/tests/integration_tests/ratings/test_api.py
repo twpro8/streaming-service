@@ -20,20 +20,9 @@ def calculate_expected_rating(ratings: dict[int, float]) -> str:
 
 @pytest.mark.order(3)
 @pytest.mark.parametrize("content_type", ("movie", "show"))
-@pytest.mark.parametrize(
-    "user_id, val",
-    (
-        (1, 4.5),
-        (1, 7.5),
-        (2, 4.5),
-        (2, 8.5),
-        (3, 4.5),
-        (3, 9.5),
-    ),
-)
-async def test_add_movie_rating_valid(
-    ac, get_all_movies, get_all_shows, user_id, content_type, val
-):
+@pytest.mark.parametrize("val", (4.5, 7.5, 4.5, 8.5, 4.5, 9.5))
+async def test_add_movie_rating_valid(ac, get_all_movies, get_all_shows, content_type, val):
+    user_id = str(uuid4())
     app.dependency_overrides[get_current_user_id] = lambda: user_id  # noqa
 
     content_id = get_all_movies[0]["id"] if content_type == "movie" else get_all_shows[0]["id"]

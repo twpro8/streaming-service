@@ -1,16 +1,14 @@
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import Field
-
 from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
-from src.schemas.pydantic_types import TitleStr
+from src.schemas.pydantic_types import Str256, PositiveInt
 
 
 class SeasonAddRequestDTO(BaseSchema):
     show_id: UUID
-    title: TitleStr
-    season_number: int = Field(default=1, ge=1, le=500, title="Season Number")
+    title: Str256
+    season_number: PositiveInt
 
 
 class SeasonAddDTO(SeasonAddRequestDTO):
@@ -18,8 +16,8 @@ class SeasonAddDTO(SeasonAddRequestDTO):
 
 
 class SeasonPatchRequestDTO(BaseSchema, AtLeastOneFieldMixin):
-    title: TitleStr | None = None
-    season_number: int | None = Field(default=None, ge=1, le=500, title="Season Number")
+    title: Str256 | None = None
+    season_number: PositiveInt | None = None
 
 
 class SeasonDTO(SeasonAddDTO):

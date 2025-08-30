@@ -42,7 +42,7 @@ async def test_show_sorting(ac, field, order, max_pagination):
     )
     # Extract field values for sorting
     if field == "year":
-        values = [int(show["release_year"][:4]) for show in data]
+        values = [int(show["release_date"][:4]) for show in data]
     elif field == "id":
         values = [show["id"] for show in data]
     elif field == "rating":
@@ -92,7 +92,7 @@ async def test_filter_by_description(ac, description, get_all_shows, max_paginat
 @pytest.mark.order(2)
 @pytest.mark.parametrize("year", [1899, 1995, 2000, 2003, 2004, 2012])
 async def test_filter_by_release_year(ac, year, get_all_shows, max_pagination):
-    expected_count = sum(1 for show in get_all_shows if year == show["release_year"].year)
+    expected_count = sum(1 for show in get_all_shows if year == show["release_date"].year)
     data = await get_and_validate(ac, "/v1/shows", params={"year": year, **max_pagination})
     assert len(data) == expected_count
 
@@ -100,7 +100,7 @@ async def test_filter_by_release_year(ac, year, get_all_shows, max_pagination):
 @pytest.mark.order(2)
 @pytest.mark.parametrize("year_gt", [1899, 2002, 2005, 2012])
 async def test_filter_by_release_year_gt(ac, year_gt, get_all_shows, max_pagination):
-    expected_count = sum(1 for show in get_all_shows if year_gt < show["release_year"].year)
+    expected_count = sum(1 for show in get_all_shows if year_gt < show["release_date"].year)
     data = await get_and_validate(ac, "/v1/shows", params={"year_gt": year_gt, **max_pagination})
     assert len(data) == expected_count
 
@@ -108,7 +108,7 @@ async def test_filter_by_release_year_gt(ac, year_gt, get_all_shows, max_paginat
 @pytest.mark.order(2)
 @pytest.mark.parametrize("year_lt", [1899, 2002, 2006, 2012])
 async def test_filter_by_release_year_lt(ac, year_lt, get_all_shows, max_pagination):
-    expected_count = sum(1 for show in get_all_shows if year_lt > show["release_year"].year)
+    expected_count = sum(1 for show in get_all_shows if year_lt > show["release_date"].year)
     data = await get_and_validate(ac, "/v1/shows", params={"year_lt": year_lt, **max_pagination})
     assert len(data) == expected_count
 
@@ -117,7 +117,7 @@ async def test_filter_by_release_year_lt(ac, year_lt, get_all_shows, max_paginat
 @pytest.mark.parametrize("year_gt, year_lt", [(2001, 2005), (1899, 2000), (2003, 2012)])
 async def test_filter_by_release_year_range(ac, year_gt, year_lt, get_all_shows, max_pagination):
     expected_count = sum(
-        1 for show in get_all_shows if year_gt < show["release_year"].year < year_lt
+        1 for show in get_all_shows if year_gt < show["release_date"].year < year_lt
     )
     data = await get_and_validate(
         ac, "/v1/shows", params={"year_gt": year_gt, "year_lt": year_lt, **max_pagination}
@@ -234,7 +234,7 @@ async def test_get_filter_by_actors(
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "title, description, release_year",
+    "title, description, release_date",
     [
         (
             "Valid Title",
@@ -248,13 +248,13 @@ async def test_get_filter_by_actors(
         ),
     ],
 )
-async def test_add_show_without_optional_valid(ac, title, description, release_year):
+async def test_add_show_without_optional_valid(ac, title, description, release_date):
     res = await ac.post(
         "/v1/shows",
         json={
             "title": title,
             "description": description,
-            "release_year": release_year,
+            "release_date": release_date,
         },
     )
     assert res.status_code == 201
@@ -264,15 +264,15 @@ async def test_add_show_without_optional_valid(ac, title, description, release_y
 
     assert show["title"] == title
     assert show["description"] == description
-    assert show["release_year"] == release_year
+    assert show["release_date"] == release_date
 
 
 @pytest.mark.order(2)
 @pytest.mark.parametrize(
-    "title, description, release_year, cover_url, genres_ids, actors_indexes",
+    "title, description, release_date, cover_url, genres_ids, actors_indexes",
     [
         (
-            "Valid Title",
+            "Valid Title3",
             "Valid Description",
             "2005-01-01",
             "https://www.example.com/abc",
@@ -280,7 +280,7 @@ async def test_add_show_without_optional_valid(ac, title, description, release_y
             [0, 1, 2],
         ),
         (
-            "Valid Title2",
+            "Valid Title4",
             "Valid Description2",
             "2006-01-01",
             "https://www.example.com/def",
@@ -293,7 +293,7 @@ async def test_add_show_with_optional_valid(
     ac,
     title,
     description,
-    release_year,
+    release_date,
     cover_url,
     genres_ids,
     actors_indexes,
@@ -305,7 +305,7 @@ async def test_add_show_with_optional_valid(
         json={
             "title": title,
             "description": description,
-            "release_year": release_year,
+            "release_date": release_date,
             "cover_url": cover_url,
             "genres_ids": genres_ids,
             "actors_ids": actors_ids,
@@ -318,22 +318,22 @@ async def test_add_show_with_optional_valid(
 
     assert show["title"] == title
     assert show["description"] == description
-    assert show["release_year"] == release_year
+    assert show["release_date"] == release_date
     assert show["cover_url"] == cover_url
     assert len(show["genres"]) == len(genres_ids)
     assert all(genre["id"] in genres_ids for genre in show["genres"])
 
 
 invalid_cases = [
-    ("title", ["t", "t" * 256]),
+    ("title", ["t", "t" * 257]),
     (
         "description",
         [
             "d",
-            "d" * 256,
+            "d" * 1025,
         ],
     ),
-    ("release_year", ["10-01-01", "999-01-01", "2100-01-01"]),
+    ("release_date", ["999-01-01", "2100-01-01"]),
     ("cover_url", ["invalid-format"]),
     ("genres_ids", ["string", ["string"]]),
     ("actors_ids", ["string", 11]),
@@ -348,10 +348,8 @@ async def test_add_show_invalid(ac, field, invalid_value):
     valid_data = {
         "title": "Valid Title3",
         "description": "Valid Description3",
-        "release_year": "2012-01-01",
+        "release_date": "2012-01-01",
         "cover_url": "https://www.example.com/meaw/cat.png",
-        "genres_ids": [7, 8, 9],
-        "actors_ids": [1, 2, 3],
         field: invalid_value,
     }
     res = await ac.post("/v1/shows", json=valid_data)
@@ -364,7 +362,7 @@ async def test_show_on_conflict(ac):
     req_body = {
         "title": "Valid Title7",
         "description": "Valid Description7",
-        "release_year": "2020-01-01",
+        "release_date": "2020-01-01",
         "cover_url": "https://www.kitten.com/kitty.jpg",  # unique
     }
     res = await ac.post("/v1/shows", json=req_body)
@@ -386,7 +384,7 @@ async def test_show_not_found(ac, field, value):
     req_body = {
         "title": "Valid Title8",
         "description": "Valid Description8",
-        "release_year": "2020-01-01",
+        "release_date": "2020-01-01",
         "cover_url": "https://www.example.com/barbara",
         field: value,
     }
@@ -402,8 +400,8 @@ async def test_show_not_found(ac, field, value):
         ("title", "Title Updated 2"),
         ("description", "Description Updated 1"),
         ("description", "Description Updated 2"),
-        ("release_year", "1888-01-01"),
-        ("release_year", "1999-07-07"),
+        ("release_date", "1888-01-01"),
+        ("release_date", "1999-07-07"),
         ("cover_url", "https://example.com/updated.jpg"),
         ("cover_url", None),
     ],
@@ -454,14 +452,13 @@ async def test_update_show_actors(ac, get_all_actors, get_all_shows, actors_inde
     "field,value",
     [
         ("title", "t"),
-        ("title", "t" * 256),
+        ("title", "t" * 257),
         ("title", 11),
         ("description", "d"),
-        ("description", "d" * 256),
+        ("description", "d" * 1025),
         ("description", 11),
-        ("release_year", "10-01-01"),
-        ("release_year", "999-07-07"),
-        ("release_year", "2100-07-07"),
+        ("release_date", "999-07-07"),
+        ("release_date", "2100-07-07"),
         ("cover_url", "invalid-format"),
         ("genres_ids", 11),
         ("genres_ids", ["str"]),

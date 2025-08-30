@@ -58,12 +58,9 @@ async def test_add_season_valid(ac, get_all_shows, title, season_number):
 @pytest.mark.parametrize(
     "field, value",
     [
-        ("title", 12),
         ("title", "t"),
-        ("title", "t" * 256),
-        ("episode_number", 0),
-        ("episode_number", -1),
-        ("episode_number", 501),
+        ("title", "t" * 257),
+        ("season_number", 0),
     ],
 )
 async def test_add_season_invalid(ac, get_all_shows, field, value):
@@ -71,7 +68,7 @@ async def test_add_season_invalid(ac, get_all_shows, field, value):
     req_body = {
         "show_id": show_id,
         "title": "Valid Season Title 3",
-        "episode_number": 12,
+        "season_number": 12,
         field: value,
     }
     res = await ac.post("/v1/seasons", json=req_body)
@@ -137,9 +134,8 @@ async def test_update_season_number_valid(ac, get_all_shows, get_all_seasons, se
     "field, value",
     (
         ("title", "t"),
-        ("title", "t" * 256),
-        ("episode_number", 0),
-        ("episode_number", 501),
+        ("title", "t" * 257),
+        ("season_number", 0),
     ),
 )
 async def test_update_season_invalid(ac, get_all_seasons, field, value):

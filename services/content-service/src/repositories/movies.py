@@ -9,7 +9,11 @@ from sqlalchemy import select, func, exists
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
-from src.exceptions import UniqueCoverURLException, UniqueVideoURLException
+from src.exceptions import (
+    UniqueCoverURLException,
+    UniqueVideoURLException,
+    MovieAlreadyExistsException,
+)
 from src.models import MovieORM, MovieGenreORM
 from src.models.associations import MovieActorORM
 from src.repositories.base import BaseRepository
@@ -38,10 +42,10 @@ class MovieRepository(BaseRepository):
         filters = {
             "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
             "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
-            "year": lambda v: (self.model.release_year >= date(v, 1, 1))
-            & (self.model.release_year <= date(v, 12, 31)),
-            "year_gt": lambda v: self.model.release_year > date(v, 1, 1),
-            "year_lt": lambda v: self.model.release_year < date(v, 1, 1),
+            "year": lambda v: (self.model.release_date >= date(v, 1, 1))
+            & (self.model.release_date <= date(v, 12, 31)),
+            "year_gt": lambda v: self.model.release_date > date(v, 1, 1),
+            "year_lt": lambda v: self.model.release_date < date(v, 1, 1),
             "rating": lambda v: self.model.rating == v,
             "rating_gt": lambda v: self.model.rating > v,
             "rating_lt": lambda v: self.model.rating < v,
@@ -65,7 +69,7 @@ class MovieRepository(BaseRepository):
             if key in filters and value is not None:
                 query = query.filter(filters[key](value))
 
-        sort_by = "release_year" if sort_by == "year" else sort_by
+        sort_by = "release_date" if sort_by == "year" else sort_by
 
         # apply sorting and pagination
         query = self._apply_sorting_and_pagination(
@@ -104,6 +108,8 @@ class MovieRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
+                    case "uq_movie":
+                        raise MovieAlreadyExistsException from exc
                     case "movies_cover_url_key":
                         raise UniqueCoverURLException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)

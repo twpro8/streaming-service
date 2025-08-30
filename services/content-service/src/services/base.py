@@ -55,7 +55,3 @@ class BaseService:
     async def check_language_exists(self, **filter_by) -> bool:
         lang = await self.db.languages.get_one_or_none(**filter_by)
         return lang is not None
-
-    @staticmethod
-    def get_content_type_key(content_type: ContentType):
-        return "movie_id" if content_type == ContentType.movie else "show_id"

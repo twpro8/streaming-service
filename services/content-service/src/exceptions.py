@@ -102,6 +102,14 @@ class EpisodeNotFoundException(ObjectNotFoundException):
     detail = "Episode not found"
 
 
+class ShowAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Show already exists"
+
+
+class ShowAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Show already exists"
+
+
 class ContentNotFoundException(ObjectNotFoundException):
     detail = "Content not found"
 

@@ -61,9 +61,9 @@ class EpisodeRepository(BaseRepository):
                 cause = getattr(exc.orig, "__cause__", None)
                 constraint = getattr(cause, "constraint_name", None)
                 match constraint:
-                    case "unique_episode_per_season":
+                    case "uq_episode":
                         raise UniqueEpisodePerSeasonException
-                    case "unique_season_per_show":
+                    case "uq_season":
                         raise UniqueSeasonPerShowException
                     case "episodes_video_url_key":
                         raise UniqueFileURLException
@@ -80,7 +80,7 @@ class EpisodeRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "unique_episode_per_season":
+                    case "uq_episode":
                         raise UniqueEpisodePerSeasonException from exc
                     case "episodes_video_url_key":
                         raise UniqueFileURLException from exc

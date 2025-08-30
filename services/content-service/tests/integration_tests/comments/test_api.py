@@ -6,11 +6,13 @@ from tests.utils import get_and_validate, calculate_expected_length
 
 
 @pytest.mark.order(3)
-@pytest.mark.parametrize("content_type, id_key", (("movie", "movie_id"), ("show", "show_id")))
+@pytest.mark.parametrize("content_type", ("movie", "show"))
 @pytest.mark.parametrize("page, per_page", ((1, 2), (2, 2), (3, 2), (4, 2)))
-async def test_get_content_comments(ac, get_all_comments, content_type, id_key, page, per_page):
-    content_id = next(c[id_key] for c in get_all_comments if c.get(id_key, None))
-    all_comments = [c for c in get_all_comments if c.get(id_key, None) == content_id]
+async def test_get_content_comments(ac, get_all_comments, content_type, page, per_page):
+    content_id = next(
+        c["content_id"] for c in get_all_comments if c["content_type"] == content_type
+    )
+    all_comments = [c for c in get_all_comments if c["content_id"] == content_id]
     assert len(all_comments) >= 5
 
     expected_count = calculate_expected_length(page, per_page, len(all_comments))
@@ -34,14 +36,12 @@ async def test_get_user_comments_valid(ac, get_all_comments, current_user_id, pa
     all_user_comments = [c for c in get_all_comments if c["user_id"] == current_user_id]
     assert len(all_user_comments) >= 5
 
-    expected_count = calculate_expected_length(
-        page=page,
-        per_page=per_page,
-        total_count=len(all_user_comments),
-    )
+    expected_count = calculate_expected_length(page, per_page, len(all_user_comments))
 
     comments = await get_and_validate(
-        ac=ac, url="/v1/comments/user", params={"page": page, "per_page": per_page}
+        ac=ac,
+        url="/v1/comments/user",
+        params={"page": page, "per_page": per_page},
     )
     assert len(comments) == expected_count
 
@@ -50,12 +50,13 @@ async def test_get_user_comments_valid(ac, get_all_comments, current_user_id, pa
 @pytest.mark.parametrize("text", ("Valid comment text 1", "Valid comment text 2"))
 async def test_add_movie_comment_valid(ac, get_all_movies, text):
     movie_id = str(get_all_movies[0]["id"])
+    content_type = "movie"
 
     res = await ac.post(
         url="/v1/comments",
         json={
             "content_id": movie_id,
-            "content_type": "movie",
+            "content_type": content_type,
             "comment": text,
         },
     )
@@ -66,21 +67,24 @@ async def test_add_movie_comment_valid(ac, get_all_movies, text):
     comment = await get_and_validate(ac, f"/v1/comments/{comment_id}", expect_list=False)
 
     assert comment["id"] == comment_id
+    assert comment["content_id"] == movie_id
+    assert comment["content_type"] == content_type
     assert comment["comment"] == text
-    assert comment["movie_id"] == movie_id
     assert comment["created_at"] is not None
+    assert comment["updated_at"] is not None
 
 
 @pytest.mark.order(3)
 @pytest.mark.parametrize("text", ("Valid comment text 1", "Valid comment text 2"))
 async def test_add_show_comment_valid(ac, get_all_shows, text):
     show_id = str(get_all_shows[0]["id"])
+    content_type = "show"
 
     res = await ac.post(
         url="/v1/comments",
         json={
             "content_id": show_id,
-            "content_type": "show",
+            "content_type": content_type,
             "comment": text,
         },
     )
@@ -91,9 +95,11 @@ async def test_add_show_comment_valid(ac, get_all_shows, text):
     comment = await get_and_validate(ac, f"/v1/comments/{comment_id}", expect_list=False)
 
     assert comment["id"] == comment_id
+    assert comment["content_id"] == show_id
+    assert comment["content_type"] == content_type
     assert comment["comment"] == text
-    assert comment["show_id"] == show_id
     assert comment["created_at"] is not None
+    assert comment["updated_at"] is not None
 
 
 @pytest.mark.order(3)
@@ -101,7 +107,7 @@ async def test_add_show_comment_valid(ac, get_all_shows, text):
     "field, value",
     (
         ("comment", "t"),
-        ("comment", "t" * 256),
+        ("comment", "t" * 513),
         ("content_type", "unknown"),
         ("show_id", "invalid-format"),
     ),
@@ -150,7 +156,7 @@ async def test_update_comment_valid(ac, get_all_comments):
     "field, value",
     (
         ("comment", "t"),
-        ("comment", "t" * 256),
+        ("comment", "t" * 513),
         ("extra", "unknown"),
     ),
 )

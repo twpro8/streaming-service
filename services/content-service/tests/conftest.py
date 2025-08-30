@@ -1,4 +1,5 @@
 from typing import Any, AsyncGenerator
+from uuid import uuid4, UUID
 
 import pytest
 
@@ -21,7 +22,7 @@ from src.schemas.shows import ShowAddDTO
 from tests.utils import read_json
 
 
-user_id = 1
+user_id = uuid4()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -51,17 +52,19 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    movies_data = [MovieAddDTO.model_validate(f) for f in read_json("movies")]
-    shows_data = [ShowAddDTO.model_validate(s) for s in read_json("shows")]
-    seasons_data = [SeasonAddDTO.model_validate(s) for s in read_json("seasons")]
-    episodes_data = [EpisodeAddDTO.model_validate(e) for e in read_json("episodes")]
-    genres_data = [GenreAddDTO.model_validate(g) for g in read_json("genres")]
-    movies_genres_data = [MovieGenreDTO.model_validate(fg) for fg in read_json("movies_genres")]
-    shows_genres_data = [ShowGenreDTO.model_validate(sg) for sg in read_json("shows_genres")]
-    actors_data = [ActorAddDTO.model_validate(ad) for ad in read_json("actors")]
-    movies_actors_data = [MovieActorDTO.model_validate(fa) for fa in read_json("movies_actors")]
-    shows_actors_data = [ShowActorDTO.model_validate(sa) for sa in read_json("shows_actors")]
-    comments_data = [CommentAddDTO.model_validate(c) for c in read_json("comments")]
+    movies_data = [MovieAddDTO.model_validate(obj) for obj in read_json("movies")]
+    shows_data = [ShowAddDTO.model_validate(obj) for obj in read_json("shows")]
+    seasons_data = [SeasonAddDTO.model_validate(obj) for obj in read_json("seasons")]
+    episodes_data = [EpisodeAddDTO.model_validate(obj) for obj in read_json("episodes")]
+    genres_data = [GenreAddDTO.model_validate(obj) for obj in read_json("genres")]
+    movies_genres_data = [MovieGenreDTO.model_validate(obj) for obj in read_json("movies_genres")]
+    shows_genres_data = [ShowGenreDTO.model_validate(obj) for obj in read_json("shows_genres")]
+    actors_data = [ActorAddDTO.model_validate(obj) for obj in read_json("actors")]
+    movies_actors_data = [MovieActorDTO.model_validate(obj) for obj in read_json("movies_actors")]
+    shows_actors_data = [ShowActorDTO.model_validate(obj) for obj in read_json("shows_actors")]
+    comments_data = [
+        CommentAddDTO.model_validate({**obj, "user_id": user_id}) for obj in read_json("comments")
+    ]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.movies.add_bulk(movies_data)
@@ -128,7 +131,7 @@ async def created_movies(ac):
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
-                    "release_year": "1777-01-01",
+                    "release_date": "1777-01-01",
                     "duration": 135,
                 },
             )
@@ -151,7 +154,7 @@ async def created_shows(ac):
                 json={
                     "title": f"Python Movie{i}",
                     "description": f"Hola Amigo{i}",
-                    "release_year": "1777-01-01",
+                    "release_date": "1777-01-01",
                 },
             )
             assert res.status_code == 201
@@ -224,5 +227,5 @@ async def get_all_episodes():
 
 
 @pytest.fixture(scope="session")
-async def current_user_id() -> int:
+async def current_user_id() -> UUID:
     return user_id

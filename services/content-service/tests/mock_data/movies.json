@@ -3,7 +3,7 @@
     "id": "36eea251-89ef-454a-892c-ed559b5ae496",
     "title": "The Hidden Forest",
     "description": "A tale of a lost tribe in the Amazon.",
-    "release_year": "2000-01-01",
+    "release_date": "2000-01-01",
     "duration": 95,
     "cover_url": null,
     "rating": "5.0"
@@ -12,7 +12,7 @@
     "id": "2a8513f3-f255-4040-aaa6-971974b1f069",
     "title": "Parallel Lives",
     "description": "Two people living the same life in parallel universes.",
-    "release_year": "2001-01-01",
+    "release_date": "2001-01-01",
     "duration": 120,
     "cover_url": null,
     "rating": "7.5"
@@ -21,7 +21,7 @@
     "id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
     "title": "The Echo Chamber",
     "description": "Psychological drama about isolation and social media.",
-    "release_year": "2002-01-01",
+    "release_date": "2002-01-01",
     "duration": 112,
     "cover_url": null,
     "rating": "2.0"
@@ -30,7 +30,7 @@
     "id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
     "title": "Desert Frequency",
     "description": "Sci-fi horror in a post-apocalyptic wasteland.",
-    "release_year": "2003-01-01",
+    "release_date": "2003-01-01",
     "duration": 101,
     "cover_url": null,
     "rating": "4.5"
@@ -39,7 +39,7 @@
     "id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
     "title": "Love in Beta",
     "description": "Roman between a programmer and an AI assistant.",
-    "release_year": "2004-01-01",
+    "release_date": "2004-01-01",
     "duration": 90,
     "cover_url": null,
     "rating": "8.5"

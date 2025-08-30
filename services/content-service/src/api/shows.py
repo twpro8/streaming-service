@@ -16,6 +16,8 @@ from src.exceptions import (
     DirectorNotFoundHTTPException,
     CountryNotFoundException,
     CountryNotFoundHTTPException,
+    ShowAlreadyExistsException,
+    ShowAlreadyExistsHTTPException,
 )
 from src.schemas.shows import ShowAddRequestDTO, ShowPatchRequestDTO
 from src.services.shows import ShowService
@@ -56,6 +58,8 @@ async def get_show(db: DBDep, show_id: UUID):
 async def add_show(db: DBDep, show_data: ShowAddRequestDTO):
     try:
         show_id = await ShowService(db).add_show(show_data)
+    except ShowAlreadyExistsException:
+        raise ShowAlreadyExistsHTTPException
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:

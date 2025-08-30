@@ -1,81 +1,22 @@
 from datetime import date
-from decimal import Decimal
-
 from typing import Annotated
+from decimal import Decimal
 
 from pydantic import Field, condecimal
 
 
-# Reusable Annotated Types
-
-TitleStr = Annotated[
-    str,
-    Field(
-        min_length=3,
-        max_length=255,
-        title="Title",
-        description="Title string from 3 to 255 characters",
-        examples=["John's Journey"],
-    ),
-]
-
-DurationInt = Annotated[
-    int,
-    Field(
-        ge=1,
-        le=512,
-        title="Duration",
-        description="Duration in minutes (1 to 9999)",
-        examples=[110],
-    ),
-]
-
-IDInt = Annotated[
-    int,
-    Field(
-        ge=1,
-        le=2_147_483_647,
-        title="ID",
-        description="Positive 32-bit integer identifier",
-        examples=[123],
-    ),
-]
-
 RatingDecimal = Annotated[
     Decimal,
     condecimal(gt=0, le=10, max_digits=3, decimal_places=1),
-    Field(
-        title="Rating",
-        description="User rating from 0.1 to 10.0 with one decimal place",
-        examples=[8.5],
-    ),
+    Field(title="Rating", examples=[8.5]),
 ]
 
-DescriptionStr = Annotated[
-    str,
-    Field(
-        min_length=3,
-        max_length=255,
-        title="Description",
-        description="Detailed description of the content",
-        examples=["A thrilling journey of John through mysterious lands."],
-    ),
-]
-
-DirectorStr = Annotated[str, Field(min_length=3, max_length=48)]
-
-ReleaseYearDate = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
-BirthDate = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
+Date = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
 Str48 = Annotated[str, Field(min_length=2, max_length=48)]
 Str100 = Annotated[str, Field(min_length=2, max_length=100)]
 Str128 = Annotated[str, Field(min_length=2, max_length=128)]
 Str256 = Annotated[str, Field(min_length=2, max_length=256)]
+Str512 = Annotated[str, Field(min_length=2, max_length=512)]
+Str1024 = Annotated[str, Field(min_length=2, max_length=1024)]
 
-
-TextStr255 = Annotated[
-    str,
-    Field(
-        min_length=3,
-        max_length=255,
-    ),
-]
+PositiveInt = Annotated[int, Field(gt=0)]

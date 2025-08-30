@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from fastapi import APIRouter
 
 from src.api.dependencies import DBDep
@@ -7,7 +9,7 @@ from src.exceptions import (
     DirectorAlreadyExistsException,
     DirectorAlreadyExistsHTTPException,
 )
-from src.schemas.directors import DirectorAddDTO, DirectorPatchDTO
+from src.schemas.directors import DirectorAddRequestDTO, DirectorPatchDTO
 from src.services.directors import DirectorService
 
 
@@ -21,7 +23,7 @@ async def get_directors(db: DBDep):
 
 
 @v1_router.get("/{director_id}")
-async def get_director(db: DBDep, director_id: int):
+async def get_director(db: DBDep, director_id: UUID):
     try:
         director = await DirectorService(db).get_director(director_id)
     except DirectorNotFoundException:
@@ -30,7 +32,7 @@ async def get_director(db: DBDep, director_id: int):
 
 
 @v1_router.post("", status_code=201)
-async def add_director(db: DBDep, director_data: DirectorAddDTO):
+async def add_director(db: DBDep, director_data: DirectorAddRequestDTO):
     try:
         director_id = await DirectorService(db).add_director(director_data)
     except DirectorAlreadyExistsException:
@@ -39,7 +41,7 @@ async def add_director(db: DBDep, director_data: DirectorAddDTO):
 
 
 @v1_router.patch("/{director_id}")
-async def update_director(db: DBDep, director_id: int, director_data: DirectorPatchDTO):
+async def update_director(db: DBDep, director_id: UUID, director_data: DirectorPatchDTO):
     try:
         await DirectorService(db).update_director(director_id, director_data)
     except DirectorAlreadyExistsException:
@@ -47,6 +49,6 @@ async def update_director(db: DBDep, director_id: int, director_data: DirectorPa
     return {"status": "ok"}
 
 
-@v1_router.post("/{director_id}", status_code=204)
-async def delete_director(db: DBDep, director_id: int):
+@v1_router.delete("/{director_id}", status_code=204)
+async def delete_director(db: DBDep, director_id: UUID):
     await DirectorService(db).delete_director(director_id)

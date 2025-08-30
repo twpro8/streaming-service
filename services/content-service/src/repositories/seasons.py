@@ -28,7 +28,7 @@ class SeasonRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "unique_season_per_show":
+                    case "uq_season":
                         raise UniqueSeasonPerShowException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
@@ -41,7 +41,7 @@ class SeasonRepository(BaseRepository):
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
-                    case "unique_season_per_show":
+                    case "uq_season":
                         raise UniqueSeasonPerShowException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise

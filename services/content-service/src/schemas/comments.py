@@ -2,26 +2,26 @@ from datetime import datetime
 from uuid import UUID
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydantic_types import IDInt, TextStr255
+from src.schemas.pydantic_types import Str512
 from src.enums import ContentType
 
 
 class CommentAddRequestDTO(BaseSchema):
     content_id: UUID
     content_type: ContentType
-    comment: TextStr255
+    comment: Str512
 
 
 class CommentAddDTO(BaseSchema):
     id: UUID
-    movie_id: UUID | None = None
-    show_id: UUID | None = None
-    user_id: IDInt
-    comment: TextStr255
+    user_id: UUID
+    content_id: UUID
+    content_type: ContentType
+    comment: Str512
 
 
 class CommentPutRequestDTO(BaseSchema):
-    comment: TextStr255
+    comment: Str512
 
 
 class CommentDTO(CommentAddDTO):

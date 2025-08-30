@@ -3,15 +3,15 @@ from datetime import datetime
 
 from src.enums import ZodiacSign
 from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
-from src.schemas.pydantic_types import BirthDate, Str48, Str128
+from src.schemas.pydantic_types import Date, Str48, Str1024
 
 
 class ActorAddRequestDTO(BaseSchema):
     first_name: Str48
     last_name: Str48
-    birth_date: BirthDate
+    birth_date: Date
     zodiac_sign: ZodiacSign | None = None
-    bio: Str128 | None = None
+    bio: Str1024 | None = None
 
 
 class ActorAddDTO(ActorAddRequestDTO):
@@ -26,9 +26,9 @@ class ActorDTO(ActorAddDTO):
 class ActorPatchDTO(BaseSchema, AtLeastOneFieldMixin):
     first_name: Str48 | None = None
     last_name: Str48 | None = None
-    birth_date: BirthDate | None = None
+    birth_date: Date | None = None
     zodiac_sign: ZodiacSign | None = None
-    bio: Str128 | None = None
+    bio: Str1024 | None = None
 
 
 class MovieActorDTO(BaseSchema):

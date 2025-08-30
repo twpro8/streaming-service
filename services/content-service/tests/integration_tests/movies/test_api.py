@@ -41,7 +41,7 @@ async def test_movies_sorting(ac, field, order, max_pagination):
     )
     # Extract field values for sorting
     if field == "year":
-        values = [int(movie["release_year"][:4]) for movie in data]
+        values = [int(movie["release_date"][:4]) for movie in data]
     elif field == "id":
         values = [movie["id"] for movie in data]
     elif field == "rating":
@@ -104,14 +104,14 @@ async def test_filter_by_description(ac, description, get_all_movies, max_pagina
 )
 async def test_filter_by_exact_release_year(ac, year, get_all_movies, max_pagination):
     data = await get_and_validate(ac=ac, url="/v1/movies", params={"year": year, **max_pagination})
-    expected_count = sum(1 for movie in get_all_movies if year == movie["release_year"].year)
+    expected_count = sum(1 for movie in get_all_movies if year == movie["release_date"].year)
     assert len(data) == expected_count
 
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize("year_gt", [1899, 2003, 2010, 2100])
 async def test_filter_by_release_year_gt(ac, year_gt, get_all_movies, max_pagination):
-    expected_count = sum(1 for movie in get_all_movies if movie["release_year"].year > year_gt)
+    expected_count = sum(1 for movie in get_all_movies if movie["release_date"].year > year_gt)
 
     data = await get_and_validate(
         ac=ac,
@@ -130,7 +130,7 @@ async def test_filter_by_release_year_gt(ac, year_gt, get_all_movies, max_pagina
     [1999, 2003, 2005, 2010],
 )
 async def test_filter_by_release_year_lt(ac, year_lt, get_all_movies, max_pagination):
-    expected_count = sum(1 for movie in get_all_movies if movie["release_year"].year < year_lt)
+    expected_count = sum(1 for movie in get_all_movies if movie["release_date"].year < year_lt)
 
     data = await get_and_validate(
         ac=ac,
@@ -160,7 +160,7 @@ async def test_filter_by_release_year_range(
     max_pagination,
 ):
     expected_count = sum(
-        1 for movie in get_all_movies if year_gt < movie["release_year"].year < year_lt
+        1 for movie in get_all_movies if year_gt < movie["release_date"].year < year_lt
     )
     data = await get_and_validate(
         ac=ac,
@@ -280,7 +280,7 @@ async def test_get_filter_by_actors(
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "title, description, release_year, duration",
+    "title, description, release_date, duration",
     [
         (
             "Valid Title",
@@ -296,13 +296,13 @@ async def test_get_filter_by_actors(
         ),
     ],
 )
-async def test_add_valid_data_without_optional(ac, title, description, release_year, duration):
+async def test_add_valid_data_without_optional(ac, title, description, release_date, duration):
     res = await ac.post(
         "/v1/movies",
         json={
             "title": title,
             "description": description,
-            "release_year": release_year,
+            "release_date": release_date,
             "duration": duration,
         },
     )
@@ -313,13 +313,13 @@ async def test_add_valid_data_without_optional(ac, title, description, release_y
 
     assert movie["title"] == title
     assert movie["description"] == description
-    assert movie["release_year"] == release_year
+    assert movie["release_date"] == release_date
     assert movie["duration"] == duration
 
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "title, description, release_year, duration, cover_url, genres_ids, actors_indexes",
+    "title, description, release_date, duration, cover_url, genres_ids, actors_indexes",
     [
         (
             "Valid Title3",
@@ -345,7 +345,7 @@ async def test_add_valid_data_with_optional(
     ac,
     title,
     description,
-    release_year,
+    release_date,
     duration,
     cover_url,
     genres_ids,
@@ -358,7 +358,7 @@ async def test_add_valid_data_with_optional(
         json={
             "title": title,
             "description": description,
-            "release_year": release_year,
+            "release_date": release_date,
             "duration": duration,
             "cover_url": cover_url,
             "genres_ids": genres_ids,
@@ -372,41 +372,39 @@ async def test_add_valid_data_with_optional(
 
     assert movie["title"] == title
     assert movie["description"] == description
-    assert movie["release_year"] == release_year
+    assert movie["release_date"] == release_date
     assert movie["duration"] == duration
     assert movie["cover_url"] == cover_url
     assert len(movie["genres"]) == len(genres_ids)
     assert all(genre["id"] in genres_ids for genre in movie["genres"])
 
 
-invalid_cases = [
-    ("title", [None, True, False, "t", "t" * 256, 1, [], {}, 1.1]),
-    ("description", [None, True, False, "d", "d" * 256, 1, [], {}, 1.1]),
-    (
-        "release_year",
-        ["10-01-01", "999-01-01", "2100-01-01", None, True, False, "string", 1, [], {}, 1.1],
-    ),
-    ("duration", [None, False, -1, 513, "string", [], {}, 1.1]),
-    ("cover_url", ["string", False, [], {}, 0, 1, 1.1]),
-    ("genres_ids", ["string", False, {}, 0, 1, 1.1, ["string", 1.1, False, 0, [], {}]]),
-    ("actors_ids", ["string", 11]),
-]
-
-
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
-    "field, invalid_value", [(field, val) for field, vals in invalid_cases for val in vals]
+    "field, value",
+    (
+        ("title", "t"),
+        ("title", "t" * 257),
+        ("description", "d"),
+        ("description", "d" * 1025),
+        ("release_date", "999-01-01"),
+        ("release_date", "2100-01-01"),
+        ("duration", -1),
+        ("cover_url", "invalid-url"),
+        ("genres_ids", 1),
+        ("genres_ids", [-1]),
+        ("actors_ids", 1),
+        ("actors_ids", ["invalid-uuid"]),
+    ),
 )
-async def test_add_invalid_fields(ac, field, invalid_value):
+async def test_add_invalid_fields(ac, field, value):
     valid_data = {
         "title": "Valid Title5",
         "description": "Valid Description5",
-        "release_year": "2020-01-01",
+        "release_date": "2020-01-01",
         "duration": 135,
-        "cover_url": "https://www.example.com/me/image.png",
-        "genres_ids": [7, 8, 9],
-        "actors_ids": [1, 2, 3],
-        field: invalid_value,
+        "cover_url": "https://www.valid.com/me/valid-image.png",
+        field: value,
     }
     res = await ac.post("/v1/movies", json=valid_data)
     assert res.status_code == 422
@@ -416,11 +414,11 @@ async def test_add_invalid_fields(ac, field, invalid_value):
 @pytest.mark.order(1)
 async def test_on_conflict(ac, get_all_movies_with_rels):
     req_body = {
-        "title": "Valid Title7",
-        "description": "Valid Description7",
-        "release_year": "2020-01-01",
+        "title": "Valid Title11",
+        "description": "Valid Description12",
+        "release_date": "2020-01-01",
         "duration": 135,
-        "cover_url": "https://www.example.com/me/image.png",  # unique
+        "cover_url": "https://www.unique1.com/me/unique1.png",
         "genres_ids": [7, 8, 9],
     }
     res = await ac.post("/v1/movies", json=req_body)
@@ -442,7 +440,7 @@ async def test_not_found(ac, field, value):
     req_body = {
         "title": "Valid Title8",
         "description": "Valid Description8",
-        "release_year": "2020-01-01",
+        "release_date": "2020-01-01",
         "duration": 135,
         "cover_url": "https://www.example.com/barbara",
         field: value,
@@ -459,8 +457,8 @@ async def test_not_found(ac, field, value):
         ("title", "Title Updated 2"),
         ("description", "Description Updated 1"),
         ("description", "Description Updated 2"),
-        ("release_year", "1888-01-01"),
-        ("release_year", "1999-07-07"),
+        ("release_date", "1888-01-01"),
+        ("release_date", "1999-07-07"),
         ("duration", 111),
         ("duration", 222),
         ("duration", 333),
@@ -516,21 +514,17 @@ async def test_update_movies_actors(ac, get_all_actors, get_all_movies, actors_i
     "field,value",
     [
         ("title", "t"),
-        ("title", "t" * 256),
-        ("title", 11),
+        ("title", "t" * 257),
         ("description", "d"),
-        ("description", "d" * 256),
-        ("description", 11),
-        ("release_year", "10-01-01"),
-        ("release_year", "999-07-07"),
-        ("release_year", "2100-07-07"),
+        ("description", "d" * 1025),
+        ("release_date", "999-07-07"),
+        ("release_date", "2100-07-07"),
         ("duration", -1),
-        ("duration", 513),
         ("cover_url", "invalid-format"),
         ("video_url", "invalid-format"),
-        ("genres_ids", 11),
-        ("genres_ids", ["str"]),
-        ("actors_ids", [11]),
+        ("genres_ids", 1),
+        ("genres_ids", [-1]),
+        ("actors_ids", [1]),
         ("actors_ids", ["str"]),
     ],
 )

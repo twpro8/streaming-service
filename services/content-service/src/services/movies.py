@@ -22,6 +22,7 @@ from src.exceptions import (
     ActorNotFoundException,
     DirectorNotFoundException,
     CountryNotFoundException,
+    MovieAlreadyExistsException,
 )
 
 
@@ -72,7 +73,7 @@ class MovieService(BaseService):
         _movie_data = MovieAddDTO(id=movie_id, **movie_data.model_dump())
         try:
             await self.db.movies.add_movie(_movie_data)
-        except UniqueCoverURLException:
+        except (MovieAlreadyExistsException, UniqueCoverURLException):
             raise
 
         if movie_data.genres_ids:

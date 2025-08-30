@@ -13,7 +13,7 @@ from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO
 from src.services.actors import ActorService
 
 
-v1_router = APIRouter(prefix="/v1/actors", tags=["Actors"])
+v1_router = APIRouter(prefix="/v1/actors", tags=["actors"])
 
 
 @v1_router.get("")

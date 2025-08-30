@@ -21,6 +21,7 @@ from src.exceptions import (
     ActorNotFoundException,
     DirectorNotFoundException,
     CountryNotFoundException,
+    ShowAlreadyExistsException,
 )
 
 
@@ -71,7 +72,7 @@ class ShowService(BaseService):
         _show_data = ShowAddDTO(id=show_id, **show_data.model_dump())
         try:
             await self.db.shows.add_show(_show_data)
-        except UniqueCoverURLException:
+        except (ShowAlreadyExistsException, UniqueCoverURLException):
             raise
 
         if show_data.genres_ids:

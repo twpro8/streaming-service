@@ -15,8 +15,8 @@ class CountryORM(Base):
     __tablename__ = "countries"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    code: Mapped[str] = mapped_column(String(2), unique=True, nullable=False, index=True)
-    name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
+    code: Mapped[str] = mapped_column(String(2), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(64), unique=True)
 
     # Relationships
     movies: Mapped[List["MovieORM"]] = relationship(

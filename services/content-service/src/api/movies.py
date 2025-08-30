@@ -21,6 +21,8 @@ from src.exceptions import (
     DirectorNotFoundHTTPException,
     CountryNotFoundException,
     CountryNotFoundHTTPException,
+    MovieAlreadyExistsException,
+    MovieAlreadyExistsHTTPException,
 )
 
 
@@ -58,6 +60,8 @@ async def get_movie(db: DBDep, movie_id: UUID):
 async def add_movie(db: DBDep, movie_data: MovieAddRequestDTO):
     try:
         movie_id = await MovieService(db).add_movie(movie_data)
+    except MovieAlreadyExistsException:
+        raise MovieAlreadyExistsHTTPException
     except UniqueCoverURLException:
         raise UniqueCoverURLHTTPException
     except GenreNotFoundException:

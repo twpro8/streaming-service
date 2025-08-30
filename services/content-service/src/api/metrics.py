@@ -2,7 +2,7 @@ from fastapi import APIRouter, Response
 from prometheus_client import generate_latest, REGISTRY
 
 
-router = APIRouter(prefix="/metrics", tags=["Metrics"])
+router = APIRouter(prefix="/metrics", tags=["metrics"])
 
 
 @router.get("")

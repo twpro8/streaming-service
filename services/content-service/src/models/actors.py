@@ -1,5 +1,3 @@
-# ruff: noqa
-
 from datetime import datetime, date
 from typing import List
 from uuid import UUID, uuid4
@@ -19,7 +17,7 @@ class ActorORM(Base):
             "first_name",
             "last_name",
             "birth_date",
-            name="unique_actors_full_identity",
+            name="uq_actor",
         ),
     )
 
@@ -32,7 +30,7 @@ class ActorORM(Base):
     last_name: Mapped[str] = mapped_column(String(48))
     birth_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     zodiac_sign: Mapped[ZodiacSign | None] = mapped_column(Enum(ZodiacSign), nullable=True)
-    bio: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    bio: Mapped[str | None] = mapped_column(String(1024), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=text("TIMEZONE('UTC', now())"),
@@ -40,7 +38,7 @@ class ActorORM(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=text("TIMEZONE('UTC', now())"),
-    )
+    )  # Make sure you have added the trigger to the migration.
 
     # Relationships
     movies: Mapped[List["MovieORM"]] = relationship(

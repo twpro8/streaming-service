@@ -6,7 +6,7 @@ from src.services.rating import RatingService
 from src.api.dependencies import DBDep, UserDep
 
 
-v1_router = APIRouter(prefix="/v1/ratings", tags=["Ratings"])
+v1_router = APIRouter(prefix="/v1/ratings", tags=["ratings"])
 
 
 @v1_router.post("")

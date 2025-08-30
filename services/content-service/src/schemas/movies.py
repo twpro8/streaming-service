@@ -9,29 +9,23 @@ from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.countries import CountryDTO
 from src.schemas.directors import DirectorDTO
 from src.schemas.genres import GenreDTO
-from src.schemas.pydantic_types import (
-    TitleStr,
-    DurationInt,
-    RatingDecimal,
-    DescriptionStr,
-    ReleaseYearDate,
-)
+from src.schemas.pydantic_types import RatingDecimal, Str256, Str1024, Date, PositiveInt
 
 
 class MovieAddDTO(BaseModel):
     id: UUID
-    title: TitleStr
-    description: DescriptionStr
-    release_year: ReleaseYearDate
-    duration: DurationInt
+    title: Str256
+    description: Str1024
+    release_date: Date
+    duration: PositiveInt
     cover_url: AnyUrl | None = None
 
 
 class MovieAddRequestDTO(BaseSchema):
-    title: TitleStr
-    description: DescriptionStr
-    release_year: ReleaseYearDate
-    duration: DurationInt
+    title: Str256
+    description: Str1024
+    release_date: Date
+    duration: PositiveInt
     cover_url: AnyUrl | None = None
     directors_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
@@ -67,10 +61,10 @@ class MovieDTO(MovieAddDTO):
 
 
 class MoviePatchDTO(BaseModel):
-    title: TitleStr | None = None
-    description: DescriptionStr | None = None
-    release_year: ReleaseYearDate | None = None
-    duration: DurationInt | None = None
+    title: Str256 | None = None
+    description: Str1024 | None = None
+    release_date: Date | None = None
+    duration: PositiveInt | None = None
     video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
 

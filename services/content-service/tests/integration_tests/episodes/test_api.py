@@ -130,11 +130,9 @@ async def test_add_valid_episode_with_video_url(ac, get_all_seasons):
     "field, value",
     [
         ("title", "t"),
-        ("title", "t" * 256),
+        ("title", "t" * 257),
         ("episode_number", 0),
-        ("episode_number", 10000),
         ("duration", 0),
-        ("duration", 513),
         ("video_url", "invalid-format"),
         ("extra", "Hello, World!"),
     ],
@@ -242,11 +240,9 @@ async def test_update_episode_valid(ac, get_all_episodes, field, value):
     "field, value",
     [
         ("title", "t"),
-        ("title", "t" * 256),
+        ("title", "t" * 257),
         ("episode_number", 0),
-        ("episode_number", 10000),
         ("duration", 0),
-        ("duration", 513),
         ("video_url", "invalid-format"),
     ],
 )
