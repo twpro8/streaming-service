@@ -8,8 +8,9 @@ from src.services.base import BaseService
 
 
 class DirectorService(BaseService):
-    async def get_directors(self) -> list[BaseModel]:
-        return await self.db.directors.get_filtered()
+    async def get_directors(self, page: int, per_page: int) -> list[BaseModel]:
+        directors = await self.db.directors.get_filtered(page=page, per_page=per_page)
+        return directors
 
     async def get_director(self, director_id: UUID) -> BaseModel:
         director = await self.db.directors.get_one_or_none(id=director_id)

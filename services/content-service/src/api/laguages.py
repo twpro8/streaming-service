@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.api.dependencies import DBDep
+from src.api.dependencies import DBDep, PaginationDep
 from src.exceptions import (
     LanguageAlreadyExistsException,
     LanguageAlreadyExistsHTTPException,
@@ -15,8 +15,11 @@ v1_router = APIRouter(prefix="/v1/languages", tags=["languages"])
 
 
 @v1_router.get("")
-async def get_languages(db: DBDep):
-    langs = await LanguageService(db).get_languages()
+async def get_languages(db: DBDep, pagination: PaginationDep):
+    langs = await LanguageService(db).get_languages(
+        page=pagination.page,
+        per_page=pagination.per_page,
+    )
     return {"status": "ok", "data": langs}
 
 
@@ -36,17 +39,6 @@ async def add_language(db: DBDep, lang_data: LanguageAddRequestDTO):
     except LanguageAlreadyExistsException:
         raise LanguageAlreadyExistsHTTPException
     return {"status": "ok", "data": {"id": lang_id}}
-
-
-@v1_router.put("/{lang_id}")
-async def update_language(db: DBDep, lang_id: int, lang_data: LanguageAddRequestDTO):
-    try:
-        await LanguageService(db).update_language(lang_id, lang_data)
-    except LanguageNotFoundException:
-        raise LanguageNotFoundHTTPException
-    except LanguageAlreadyExistsException:
-        raise LanguageAlreadyExistsHTTPException
-    return {"status": "ok"}
 
 
 @v1_router.delete("/{lang_id}", status_code=204)

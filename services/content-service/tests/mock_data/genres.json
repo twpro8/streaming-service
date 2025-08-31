@@ -1,32 +1,12 @@
 [
-  {
-    "name": "Romance"
-  },
-  {
-    "name": "Drama"
-  },
-  {
-    "name": "Horror"
-  },
-  {
-    "name": "Action"
-  },
-  {
-    "name": "Fantasy"
-  },
-  {
-    "name": "Adventure"
-  },
-  {
-    "name": "Thriller"
-  },
-  {
-    "name": "Western"
-  },
-  {
-    "name": "Mystery"
-  },
-  {
-    "name": "Comedy"
-  }
+  {"name": "Romance"},
+  {"name": "Drama"},
+  {"name": "Horror"},
+  {"name": "Action"},
+  {"name": "Fantasy"},
+  {"name": "Adventure"},
+  {"name": "Thriller"},
+  {"name": "Western"},
+  {"name": "Mystery"},
+  {"name": "Comedy"}
 ]

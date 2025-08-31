@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from src.api.dependencies import DBDep
+from src.api.dependencies import DBDep, PaginationDep
 from src.exceptions import (
     CountryNotFoundException,
     CountryNotFoundHTTPException,
@@ -15,8 +15,11 @@ v1_router = APIRouter(prefix="/v1/countries", tags=["countries"])
 
 
 @v1_router.get("")
-async def get_countries(db: DBDep):
-    countries = await CountryService(db).get_countries()
+async def get_countries(db: DBDep, pagination: PaginationDep):
+    countries = await CountryService(db).get_countries(
+        page=pagination.page,
+        per_page=pagination.per_page,
+    )
     return {"status": "ok", "data": countries}
 
 
@@ -36,17 +39,6 @@ async def add_country(db: DBDep, country_data: CountryAddRequestDTO):
     except CountryAlreadyExistsException:
         raise CountryAlreadyExistsHTTPException
     return {"status": "ok", "data": {"id": country_id}}
-
-
-@v1_router.put("/{country_id}")
-async def update_country(db: DBDep, country_id: int, country_data: CountryAddRequestDTO):
-    try:
-        await CountryService(db).update_country(country_id, country_data)
-    except CountryNotFoundException:
-        raise CountryNotFoundHTTPException
-    except CountryAlreadyExistsException:
-        raise CountryAlreadyExistsHTTPException
-    return {"status": "ok"}
 
 
 @v1_router.delete("/{country_id}", status_code=204)

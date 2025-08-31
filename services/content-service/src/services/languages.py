@@ -4,8 +4,8 @@ from src.services.base import BaseService
 
 
 class LanguageService(BaseService):
-    async def get_languages(self):
-        return await self.db.languages.get_filtered()
+    async def get_languages(self, page: int, per_page: int):
+        return await self.db.languages.get_filtered(page=page, per_page=per_page)
 
     async def get_language(self, lang_id: int):
         lang = await self.db.languages.get_one_or_none(id=lang_id)
@@ -21,16 +21,6 @@ class LanguageService(BaseService):
             raise
         await self.db.commit()
         return lang_id
-
-    async def update_language(self, lang_id: int, lang_data: LanguageAddRequestDTO):
-        if not await self.check_language_exists(id=lang_id):
-            raise LanguageNotFoundException
-        _lang_data = LanguageAddDTO(code=lang_data.code, name=lang_data.name)
-        try:
-            await self.db.languages.update_language(lang_id, _lang_data)
-        except LanguageAlreadyExistsException:
-            raise
-        await self.db.commit()
 
     async def delete_language(self, lang_id: int):
         await self.db.languages.delete(id=lang_id)

@@ -14,7 +14,10 @@ from src.models import *  # noqa
 from src.main import app
 from src.schemas.actors import ActorAddDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentAddDTO
+from src.schemas.countries import CountryAddDTO
+from src.schemas.directors import DirectorAddDTO
 from src.schemas.episodes import EpisodeAddDTO
+from src.schemas.languages import LanguageAddDTO
 from src.schemas.movies import MovieAddDTO
 from src.schemas.genres import GenreAddDTO, MovieGenreDTO, ShowGenreDTO
 from src.schemas.seasons import SeasonAddDTO
@@ -56,15 +59,18 @@ async def setup_database(check_test_mode):
     shows_data = [ShowAddDTO.model_validate(obj) for obj in read_json("shows")]
     seasons_data = [SeasonAddDTO.model_validate(obj) for obj in read_json("seasons")]
     episodes_data = [EpisodeAddDTO.model_validate(obj) for obj in read_json("episodes")]
+    directors_data = [DirectorAddDTO.model_validate(obj) for obj in read_json("actors")]
+    actors_data = [ActorAddDTO.model_validate(obj) for obj in read_json("actors")]
     genres_data = [GenreAddDTO.model_validate(obj) for obj in read_json("genres")]
     movies_genres_data = [MovieGenreDTO.model_validate(obj) for obj in read_json("movies_genres")]
     shows_genres_data = [ShowGenreDTO.model_validate(obj) for obj in read_json("shows_genres")]
-    actors_data = [ActorAddDTO.model_validate(obj) for obj in read_json("actors")]
     movies_actors_data = [MovieActorDTO.model_validate(obj) for obj in read_json("movies_actors")]
     shows_actors_data = [ShowActorDTO.model_validate(obj) for obj in read_json("shows_actors")]
     comments_data = [
         CommentAddDTO.model_validate({**obj, "user_id": user_id}) for obj in read_json("comments")
     ]
+    languages = [LanguageAddDTO.model_validate(obj) for obj in read_json("languages")]
+    countries = [CountryAddDTO.model_validate(obj) for obj in read_json("countries")]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.movies.add_bulk(movies_data)
@@ -74,10 +80,13 @@ async def setup_database(check_test_mode):
         await db_.genres.add_bulk(genres_data)
         await db_.movies_genres.add_bulk(movies_genres_data)
         await db_.shows_genres.add_bulk(shows_genres_data)
+        await db_.directors.add_bulk(directors_data)
         await db_.actors.add_bulk(actors_data)
         await db_.movies_actors.add_bulk(movies_actors_data)
         await db_.shows_actors.add_bulk(shows_actors_data)
         await db_.comments.add_bulk(comments_data)
+        await db_.languages.add_bulk(languages)
+        await db_.countries.add_bulk(countries)
         await db_.commit()
 
 
@@ -166,6 +175,38 @@ async def created_shows(ac):
             await ac.delete(f"/v1/shows/{s['id']}")
 
 
+@pytest.fixture
+async def created_languages(ac):
+    langs = []
+    mock_data = ["he", "vi", "th", "id", "no"]
+    try:
+        for code in mock_data:
+            res = await ac.post("/v1/languages", json={"code": code})
+            assert res.status_code == 201
+            lang = res.json()["data"]
+            langs.append(lang)
+        yield langs
+    finally:
+        for s in langs:
+            await ac.delete(f"/v1/shows/{s['id']}")
+
+
+@pytest.fixture
+async def created_countries(ac):
+    countries = []
+    mock_data = ["EG", "NG", "SE", "FI", "NZ"]
+    try:
+        for code in mock_data:
+            res = await ac.post("/v1/countries", json={"code": code})
+            assert res.status_code == 201
+            country = res.json()["data"]
+            countries.append(country)
+        yield countries
+    finally:
+        for s in countries:
+            await ac.delete(f"/v1/shows/{s['id']}")
+
+
 @pytest.fixture(scope="function")
 async def get_all_comments():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
@@ -202,6 +243,13 @@ async def get_all_actors():
 
 
 @pytest.fixture(scope="session")
+async def get_all_directors():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        directors = await db_.directors.get_filtered()
+        return [director.model_dump() for director in directors]
+
+
+@pytest.fixture(scope="session")
 async def get_all_shows_with_rels(ac):
     shows = []
     for s in read_json("shows"):
@@ -224,6 +272,20 @@ async def get_all_episodes():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         episodes = await db_.episodes.get_filtered()
         return [episode.model_dump() for episode in episodes]
+
+
+@pytest.fixture(scope="session")
+async def get_all_languages():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        languages = await db_.languages.get_filtered()
+        return [lang.model_dump() for lang in languages]
+
+
+@pytest.fixture(scope="session")
+async def get_all_countries():
+    async with DBManager(session_factory=null_pool_session_maker) as db_:
+        countries = await db_.countries.get_filtered()
+        return [country.model_dump() for country in countries]
 
 
 @pytest.fixture(scope="session")

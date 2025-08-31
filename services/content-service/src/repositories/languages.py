@@ -19,14 +19,3 @@ class LanguageRepository(BaseRepository):
         except IntegrityError as e:
             raise LanguageAlreadyExistsException from e
         return res.scalars().one()
-
-    async def update_language(
-        self,
-        language_id: int,
-        data: BaseModel,
-        exclude_unset: bool = False,
-    ):
-        try:
-            await self.update(id=language_id, data=data, exclude_unset=exclude_unset)
-        except IntegrityError as e:
-            raise LanguageAlreadyExistsException from e

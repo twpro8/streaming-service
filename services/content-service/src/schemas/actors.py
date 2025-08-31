@@ -9,7 +9,7 @@ from src.schemas.pydantic_types import Date, Str48, Str1024
 class ActorAddRequestDTO(BaseSchema):
     first_name: Str48
     last_name: Str48
-    birth_date: Date
+    birth_date: Date | None = None
     zodiac_sign: ZodiacSign | None = None
     bio: Str1024 | None = None
 

@@ -2,7 +2,7 @@ from uuid import UUID
 
 from fastapi import APIRouter
 
-from src.api.dependencies import DBDep
+from src.api.dependencies import DBDep, PaginationDep
 from src.exceptions import (
     DirectorNotFoundException,
     DirectorNotFoundHTTPException,
@@ -17,8 +17,11 @@ v1_router = APIRouter(prefix="/v1/directors", tags=["directors"])
 
 
 @v1_router.get("")
-async def get_directors(db: DBDep):
-    directors = await DirectorService(db).get_directors()
+async def get_directors(db: DBDep, pagination: PaginationDep):
+    directors = await DirectorService(db).get_directors(
+        page=pagination.page,
+        per_page=pagination.per_page,
+    )
     return {"status": "ok", "data": directors}
 
 

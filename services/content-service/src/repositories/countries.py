@@ -27,17 +27,6 @@ class CountryRepository(BaseRepository):
             raise CountryAlreadyExistsException from e
         return res.scalars().one()
 
-    async def update_country(
-        self,
-        country_id: int,
-        data: BaseModel,
-        exclude_unset: bool = False,
-    ):
-        try:
-            await self.update(id=country_id, data=data, exclude_unset=exclude_unset)
-        except IntegrityError as e:
-            raise CountryAlreadyExistsException from e
-
 
 class MovieCountryRepository(BaseRepository):
     model = MovieCountryORM

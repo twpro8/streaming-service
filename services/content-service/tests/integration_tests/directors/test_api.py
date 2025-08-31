@@ -16,20 +16,20 @@ from tests.utils import get_and_validate, calculate_expected_length
         (5, 3),
     ],
 )
-async def test_actors_pagination(ac, page, per_page, get_all_actors):
-    expected_length = calculate_expected_length(page, per_page, len(get_all_actors))
-    data = await get_and_validate(ac, "/v1/actors", params={"page": page, "per_page": per_page})
+async def test_directors_pagination(ac, page, per_page, get_all_directors):
+    expected_length = calculate_expected_length(page, per_page, len(get_all_directors))
+    data = await get_and_validate(ac, "/v1/directors", params={"page": page, "per_page": per_page})
     assert len(data) == expected_length
 
 
-async def test_get_existing_actor(ac, get_all_actors):
-    for actor in get_all_actors:
-        data = await get_and_validate(ac, f"/v1/actors/{actor['id']}", expect_list=False)
+async def test_get_existing_director(ac, get_all_directors):
+    for director in get_all_directors:
+        data = await get_and_validate(ac, f"/v1/directors/{director['id']}", expect_list=False)
         assert isinstance(data, dict)
 
 
-async def test_get_nonexistent_actor(ac):
-    res = await ac.get(f"/v1/actors/{uuid4()}")
+async def test_get_nonexistent_director(ac):
+    res = await ac.get(f"/v1/directors/{uuid4()}")
     assert res.status_code == 404
     assert "detail" in res.json()
 
@@ -38,10 +38,10 @@ async def test_get_nonexistent_actor(ac):
     "first_name, last_name, birth_date, zodiac_sign, bio",
     [
         ("John", "Smith", "1977-01-17", None, None),
-        ("Lana", "Light", "1988-01-25", ZodiacSign.pisces, "Well-known actress"),
+        ("Lana", "Light", "1988-01-25", ZodiacSign.pisces, "Well-known director"),
     ],
 )
-async def test_add_actor_valid(ac, first_name, last_name, birth_date, zodiac_sign, bio):
+async def test_add_director_valid(ac, first_name, last_name, birth_date, zodiac_sign, bio):
     req_body = {
         "first_name": first_name,
         "last_name": last_name,
@@ -49,18 +49,18 @@ async def test_add_actor_valid(ac, first_name, last_name, birth_date, zodiac_sig
         "zodiac_sign": zodiac_sign,
         "bio": bio,
     }
-    res = await ac.post("/v1/actors", json=req_body)
+    res = await ac.post("/v1/directors", json=req_body)
     assert res.status_code == 201
 
-    actor_id = res.json()["data"]["id"]
+    director_id = res.json()["data"]["id"]
 
-    actor = await get_and_validate(ac, f"/v1/actors/{actor_id}", expect_list=False)
+    director = await get_and_validate(ac, f"/v1/directors/{director_id}", expect_list=False)
 
-    assert actor["first_name"] == first_name
-    assert actor["last_name"] == last_name
-    assert actor["birth_date"] == birth_date
-    assert actor["zodiac_sign"] == zodiac_sign
-    assert actor["bio"] == bio
+    assert director["first_name"] == first_name
+    assert director["last_name"] == last_name
+    assert director["birth_date"] == birth_date
+    assert director["zodiac_sign"] == zodiac_sign
+    assert director["bio"] == bio
 
 
 invalid_cases = [
@@ -76,7 +76,7 @@ invalid_cases = [
 @pytest.mark.parametrize(
     "field, invalid_value", [(field, val) for field, vals in invalid_cases for val in vals]
 )
-async def test_add_actor_invalid(ac, field, invalid_value):
+async def test_add_director_invalid(ac, field, invalid_value):
     data = {
         "first_name": "Test1",
         "last_name": "Test1",
@@ -85,7 +85,7 @@ async def test_add_actor_invalid(ac, field, invalid_value):
         "bio": "Likes kittens...",
         field: invalid_value,
     }
-    res = await ac.post("/v1/actors", json=data)
+    res = await ac.post("/v1/directors", json=data)
     assert res.status_code == 422
     assert "detail" in res.json()
 
@@ -105,14 +105,14 @@ async def test_add_actor_invalid(ac, field, invalid_value):
         ("bio", "Updated bio two ... "),
     ],
 )
-async def test_update_actor_valid(ac, field, value, get_all_actors):
-    actor_id = get_all_actors[0]["id"]
+async def test_update_director_valid(ac, field, value, get_all_directors):
+    director_id = get_all_directors[0]["id"]
 
-    res = await ac.patch(f"/v1/actors/{actor_id}", json={field: value})
+    res = await ac.patch(f"/v1/directors/{director_id}", json={field: value})
     assert res.status_code == 200
 
-    actor = await get_and_validate(ac, f"/v1/actors/{actor_id}", expect_list=False)
-    assert actor[field] == value
+    director = await get_and_validate(ac, f"/v1/directors/{director_id}", expect_list=False)
+    assert director[field] == value
 
 
 @pytest.mark.parametrize(
@@ -129,16 +129,16 @@ async def test_update_actor_valid(ac, field, value, get_all_actors):
         ("bio", "b" * 1025),
     ],
 )
-async def test_update_actor_invalid(ac, field, value, get_all_actors):
-    actor_id = get_all_actors[0]["id"]
+async def test_update_director_invalid(ac, field, value, get_all_directors):
+    director_id = get_all_directors[0]["id"]
 
-    res = await ac.patch(f"/v1/actors/{actor_id}", json={field: value})
+    res = await ac.patch(f"/v1/directors/{director_id}", json={field: value})
     assert res.status_code == 422
     assert "detail" in res.json()
 
 
-async def test_delete_actor(ac, get_all_actors):
-    for actor in get_all_actors:
-        assert (await ac.get(f"/v1/actors/{actor['id']}")).status_code == 200
-        assert (await ac.delete(f"/v1/actors/{actor['id']}")).status_code == 204
-        assert (await ac.get(f"/v1/actors/{actor['id']}")).status_code == 404
+async def test_delete_director(ac, get_all_directors):
+    for director in get_all_directors:
+        assert (await ac.get(f"/v1/directors/{director['id']}")).status_code == 200
+        assert (await ac.delete(f"/v1/directors/{director['id']}")).status_code == 204
+        assert (await ac.get(f"/v1/directors/{director['id']}")).status_code == 404
