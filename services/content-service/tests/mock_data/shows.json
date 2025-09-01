@@ -5,7 +5,9 @@
     "description": "A high school chemistry teacher turns to a life of crime after being diagnosed with cancer.",
     "release_date": "2000-01-01",
     "cover_url": null,
-    "rating": "5.0"
+    "rating": "5.0",
+    "created_at": "2025-07-01T17:17:28.998256Z",
+    "updated_at": "2025-08-01T17:17:28.998256Z"
   },
   {
     "id": "ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4",
@@ -13,7 +15,9 @@
     "description": "A group of young friends witnesses supernatural forces and secret experiments in their town.",
     "release_date": "2001-01-01",
     "cover_url": null,
-    "rating": "7.5"
+    "rating": "7.5",
+    "created_at": "2025-07-02T17:17:28.998256Z",
+    "updated_at": "2025-08-02T17:17:28.998256Z"
   },
   {
     "id": "ecc3631e-fc14-4fe3-b547-155b30045d6d",
@@ -21,7 +25,9 @@
     "description": "A dramatization of the true story of the Chernobyl nuclear disaster.",
     "release_date": "2002-01-01",
     "cover_url": null,
-    "rating": "2.0"
+    "rating": "2.0",
+    "created_at": "2025-07-03T17:17:28.998256Z",
+    "updated_at": "2025-08-03T17:17:28.998256Z"
   },
   {
     "id": "49f7cbdb-ec47-4807-8ed4-dc78d206a9ad",
@@ -29,7 +35,9 @@
     "description": "A mockumentary on a group of typical office workers, where the workday consists of ego clashes and inappropriate behavior.",
     "release_date": "2003-01-01",
     "cover_url": null,
-    "rating": "4.5"
+    "rating": "4.5",
+    "created_at": "2025-07-04T17:17:28.998256Z",
+    "updated_at": "2025-08-04T17:17:28.998256Z"
   },
   {
     "id": "bf7264e9-6e93-424a-a1f5-943b55f1e102",
@@ -37,6 +45,8 @@
     "description": "A family saga with a supernatural twist, set in a German town where the disappearance of two children exposes the secrets of four families.",
     "release_date": "2004-01-01",
     "cover_url": null,
-    "rating": "8.5"
+    "rating": "8.5",
+    "created_at": "2025-07-05T17:17:28.998256Z",
+    "updated_at": "2025-08-05T17:17:28.998256Z"
   }
 ]

@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 from src.enums import SortBy, SortOrder
 from src.exceptions import UniqueCoverURLException, ShowAlreadyExistsException
 from src.models import ShowORM, ShowGenreORM
-from src.models.associations import ShowActorORM
+from src.models.associations import ShowActorORM, ShowDirectorORM, ShowCountryORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import ShowDataMapper, ShowWithRelsDataMapper
 from src.schemas.shows import ShowDTO
@@ -30,8 +30,10 @@ class ShowRepository(BaseRepository):
         self,
         page: int | None,
         per_page: int | None,
-        genres_ids: List[int] | None,
+        directors_ids: List[UUID] | None,
         actors_ids: List[UUID] | None,
+        genres_ids: List[int] | None,
+        countries_ids: List[int] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
         **kwargs,
@@ -50,17 +52,29 @@ class ShowRepository(BaseRepository):
 
         query = select(self.model)
         if genres_ids:
-            genre_filter = exists().where(
+            _filter = exists().where(
                 ShowGenreORM.show_id == self.model.id,
                 ShowGenreORM.genre_id.in_(genres_ids),
             )
-            query = query.filter(genre_filter)
+            query = query.filter(_filter)
+        if countries_ids:
+            _filter = exists().where(
+                ShowCountryORM.show_id == self.model.id,
+                ShowCountryORM.country_id.in_(countries_ids),
+            )
+            query = query.filter(_filter)
         if actors_ids:
-            actor_filter = exists().where(
+            _filter = exists().where(
                 ShowActorORM.show_id == self.model.id,
                 ShowActorORM.actor_id.in_(actors_ids),
             )
-            query = query.filter(actor_filter)
+            query = query.filter(_filter)
+        if directors_ids:
+            _filter = exists().where(
+                ShowDirectorORM.show_id == self.model.id,
+                ShowDirectorORM.director_id.in_(directors_ids),
+            )
+            query = query.filter(_filter)
 
         for key, value in kwargs.items():
             if key in filters and value is not None:

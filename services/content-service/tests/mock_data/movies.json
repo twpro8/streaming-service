@@ -6,7 +6,9 @@
     "release_date": "2000-01-01",
     "duration": 95,
     "cover_url": null,
-    "rating": "5.0"
+    "rating": "5.0",
+    "created_at": "2025-07-01T17:17:28.998256Z",
+    "updated_at": "2025-08-01T17:17:28.998256Z"
   },
   {
     "id": "2a8513f3-f255-4040-aaa6-971974b1f069",
@@ -15,7 +17,9 @@
     "release_date": "2001-01-01",
     "duration": 120,
     "cover_url": null,
-    "rating": "7.5"
+    "rating": "7.5",
+    "created_at": "2025-07-02T17:17:28.998256Z",
+    "updated_at": "2025-08-02T17:17:28.998256Z"
   },
   {
     "id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
@@ -24,7 +28,9 @@
     "release_date": "2002-01-01",
     "duration": 112,
     "cover_url": null,
-    "rating": "2.0"
+    "rating": "2.0",
+    "created_at": "2025-07-03T17:17:28.998256Z",
+    "updated_at": "2025-08-03T17:17:28.998256Z"
   },
   {
     "id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
@@ -33,7 +39,9 @@
     "release_date": "2003-01-01",
     "duration": 101,
     "cover_url": null,
-    "rating": "4.5"
+    "rating": "4.5",
+    "created_at": "2025-07-04T17:17:28.998256Z",
+    "updated_at": "2025-08-04T17:17:28.998256Z"
   },
   {
     "id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
@@ -42,6 +50,8 @@
     "release_date": "2004-01-01",
     "duration": 90,
     "cover_url": null,
-    "rating": "8.5"
+    "rating": "8.5",
+    "created_at": "2025-07-05T17:17:28.998256Z",
+    "updated_at": "2025-08-05T17:17:28.998256Z"
   }
 ]

@@ -6,19 +6,12 @@ from tests.utils import get_and_validate, count_content, calculate_expected_leng
 
 
 @pytest.mark.order(1)
-@pytest.mark.parametrize(
-    "page, per_page",
-    [
-        (1, 2),
-        (2, 2),
-        (3, 2),
-        (4, 2),
-    ],
-)
-async def test_movies_pagination(ac, page, per_page, get_all_movies):
-    data = await get_and_validate(ac, "/v1/movies", params={"page": page, "per_page": per_page})
-    expected_length = calculate_expected_length(page, per_page, len(get_all_movies))
-    assert len(data) == expected_length
+async def test_movies_pagination(ac, get_all_movies):
+    per_page = 2
+    for page in range(1, 10):
+        data = await get_and_validate(ac, "/v1/movies", params={"page": page, "per_page": per_page})
+        expected_length = calculate_expected_length(page, per_page, len(get_all_movies))
+        assert len(data) == expected_length
 
 
 @pytest.mark.order(1)
@@ -33,6 +26,10 @@ async def test_movies_pagination(ac, page, per_page, get_all_movies):
         ("year", "desc"),
         ("rating", "asc"),
         ("rating", "desc"),
+        ("created_at", "asc"),
+        ("created_at", "desc"),
+        ("updated_at", "asc"),
+        ("updated_at", "desc"),
     ],
 )
 async def test_movies_sorting(ac, field, order, max_pagination):
@@ -48,6 +45,10 @@ async def test_movies_sorting(ac, field, order, max_pagination):
         values = [float(movie["rating"]) for movie in data]
     elif field == "title":
         values = [movie["title"] for movie in data]
+    elif field == "created_at":
+        values = [movie["created_at"] for movie in data]
+    elif field == "updated_at":
+        values = [movie["updated_at"] for movie in data]
     else:
         raise AssertionError(f"Unknown field: {field}")
     sorted_values = sorted(values, reverse=(order == "desc"))
@@ -248,6 +249,39 @@ async def test_get_filter_by_genres(ac, genres_ids, get_all_movies_with_rels, ma
 
 @pytest.mark.order(1)
 @pytest.mark.parametrize(
+    "countries_ids",
+    [
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+        [2, 4, 6, 8, 10],
+        [1, 3, 5, 7, 9],
+        [2, 4, 6, 8],
+        [1],
+        [2],
+        [3],
+        [4],
+        [5],
+        [6],
+        [7],
+        [8],
+        [9],
+        [10],
+        [1, 2, 3],
+    ],
+)
+async def test_get_filter_by_countries(ac, countries_ids, get_all_movies_with_rels, max_pagination):
+    expected_count = sum(
+        1
+        for movie in get_all_movies_with_rels
+        if any(country["id"] in countries_ids for country in movie["countries"])
+    )
+    data = await get_and_validate(
+        ac=ac, url="/v1/movies", params={"countries_ids": countries_ids, **max_pagination}
+    )
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
     "set_indexes",
     [
         [0, 1, 2, 3, 4],
@@ -274,7 +308,33 @@ async def test_get_filter_by_actors(
     data = await get_and_validate(
         ac, "/v1/movies", params={"actors_ids": actors_ids, **max_pagination}
     )
-    print(len(data), expected_count)
+    assert len(data) == expected_count
+
+
+@pytest.mark.order(1)
+@pytest.mark.parametrize(
+    "set_indexes",
+    [
+        [1, 4],
+        [1, 3, 4],
+        [1],
+        [2],
+        [0, 1, 2, 3, 4],
+        [4],
+    ],
+)
+async def test_filter_by_directors(
+    ac, set_indexes, get_all_directors, get_all_movies_with_rels, max_pagination
+):
+    directors_ids = [str(get_all_directors[i]["id"]) for i in set_indexes]
+    expected_count = sum(
+        1
+        for movie in get_all_movies_with_rels
+        if any(director["id"] in directors_ids for director in movie["directors"])
+    )
+    data = await get_and_validate(
+        ac, "/v1/movies", params={"directors_ids": directors_ids, **max_pagination}
+    )
     assert len(data) == expected_count
 
 

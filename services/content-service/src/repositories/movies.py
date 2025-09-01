@@ -15,7 +15,7 @@ from src.exceptions import (
     MovieAlreadyExistsException,
 )
 from src.models import MovieORM, MovieGenreORM
-from src.models.associations import MovieActorORM
+from src.models.associations import MovieActorORM, MovieDirectorORM, MovieCountryORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import MovieDataMapper, MovieWithRelsDataMapper
 from src.schemas.movies import MovieDTO
@@ -33,8 +33,10 @@ class MovieRepository(BaseRepository):
         self,
         page: int | None,
         per_page: int | None,
-        genres_ids: List[int] | None,
+        directors_ids: List[UUID] | None,
         actors_ids: List[UUID] | None,
+        genres_ids: List[int] | None,
+        countries_ids: List[int] | None,
         sort_by: str | None,
         sort_order: str | None,
         **kwargs,
@@ -53,17 +55,29 @@ class MovieRepository(BaseRepository):
 
         query = select(self.model)
         if genres_ids:
-            genre_filter = exists().where(
+            _filter = exists().where(
                 MovieGenreORM.movie_id == self.model.id,
                 MovieGenreORM.genre_id.in_(genres_ids),
             )
-            query = query.filter(genre_filter)
+            query = query.filter(_filter)
+        if countries_ids:
+            _filter = exists().where(
+                MovieCountryORM.movie_id == self.model.id,
+                MovieCountryORM.country_id.in_(countries_ids),
+            )
+            query = query.filter(_filter)
         if actors_ids:
-            actor_filter = exists().where(
+            _filter = exists().where(
                 MovieActorORM.movie_id == self.model.id,
                 MovieActorORM.actor_id.in_(actors_ids),
             )
-            query = query.filter(actor_filter)
+            query = query.filter(_filter)
+        if directors_ids:
+            _filter = exists().where(
+                MovieDirectorORM.movie_id == self.model.id,
+                MovieDirectorORM.director_id.in_(directors_ids),
+            )
+            query = query.filter(_filter)
 
         for key, value in kwargs.items():
             if key in filters and value is not None:

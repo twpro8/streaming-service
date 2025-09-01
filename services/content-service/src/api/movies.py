@@ -34,13 +34,17 @@ async def get_movies(
     db: DBDep,
     common_params: ContentParamsDep,
     sort: SortDep,
-    genres_ids: Annotated[List[int] | None, Query()] = None,
+    directors_ids: Annotated[List[UUID] | None, Query()] = None,
     actors_ids: Annotated[List[UUID] | None, Query()] = None,
+    genres_ids: Annotated[List[int] | None, Query()] = None,
+    countries_ids: Annotated[List[int] | None, Query()] = None,
 ):
     movies = await MovieService(db).get_movies(
         **common_params.model_dump(),
-        genres_ids=genres_ids,
+        directors_ids=directors_ids,
         actors_ids=actors_ids,
+        genres_ids=genres_ids,
+        countries_ids=countries_ids,
         sort_by=sort.field,
         sort_order=sort.order,
     )

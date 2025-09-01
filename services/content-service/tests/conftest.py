@@ -14,14 +14,14 @@ from src.models import *  # noqa
 from src.main import app
 from src.schemas.actors import ActorAddDTO, MovieActorDTO, ShowActorDTO
 from src.schemas.comments import CommentAddDTO
-from src.schemas.countries import CountryAddDTO
-from src.schemas.directors import DirectorAddDTO
+from src.schemas.countries import CountryAddDTO, MovieCountryDTO, ShowCountryDTO
+from src.schemas.directors import DirectorAddDTO, MovieDirectorDTO, ShowDirectorDTO
 from src.schemas.episodes import EpisodeAddDTO
 from src.schemas.languages import LanguageAddDTO
-from src.schemas.movies import MovieAddDTO
+from src.schemas.movies import MovieDTO
 from src.schemas.genres import GenreAddDTO, MovieGenreDTO, ShowGenreDTO
 from src.schemas.seasons import SeasonAddDTO
-from src.schemas.shows import ShowAddDTO
+from src.schemas.shows import ShowDTO
 from tests.utils import read_json
 
 
@@ -55,8 +55,8 @@ async def setup_database(check_test_mode):
         await conn.run_sync(Base.metadata.drop_all)
         await conn.run_sync(Base.metadata.create_all)
 
-    movies_data = [MovieAddDTO.model_validate(obj) for obj in read_json("movies")]
-    shows_data = [ShowAddDTO.model_validate(obj) for obj in read_json("shows")]
+    movies_data = [MovieDTO.model_validate(obj) for obj in read_json("movies")]
+    shows_data = [ShowDTO.model_validate(obj) for obj in read_json("shows")]
     seasons_data = [SeasonAddDTO.model_validate(obj) for obj in read_json("seasons")]
     episodes_data = [EpisodeAddDTO.model_validate(obj) for obj in read_json("episodes")]
     directors_data = [DirectorAddDTO.model_validate(obj) for obj in read_json("actors")]
@@ -65,12 +65,24 @@ async def setup_database(check_test_mode):
     movies_genres_data = [MovieGenreDTO.model_validate(obj) for obj in read_json("movies_genres")]
     shows_genres_data = [ShowGenreDTO.model_validate(obj) for obj in read_json("shows_genres")]
     movies_actors_data = [MovieActorDTO.model_validate(obj) for obj in read_json("movies_actors")]
+    movies_directors_data = [
+        MovieDirectorDTO.model_validate(obj) for obj in read_json("movies_directors")
+    ]
     shows_actors_data = [ShowActorDTO.model_validate(obj) for obj in read_json("shows_actors")]
+    shows_directors_data = [
+        ShowDirectorDTO.model_validate(obj) for obj in read_json("shows_directors")
+    ]
     comments_data = [
         CommentAddDTO.model_validate({**obj, "user_id": user_id}) for obj in read_json("comments")
     ]
     languages = [LanguageAddDTO.model_validate(obj) for obj in read_json("languages")]
     countries = [CountryAddDTO.model_validate(obj) for obj in read_json("countries")]
+    movies_countries_data = [
+        MovieCountryDTO.model_validate(obj) for obj in read_json("movies_countries")
+    ]
+    shows_countries_data = [
+        ShowCountryDTO.model_validate(obj) for obj in read_json("shows_countries")
+    ]
 
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         await db_.movies.add_bulk(movies_data)
@@ -87,6 +99,10 @@ async def setup_database(check_test_mode):
         await db_.comments.add_bulk(comments_data)
         await db_.languages.add_bulk(languages)
         await db_.countries.add_bulk(countries)
+        await db_.movies_directors.add_bulk(movies_directors_data)
+        await db_.shows_directors.add_bulk(shows_directors_data)
+        await db_.movies_countries.add_bulk(movies_countries_data)
+        await db_.shows_countries.add_bulk(shows_countries_data)
         await db_.commit()
 
 
@@ -116,7 +132,7 @@ async def created_genres(ac):
 
 @pytest.fixture(scope="session")
 async def max_pagination():
-    return {"page": 1, "per_page": 30}
+    return {"page": 1, "per_page": 100}
 
 
 @pytest.fixture

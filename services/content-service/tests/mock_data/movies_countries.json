@@ -1,0 +1,58 @@
+[
+  {
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "country_id": 1
+  },
+  {
+    "movie_id": "36eea251-89ef-454a-892c-ed559b5ae496",
+    "country_id": 2
+  },
+  {
+    "movie_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "country_id": 2
+  },
+  {
+    "movie_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "country_id": 3
+  },
+  {
+    "movie_id": "2a8513f3-f255-4040-aaa6-971974b1f069",
+    "country_id": 4
+  },
+  {
+    "movie_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "country_id": 4
+  },
+  {
+    "movie_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "country_id": 5
+  },
+  {
+    "movie_id": "97b817f3-6332-4275-bd2d-1b5a1fd4de87",
+    "country_id": 6
+  },
+  {
+    "movie_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "country_id": 6
+  },
+  {
+    "movie_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "country_id": 7
+  },
+  {
+    "movie_id": "4ac0591c-09cf-47c2-afe5-427bb411819c",
+    "country_id": 8
+  },
+  {
+    "movie_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "country_id": 8
+  },
+  {
+    "movie_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "country_id": 9
+  },
+  {
+    "movie_id": "2449c8d3-6875-467e-b192-e89dc7a5a7e9",
+    "country_id": 10
+  }
+]

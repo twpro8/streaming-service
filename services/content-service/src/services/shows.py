@@ -38,8 +38,10 @@ class ShowService(BaseService):
         rating: Decimal | None,
         rating_gt: Decimal | None,
         rating_lt: Decimal | None,
-        genres_ids: List[int] | None,
+        directors_ids: List[UUID] | None,
         actors_ids: List[UUID] | None,
+        genres_ids: List[int] | None,
+        countries_ids: List[int] | None,
         sort_by: SortBy | None,
         sort_order: SortOrder | None,
     ):
@@ -54,8 +56,10 @@ class ShowService(BaseService):
             rating=rating,
             rating_gt=rating_gt,
             rating_lt=rating_lt,
-            genres_ids=genres_ids,
+            directors_ids=directors_ids,
             actors_ids=actors_ids,
+            genres_ids=genres_ids,
+            countries_ids=countries_ids,
             sort_by=sort_by,
             sort_order=sort_order,
         )
