@@ -6,8 +6,9 @@ import pytest
 from httpx import AsyncClient, ASGITransport
 
 from src.config import settings
-from src.api.dependencies import get_db, get_admin, get_current_user_id
+from src.api.dependencies import get_admin, get_current_user_id
 from src.db import null_pool_engine, null_pool_session_maker
+from src.factories.db_manager import DBManagerFactory
 from src.managers.db import DBManager
 from src.models.base import Base
 from src.models import *  # noqa
@@ -44,7 +45,7 @@ async def db() -> AsyncGenerator[Any, Any]:
         yield db
 
 
-app.dependency_overrides[get_db] = get_db_null_pool  # noqa
+app.dependency_overrides[DBManagerFactory.get_db] = get_db_null_pool  # noqa
 app.dependency_overrides[get_admin] = lambda: None  # noqa
 app.dependency_overrides[get_current_user_id] = lambda: user_id  # The number is a user_id | # noqa
 

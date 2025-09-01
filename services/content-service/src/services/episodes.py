@@ -73,14 +73,14 @@ class EpisodeService(BaseService):
         await self.db.commit()
         return episode_id
 
-    async def update_episode(self, episode_id: UUID, data: EpisodePatchRequestDTO):
+    async def update_episode(self, episode_id: UUID, episode_data: EpisodePatchRequestDTO):
         """
         Update episode by ID.
         """
         if not await self.check_episode_exists(id=episode_id):
             raise EpisodeNotFoundException
         try:
-            await self.db.episodes.update(id=episode_id, data=data, exclude_unset=True)
+            await self.db.episodes.update(id=episode_id, data=episode_data, exclude_unset=True)
         except UniqueEpisodePerSeasonException:
             raise UniqueEpisodePerSeasonException
         await self.db.commit()

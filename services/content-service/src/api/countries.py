@@ -1,12 +1,15 @@
-from fastapi import APIRouter
+from typing import Annotated
 
-from src.api.dependencies import DBDep, PaginationDep
+from fastapi import APIRouter, Depends
+
+from src.api.dependencies import PaginationDep
 from src.exceptions import (
     CountryNotFoundException,
     CountryNotFoundHTTPException,
     CountryAlreadyExistsException,
     CountryAlreadyExistsHTTPException,
 )
+from src.factories.service import ServiceFactory
 from src.schemas.countries import CountryAddRequestDTO
 from src.services.countries import CountryService
 
@@ -15,8 +18,11 @@ v1_router = APIRouter(prefix="/v1/countries", tags=["countries"])
 
 
 @v1_router.get("")
-async def get_countries(db: DBDep, pagination: PaginationDep):
-    countries = await CountryService(db).get_countries(
+async def get_countries(
+    service: Annotated[CountryService, Depends(ServiceFactory.country_service_factory)],
+    pagination: PaginationDep,
+):
+    countries = await service.get_countries(
         page=pagination.page,
         per_page=pagination.per_page,
     )
@@ -24,23 +30,32 @@ async def get_countries(db: DBDep, pagination: PaginationDep):
 
 
 @v1_router.get("/{country_id}")
-async def get_country(db: DBDep, country_id: int):
+async def get_country(
+    service: Annotated[CountryService, Depends(ServiceFactory.country_service_factory)],
+    country_id: int,
+):
     try:
-        country = await CountryService(db).get_country(country_id)
+        country = await service.get_country(country_id=country_id)
     except CountryNotFoundException:
         raise CountryNotFoundHTTPException
     return {"status": "ok", "data": country}
 
 
 @v1_router.post("", status_code=201)
-async def add_country(db: DBDep, country_data: CountryAddRequestDTO):
+async def add_country(
+    service: Annotated[CountryService, Depends(ServiceFactory.country_service_factory)],
+    country_data: CountryAddRequestDTO,
+):
     try:
-        country_id = await CountryService(db).add_country(country_data)
+        country_id = await service.add_country(country_data=country_data)
     except CountryAlreadyExistsException:
         raise CountryAlreadyExistsHTTPException
     return {"status": "ok", "data": {"id": country_id}}
 
 
 @v1_router.delete("/{country_id}", status_code=204)
-async def delete_country(db: DBDep, country_id: int):
-    await CountryService(db).delete_country(country_id)
+async def delete_country(
+    service: Annotated[CountryService, Depends(ServiceFactory.country_service_factory)],
+    country_id: int,
+):
+    await service.delete_country(country_id=country_id)

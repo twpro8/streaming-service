@@ -1,6 +1,7 @@
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.params import Query
 
 from src.exceptions import (
@@ -9,10 +10,11 @@ from src.exceptions import (
     CommentNotFoundException,
     CommentNotFoundHTTPException,
 )
+from src.factories.service import ServiceFactory
 from src.schemas.comments import CommentAddRequestDTO, CommentPutRequestDTO
 from src.enums import ContentType
 from src.services.comments import CommentService
-from src.api.dependencies import DBDep, UserDep, PaginationDep
+from src.api.dependencies import UserDep, PaginationDep
 
 
 v1_router = APIRouter(prefix="/v1/comments", tags=["comments"])
@@ -20,12 +22,12 @@ v1_router = APIRouter(prefix="/v1/comments", tags=["comments"])
 
 @v1_router.get("")
 async def get_comments(
-    db: DBDep,
+    service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
     pagination: PaginationDep,
     content_id: UUID = Query(),
     content_type: ContentType = Query(),
 ):
-    comments = await CommentService(db).get_comments(
+    comments = await service.get_comments(
         content_id=content_id,
         content_type=content_type,
         page=pagination.page,
@@ -35,8 +37,12 @@ async def get_comments(
 
 
 @v1_router.get("/user")
-async def get_user_comments(db: DBDep, pagination: PaginationDep, user_id: UserDep):
-    comments = await CommentService(db).get_user_comments(
+async def get_user_comments(
+    service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
+    pagination: PaginationDep,
+    user_id: UserDep,
+):
+    comments = await service.get_user_comments(
         user_id=user_id,
         page=pagination.page,
         per_page=pagination.per_page,
@@ -45,18 +51,25 @@ async def get_user_comments(db: DBDep, pagination: PaginationDep, user_id: UserD
 
 
 @v1_router.get("/{comment_id}")
-async def get_comment(db: DBDep, comment_id: UUID):
+async def get_comment(
+    service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
+    comment_id: UUID,
+):
     try:
-        comment = await CommentService(db).get_comment(comment_id=comment_id)
+        comment = await service.get_comment(comment_id=comment_id)
     except CommentNotFoundException:
         raise CommentNotFoundHTTPException
     return {"status": "ok", "data": comment}
 
 
 @v1_router.post("", status_code=201)
-async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
+async def add_comment(
+    service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
+    user_id: UserDep,
+    comment_data: CommentAddRequestDTO,
+):
     try:
-        comment_id = await CommentService(db).add_comment(user_id=user_id, data=data)
+        comment_id = await service.add_comment(user_id=user_id, comment_data=comment_data)
     except ContentNotFoundException:
         raise ContentNotFoundHTTPException
     return {"status": "ok", "data": {"id": comment_id}}
@@ -64,16 +77,16 @@ async def add_comment(db: DBDep, user_id: UserDep, data: CommentAddRequestDTO):
 
 @v1_router.put("/{comment_id}")
 async def update_comment(
-    db: DBDep,
+    service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
     user_id: UserDep,
     comment_id: UUID,
-    data: CommentPutRequestDTO,
+    comment_data: CommentPutRequestDTO,
 ):
     try:
-        await CommentService(db).update_comment(
+        await service.update_comment(
             user_id=user_id,
             comment_id=comment_id,
-            data=data,
+            comment_data=comment_data,
         )
     except CommentNotFoundException:
         raise CommentNotFoundHTTPException
@@ -81,5 +94,9 @@ async def update_comment(
 
 
 @v1_router.delete("/{comment_id}", status_code=204)
-async def delete_comment(db: DBDep, user_id: UserDep, comment_id: UUID):
-    await CommentService(db).delete_comment(comment_id=comment_id, user_id=user_id)
+async def delete_comment(
+    service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
+    user_id: UserDep,
+    comment_id: UUID,
+):
+    await service.delete_comment(comment_id=comment_id, user_id=user_id)

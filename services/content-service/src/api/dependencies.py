@@ -6,8 +6,6 @@ from fastapi import Depends, Request, Query
 from fastapi.openapi.models import Example
 from pydantic import BaseModel
 
-from src.db import session_maker
-from src.managers.db import DBManager
 from src.enums import SortBy, SortOrder
 from src.exceptions import (
     NoTokenHTTPException,
@@ -15,20 +13,7 @@ from src.exceptions import (
     UnknownSortFieldHTTPException,
     UnknownSortOrderHTTPException,
 )
-from src.protocols.db_manager import DBManagerProtocol
 from src.services.auth import AuthService
-
-
-def get_db_manager():
-    return DBManager(session_factory=session_maker)
-
-
-async def get_db():
-    async with get_db_manager() as db:
-        yield db
-
-
-DBDep = Annotated[DBManagerProtocol, Depends(get_db)]
 
 
 def get_token(request: Request) -> str:

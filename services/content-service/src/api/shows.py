@@ -1,7 +1,7 @@
 from typing import Annotated, List
 from uuid import UUID
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Depends
 
 from src.exceptions import (
     ShowNotFoundException,
@@ -19,9 +19,10 @@ from src.exceptions import (
     ShowAlreadyExistsException,
     ShowAlreadyExistsHTTPException,
 )
+from src.factories.service import ServiceFactory
 from src.schemas.shows import ShowAddRequestDTO, ShowPatchRequestDTO
 from src.services.shows import ShowService
-from src.api.dependencies import DBDep, AdminDep, ContentParamsDep, SortDep
+from src.api.dependencies import AdminDep, ContentParamsDep, SortDep
 
 
 v1_router = APIRouter(prefix="/v1/shows", tags=["shows"])
@@ -29,7 +30,7 @@ v1_router = APIRouter(prefix="/v1/shows", tags=["shows"])
 
 @v1_router.get("")
 async def get_shows(
-    db: DBDep,
+    service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
     common_params: ContentParamsDep,
     sort: SortDep,
     directors_ids: Annotated[List[UUID] | None, Query()] = None,
@@ -37,31 +38,37 @@ async def get_shows(
     genres_ids: Annotated[List[int] | None, Query()] = None,
     countries_ids: Annotated[List[int] | None, Query()] = None,
 ):
-    shows = await ShowService(db).get_shows(
-        **common_params.model_dump(),
+    shows = await service.get_shows(
         directors_ids=directors_ids,
         actors_ids=actors_ids,
         genres_ids=genres_ids,
         countries_ids=countries_ids,
         sort_by=sort.field,
         sort_order=sort.order,
+        **common_params.model_dump(),
     )
     return {"status": "ok", "data": shows}
 
 
 @v1_router.get("/{show_id}")
-async def get_show(db: DBDep, show_id: UUID):
+async def get_show(
+    service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
+    show_id: UUID,
+):
     try:
-        show = await ShowService(db).get_show(show_id)
+        show = await service.get_show(show_id=show_id)
     except ShowNotFoundException:
         raise ShowNotFoundHTTPException
     return {"status": "ok", "data": show}
 
 
 @v1_router.post("", dependencies=[AdminDep], status_code=201)
-async def add_show(db: DBDep, show_data: ShowAddRequestDTO):
+async def add_show(
+    service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
+    show_data: ShowAddRequestDTO,
+):
     try:
-        show_id = await ShowService(db).add_show(show_data)
+        show_id = await service.add_show(show_data=show_data)
     except ShowAlreadyExistsException:
         raise ShowAlreadyExistsHTTPException
     except UniqueCoverURLException:
@@ -78,9 +85,13 @@ async def add_show(db: DBDep, show_data: ShowAddRequestDTO):
 
 
 @v1_router.patch("/{show_id}", dependencies=[AdminDep])
-async def update_show(db: DBDep, show_id: UUID, show_data: ShowPatchRequestDTO):
+async def update_show(
+    service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
+    show_id: UUID,
+    show_data: ShowPatchRequestDTO,
+):
     try:
-        await ShowService(db).update_show(show_id, show_data)
+        await service.update_show(show_id=show_id, show_data=show_data)
     except ShowNotFoundException:
         raise ShowNotFoundHTTPException
     except UniqueCoverURLException:
@@ -97,5 +108,8 @@ async def update_show(db: DBDep, show_id: UUID, show_data: ShowPatchRequestDTO):
 
 
 @v1_router.delete("/{show_id}", dependencies=[AdminDep], status_code=204)
-async def delete_show(db: DBDep, show_id: UUID):
-    await ShowService(db).delete_show(show_id)
+async def delete_show(
+    service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
+    show_id: UUID,
+):
+    await service.delete_show(show_id=show_id)

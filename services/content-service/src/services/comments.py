@@ -36,25 +36,34 @@ class CommentService(BaseService):
             raise CommentNotFoundException
         return comment
 
-    async def add_comment(self, user_id: UUID, data: CommentAddRequestDTO) -> UUID:
-        if not await self.check_content_exists(data.content_id, data.content_type):
+    async def add_comment(self, user_id: UUID, comment_data: CommentAddRequestDTO) -> UUID:
+        if not await self.check_content_exists(
+            content_id=comment_data.content_id,
+            content_type=comment_data.content_type,
+        ):
             raise ContentNotFoundException
 
         comment_id = uuid4()
         _new_data = CommentAddDTO(
             id=comment_id,
             user_id=user_id,
-            **data.model_dump(),
+            **comment_data.model_dump(),
         )
         await self.db.comments.add(data=_new_data)
 
         await self.db.commit()
         return comment_id
 
-    async def update_comment(self, user_id: UUID, comment_id: UUID, data: CommentPutRequestDTO):
+    async def update_comment(
+        self,
+        user_id: UUID,
+        comment_id: UUID,
+        comment_data: CommentPutRequestDTO,
+    ):
         if not await self.check_comment_exists(id=comment_id, user_id=user_id):
             raise CommentNotFoundException
-        await self.db.comments.update(id=comment_id, user_id=user_id, data=data)
+
+        await self.db.comments.update(id=comment_id, user_id=user_id, data=comment_data)
         await self.db.commit()
 
     async def delete_comment(self, comment_id: UUID, user_id: UUID):

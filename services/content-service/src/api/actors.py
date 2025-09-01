@@ -1,14 +1,16 @@
+from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from src.api.dependencies import DBDep, PaginationDep, AdminDep
+from src.api.dependencies import PaginationDep, AdminDep
 from src.exceptions import (
     ActorAlreadyExistsException,
     ActorAlreadyExistsHTTPException,
     ActorNotFoundException,
     ActorNotFoundHTTPException,
 )
+from src.factories.service import ServiceFactory
 from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO
 from src.services.actors import ActorService
 
@@ -17,8 +19,11 @@ v1_router = APIRouter(prefix="/v1/actors", tags=["actors"])
 
 
 @v1_router.get("")
-async def get_actors(db: DBDep, pagination: PaginationDep):
-    actors = await ActorService(db).get_actors(
+async def get_actors(
+    service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
+    pagination: PaginationDep,
+):
+    actors = await service.get_actors(
         page=pagination.page,
         per_page=pagination.per_page,
     )
@@ -26,32 +31,45 @@ async def get_actors(db: DBDep, pagination: PaginationDep):
 
 
 @v1_router.get("/{actor_id}")
-async def get_actor(db: DBDep, actor_id: UUID):
+async def get_actor(
+    service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
+    actor_id: UUID,
+):
     try:
-        actor = await ActorService(db).get_actor(actor_id=actor_id)
+        actor = await service.get_actor(actor_id=actor_id)
     except ActorNotFoundException:
         raise ActorNotFoundHTTPException
     return {"status": "ok", "data": actor}
 
 
 @v1_router.post("", dependencies=[AdminDep], status_code=201)
-async def add_actor(db: DBDep, actor_data: ActorAddRequestDTO):
+async def add_actor(
+    service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
+    actor_data: ActorAddRequestDTO,
+):
     try:
-        actor_id = await ActorService(db).add_actor(actor_data=actor_data)
+        actor_id = await service.add_actor(actor_data=actor_data)
     except ActorAlreadyExistsException:
         raise ActorAlreadyExistsHTTPException
     return {"status": "ok", "data": {"id": actor_id}}
 
 
 @v1_router.patch("/{actor_id}", dependencies=[AdminDep])
-async def update_actor(db: DBDep, actor_id: UUID, actor_data: ActorPatchDTO):
+async def update_actor(
+    service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
+    actor_id: UUID,
+    actor_data: ActorPatchDTO,
+):
     try:
-        await ActorService(db).update_actor(actor_id=actor_id, actor_data=actor_data)
+        await service.update_actor(actor_id=actor_id, actor_data=actor_data)
     except ActorAlreadyExistsException:
         raise ActorAlreadyExistsHTTPException
     return {"status": "ok"}
 
 
 @v1_router.delete("/{actor_id}", status_code=204, dependencies=[AdminDep])
-async def delete_actor(db: DBDep, actor_id: UUID):
-    await ActorService(db).delete_actor(actor_id=actor_id)
+async def delete_actor(
+    service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
+    actor_id: UUID,
+):
+    await service.delete_actor(actor_id=actor_id)
