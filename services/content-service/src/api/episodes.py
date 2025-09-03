@@ -12,15 +12,13 @@ from src.exceptions import (
     ShowNotFoundException,
     SeasonNotFoundException,
     EpisodeNotFoundException,
-    EpisodeAlreadyExistsException,
     ShowNotFoundHTTPException,
     SeasonNotFoundHTTPException,
     EpisodeNotFoundHTTPException,
     EpisodeAlreadyExistsHTTPException,
-    UniqueEpisodePerSeasonException,
-    UniqueEpisodePerSeasonHTTPException,
-    UniqueFileURLHTTPException,
-    UniqueFileURLException,
+    EpisodeAlreadyExistsException,
+    VideoUrlAlreadyExistsException,
+    VideoUrlAlreadyExistsHTTPException,
 )
 
 
@@ -61,10 +59,8 @@ async def add_episode(
         raise SeasonNotFoundHTTPException
     except EpisodeAlreadyExistsException:
         raise EpisodeAlreadyExistsHTTPException
-    except UniqueEpisodePerSeasonException:
-        raise UniqueEpisodePerSeasonHTTPException
-    except UniqueFileURLException:
-        raise UniqueFileURLHTTPException
+    except VideoUrlAlreadyExistsException:
+        raise VideoUrlAlreadyExistsHTTPException
     return {"status": "ok", "data": {"id": episode_id}}
 
 
@@ -78,10 +74,10 @@ async def update_episode(
         await service.update_episode(episode_id=episode_id, episode_data=episode_data)
     except EpisodeNotFoundException:
         raise EpisodeNotFoundHTTPException
-    except UniqueEpisodePerSeasonException:
-        raise UniqueEpisodePerSeasonHTTPException
-    except UniqueFileURLException:
-        raise UniqueFileURLHTTPException
+    except EpisodeAlreadyExistsException:
+        raise EpisodeAlreadyExistsHTTPException
+    except VideoUrlAlreadyExistsException:
+        raise VideoUrlAlreadyExistsHTTPException
     return {"status": "ok"}
 
 

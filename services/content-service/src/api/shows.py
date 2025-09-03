@@ -6,8 +6,8 @@ from fastapi import APIRouter, Query, Depends
 from src.exceptions import (
     ShowNotFoundException,
     ShowNotFoundHTTPException,
-    UniqueCoverURLException,
-    UniqueCoverURLHTTPException,
+    CoverUrlAlreadyExistsException,
+    CoverUrlAlreadyExistsHTTPException,
     GenreNotFoundException,
     GenreNotFoundHTTPException,
     ActorNotFoundException,
@@ -71,8 +71,8 @@ async def add_show(
         show_id = await service.add_show(show_data=show_data)
     except ShowAlreadyExistsException:
         raise ShowAlreadyExistsHTTPException
-    except UniqueCoverURLException:
-        raise UniqueCoverURLHTTPException
+    except CoverUrlAlreadyExistsException:
+        raise CoverUrlAlreadyExistsHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
@@ -94,8 +94,10 @@ async def update_show(
         await service.update_show(show_id=show_id, show_data=show_data)
     except ShowNotFoundException:
         raise ShowNotFoundHTTPException
-    except UniqueCoverURLException:
-        raise UniqueCoverURLHTTPException
+    except ShowAlreadyExistsException:
+        raise ShowAlreadyExistsHTTPException
+    except CoverUrlAlreadyExistsException:
+        raise CoverUrlAlreadyExistsHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:

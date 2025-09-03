@@ -4,14 +4,16 @@ from src.schemas.episodes import (
     EpisodePatchRequestDTO,
     EpisodeAddDTO,
     EpisodeAddRequestDTO,
+    EpisodePatchDTO,
 )
 from src.services.base import BaseService
 from src.exceptions import (
     EpisodeNotFoundException,
     ShowNotFoundException,
     SeasonNotFoundException,
-    UniqueEpisodePerSeasonException,
-    UniqueFileURLException,
+    EpisodeAlreadyExistsException,
+    ObjectNotFoundException,
+    VideoUrlAlreadyExistsException,
 )
 
 
@@ -64,11 +66,9 @@ class EpisodeService(BaseService):
         _episode_data = EpisodeAddDTO(id=episode_id, **episode_data.model_dump())
 
         try:
-            await self.db.episodes.add(_episode_data)
-        except UniqueEpisodePerSeasonException:
-            raise UniqueEpisodePerSeasonException
-        except UniqueFileURLException:
-            raise UniqueFileURLException
+            await self.db.episodes.add_episode(_episode_data)
+        except (EpisodeAlreadyExistsException, VideoUrlAlreadyExistsException):
+            raise
 
         await self.db.commit()
         return episode_id
@@ -77,12 +77,17 @@ class EpisodeService(BaseService):
         """
         Update episode by ID.
         """
-        if not await self.check_episode_exists(id=episode_id):
-            raise EpisodeNotFoundException
+        _episode_data = EpisodePatchDTO(**episode_data.model_dump(exclude_unset=True))
         try:
-            await self.db.episodes.update(id=episode_id, data=episode_data, exclude_unset=True)
-        except UniqueEpisodePerSeasonException:
-            raise UniqueEpisodePerSeasonException
+            await self.db.episodes.update_episode(
+                id=episode_id,
+                data=_episode_data,
+                exclude_unset=True,
+            )
+        except ObjectNotFoundException:
+            raise EpisodeNotFoundException
+        except (EpisodeAlreadyExistsException, VideoUrlAlreadyExistsException):
+            raise
         await self.db.commit()
 
     async def delete_episode(self, episode_id: UUID):

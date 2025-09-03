@@ -16,8 +16,8 @@ from src.schemas.genres import MovieGenreDTO
 from src.services.base import BaseService
 from src.exceptions import (
     MovieNotFoundException,
-    UniqueCoverURLException,
-    UniqueVideoURLException,
+    CoverUrlAlreadyExistsException,
+    VideoUrlAlreadyExistsException,
     GenreNotFoundException,
     ActorNotFoundException,
     DirectorNotFoundException,
@@ -77,7 +77,7 @@ class MovieService(BaseService):
         _movie_data = MovieAddDTO(id=movie_id, **movie_data.model_dump())
         try:
             await self.db.movies.add_movie(_movie_data)
-        except (MovieAlreadyExistsException, UniqueCoverURLException):
+        except (MovieAlreadyExistsException, CoverUrlAlreadyExistsException):
             raise
 
         if movie_data.genres_ids:
@@ -121,17 +121,17 @@ class MovieService(BaseService):
         return movie_id
 
     async def update_movie(self, movie_id: UUID, movie_data: MoviePatchRequestDTO):
-        if not await self.check_movie_exists(id=movie_id):
-            raise MovieNotFoundException
-
         _movie_data = MoviePatchDTO(**movie_data.model_dump(exclude_unset=True))
 
         try:
             await self.db.movies.update_movie(id=movie_id, data=_movie_data, exclude_unset=True)
-        except UniqueCoverURLException:
-            raise UniqueCoverURLException
-        except UniqueVideoURLException:
-            raise UniqueVideoURLException
+        except (
+            MovieNotFoundException,
+            MovieAlreadyExistsException,
+            CoverUrlAlreadyExistsException,
+            VideoUrlAlreadyExistsException,
+        ):
+            raise
 
         if movie_data.genres_ids is not None:
             try:

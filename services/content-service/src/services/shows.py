@@ -16,7 +16,7 @@ from src.schemas.shows import (
 from src.services.base import BaseService
 from src.exceptions import (
     ShowNotFoundException,
-    UniqueCoverURLException,
+    CoverUrlAlreadyExistsException,
     GenreNotFoundException,
     ActorNotFoundException,
     DirectorNotFoundException,
@@ -76,7 +76,7 @@ class ShowService(BaseService):
         _show_data = ShowAddDTO(id=show_id, **show_data.model_dump())
         try:
             await self.db.shows.add_show(_show_data)
-        except (ShowAlreadyExistsException, UniqueCoverURLException):
+        except (ShowAlreadyExistsException, CoverUrlAlreadyExistsException):
             raise
 
         if show_data.genres_ids:
@@ -120,9 +120,6 @@ class ShowService(BaseService):
         return show_id
 
     async def update_show(self, show_id: UUID, show_data: ShowPatchRequestDTO):
-        if not await self.check_show_exists(id=show_id):
-            raise ShowNotFoundException
-
         _show_data = ShowPatchDTO(**show_data.model_dump(exclude_unset=True))
 
         try:
@@ -131,7 +128,11 @@ class ShowService(BaseService):
                 data=_show_data,
                 exclude_unset=True,
             )
-        except UniqueCoverURLException:
+        except (
+            ShowNotFoundException,
+            ShowAlreadyExistsException,
+            CoverUrlAlreadyExistsException,
+        ):
             raise
 
         if show_data.genres_ids is not None:

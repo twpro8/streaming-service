@@ -91,7 +91,7 @@ class MovieAlreadyExistsException(ObjectAlreadyExistsException):
 
 
 class MovieAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    detail = "Movie with the provided data already exists"
+    detail = "Movie already exists. Combination title and release date must be unique."
 
 
 class ShowNotFoundHTTPException(ObjectNotFoundHTTPException):
@@ -107,7 +107,7 @@ class ShowAlreadyExistsException(ObjectAlreadyExistsException):
 
 
 class ShowAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    detail = "Show already exists"
+    detail = "Show already exists. Combination title and release date must be unique."
 
 
 class ContentNotFoundException(ObjectNotFoundException):
@@ -134,21 +134,8 @@ class EpisodeDoesNotExistException(ObjectNotFoundException):
     detail = "Episode does not exist"
 
 
-class EpisodeAlreadyExistsException(ObjectAlreadyExistsException):
-    detail = "Episode already exists"
-
-
 class EpisodeAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Episode with the provided data already exists."
-
-
-class UniqueViolationException(MasterException):
-    detail = "Unique violation error"
-
-
-class UniqueViolationHTTPException(MasterHTTPException):
-    status_code = 409
-    detail = "Unique violation error"
 
 
 class AtLeastOneFieldRequiredException(MasterHTTPException):
@@ -156,48 +143,32 @@ class AtLeastOneFieldRequiredException(MasterHTTPException):
     detail = "At least one field must be provided"
 
 
-class UniqueCoverURLException(UniqueViolationException):
-    detail = "Cover URL unique violation error"
+class CoverUrlAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Cover URL already exists"
 
 
-class UniqueVideoURLException(UniqueViolationException):
-    detail = "Cover URL unique violation error"
+class VideoUrlAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Video URL already exists"
 
 
-class UniqueCoverURLHTTPException(UniqueViolationHTTPException):
-    detail = "Cover URL has to be unique"
+class CoverUrlAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Cover URL already exists"
 
 
-class UniqueVideoURLHTTPException(UniqueViolationHTTPException):
-    detail = "Video URL is already in use"
+class VideoUrlAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
+    detail = "Video URL already exists"
 
 
-class UniqueEpisodePerSeasonException(UniqueViolationException):
+class EpisodeAlreadyExistsException(ObjectAlreadyExistsException):
     detail = "Unique episode per season already exists"
-
-
-class UniqueSeasonPerShowException(UniqueViolationException):
-    detail = "Unique season per show already exists"
-
-
-class UniqueFileURLException(UniqueViolationException):
-    detail = "Unique file URL already exists"
-
-
-class UniqueEpisodePerSeasonHTTPException(UniqueViolationHTTPException):
-    detail = "Episode number already exists"
-
-
-class UniqueFileURLHTTPException(UniqueViolationHTTPException):
-    detail = "Unique file URL already exists"
-
-
-class SeasonAlreadyExistsException(ObjectAlreadyExistsException):
-    detail = "Season already exists"
 
 
 class SeasonAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
     detail = "Season with the provided number already exists"
+
+
+class SeasonAlreadyExistsException(ObjectAlreadyExistsException):
+    detail = "Unique season per show already exists"
 
 
 class CommentNotFoundException(ObjectNotFoundException):

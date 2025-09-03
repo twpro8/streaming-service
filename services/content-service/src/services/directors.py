@@ -38,7 +38,7 @@ class DirectorService(BaseService):
                 data=director_data,
                 exclude_unset=True,
             )
-        except DirectorAlreadyExistsException:
+        except (DirectorNotFoundException, DirectorAlreadyExistsException):
             raise
         await self.db.commit()
 

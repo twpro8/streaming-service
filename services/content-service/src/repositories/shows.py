@@ -10,7 +10,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from src.enums import SortBy, SortOrder
-from src.exceptions import UniqueCoverURLException, ShowAlreadyExistsException
+from src.exceptions import (
+    CoverUrlAlreadyExistsException,
+    ShowAlreadyExistsException,
+    ObjectNotFoundException,
+    ShowNotFoundException,
+)
 from src.models import ShowORM, ShowGenreORM
 from src.models.associations import ShowActorORM, ShowDirectorORM, ShowCountryORM
 from src.repositories.base import BaseRepository
@@ -122,7 +127,7 @@ class ShowRepository(BaseRepository):
                     case "uq_show":
                         raise ShowAlreadyExistsException from exc
                     case "shows_cover_url_key":
-                        raise UniqueCoverURLException from exc
+                        raise CoverUrlAlreadyExistsException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
@@ -134,12 +139,16 @@ class ShowRepository(BaseRepository):
     ) -> None:
         try:
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
+        except ObjectNotFoundException as e:
+            raise ShowNotFoundException from e
         except IntegrityError as exc:
             cause = getattr(exc.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
+                    case "uq_show":
+                        raise ShowAlreadyExistsException from exc
                     case "shows_cover_url_key":
-                        raise UniqueCoverURLException from exc
+                        raise CoverUrlAlreadyExistsException from exc
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise

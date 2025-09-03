@@ -10,7 +10,7 @@ from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.countries import CountryDTO
 from src.schemas.directors import DirectorDTO
 from src.schemas.genres import GenreDTO
-from src.schemas.pydantic_types import Str256, Str1024, Date
+from src.schemas.pydantic_types import Str256, Str1024, Date, StrAnyUrl
 
 
 class ShowAddDTO(BaseModel):
@@ -18,7 +18,7 @@ class ShowAddDTO(BaseModel):
     title: Str256
     description: Str1024
     release_date: Date
-    cover_url: AnyUrl | None = None
+    cover_url: StrAnyUrl | None = None
 
 
 class ShowAddRequestDTO(BaseSchema):
@@ -62,10 +62,11 @@ class ShowPatchDTO(BaseModel):
     title: Str256 | None = None
     description: Str1024 | None = None
     release_date: Date | None = None
-    cover_url: AnyUrl | None = None
+    cover_url: StrAnyUrl | None = None
 
 
 class ShowPatchRequestDTO(ShowPatchDTO, AtLeastOneFieldMixin):
+    cover_url: AnyUrl | None = None
     directors_ids: List[conint(strict=True, ge=1)] | None = Field(
         default=None,
         examples=[

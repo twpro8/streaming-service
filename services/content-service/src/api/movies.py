@@ -10,10 +10,10 @@ from src.services.movies import MovieService
 from src.exceptions import (
     MovieNotFoundException,
     MovieNotFoundHTTPException,
-    UniqueCoverURLException,
-    UniqueVideoURLException,
-    UniqueCoverURLHTTPException,
-    UniqueVideoURLHTTPException,
+    CoverUrlAlreadyExistsException,
+    VideoUrlAlreadyExistsException,
+    CoverUrlAlreadyExistsHTTPException,
+    VideoUrlAlreadyExistsHTTPException,
     GenreNotFoundException,
     GenreNotFoundHTTPException,
     ActorNotFoundException,
@@ -73,8 +73,8 @@ async def add_movie(
         movie_id = await service.add_movie(movie_data=movie_data)
     except MovieAlreadyExistsException:
         raise MovieAlreadyExistsHTTPException
-    except UniqueCoverURLException:
-        raise UniqueCoverURLHTTPException
+    except CoverUrlAlreadyExistsException:
+        raise CoverUrlAlreadyExistsHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:
@@ -96,10 +96,12 @@ async def update_movie(
         await service.update_movie(movie_id=movie_id, movie_data=movie_data)
     except MovieNotFoundException:
         raise MovieNotFoundHTTPException
-    except UniqueCoverURLException:
-        raise UniqueCoverURLHTTPException
-    except UniqueVideoURLException:
-        raise UniqueVideoURLHTTPException
+    except MovieAlreadyExistsException:
+        raise MovieAlreadyExistsHTTPException
+    except CoverUrlAlreadyExistsException:
+        raise CoverUrlAlreadyExistsHTTPException
+    except VideoUrlAlreadyExistsException:
+        raise VideoUrlAlreadyExistsHTTPException
     except GenreNotFoundException:
         raise GenreNotFoundHTTPException
     except ActorNotFoundException:

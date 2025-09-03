@@ -32,7 +32,7 @@ class ActorService(BaseService):
                 actor_data=actor_data,
                 exclude_unset=True,
             )
-        except ActorAlreadyExistsException:
+        except (ActorNotFoundException, ActorAlreadyExistsException):
             raise
         await self.db.commit()
 

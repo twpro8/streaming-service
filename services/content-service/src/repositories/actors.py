@@ -5,7 +5,11 @@ from pydantic import BaseModel
 from sqlalchemy import select, delete, insert
 from sqlalchemy.exc import IntegrityError
 
-from src.exceptions import ActorAlreadyExistsException, ActorNotFoundException
+from src.exceptions import (
+    ActorAlreadyExistsException,
+    ActorNotFoundException,
+    ObjectNotFoundException,
+)
 from src.models.actors import ActorORM
 from src.models.associations import MovieActorORM, ShowActorORM
 from src.repositories.base import BaseRepository
@@ -34,6 +38,8 @@ class ActorRepository(BaseRepository):
     ):
         try:
             await self.update(id=actor_id, data=actor_data, exclude_unset=exclude_unset)
+        except ObjectNotFoundException:
+            raise ActorNotFoundException
         except IntegrityError as exc:
             raise ActorAlreadyExistsException from exc
 

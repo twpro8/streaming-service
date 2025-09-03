@@ -2,8 +2,7 @@ from datetime import date
 from typing import Annotated
 from decimal import Decimal
 
-from pydantic import Field, condecimal
-
+from pydantic import Field, condecimal, BeforeValidator
 
 RatingDecimal = Annotated[
     Decimal,
@@ -20,3 +19,5 @@ Str512 = Annotated[str, Field(min_length=2, max_length=512)]
 Str1024 = Annotated[str, Field(min_length=2, max_length=1024)]
 
 PositiveInt = Annotated[int, Field(gt=0)]
+
+StrAnyUrl = Annotated[str, BeforeValidator(lambda v: str(v) if v else v)]

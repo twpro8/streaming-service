@@ -1,20 +1,22 @@
 from typing import List
 
+from pydantic import BaseModel
+
 from src.exceptions import (
     ObjectNotFoundException,
     GenreNotFoundException,
     GenreAlreadyExistsException,
 )
-from src.schemas.genres import GenreDTO, GenreAddDTO
+from src.schemas.genres import GenreAddDTO
 from src.services.base import BaseService
 
 
 class GenreService(BaseService):
-    async def get_genres(self, per_page: int, page: int) -> List[GenreDTO]:
+    async def get_genres(self, per_page: int, page: int) -> List[BaseModel]:
         genres = await self.db.genres.get_filtered(per_page=per_page, page=page)
         return genres
 
-    async def get_genre(self, genre_id: int) -> GenreDTO:
+    async def get_genre(self, genre_id: int) -> BaseModel:
         try:
             genre = await self.db.genres.get_one(id=genre_id)
         except ObjectNotFoundException:

@@ -1,6 +1,10 @@
 from uuid import UUID, uuid4
 
-from src.exceptions import ContentNotFoundException, CommentNotFoundException
+from src.exceptions import (
+    ContentNotFoundException,
+    CommentNotFoundException,
+    ObjectNotFoundException,
+)
 from src.schemas.comments import CommentAddRequestDTO, CommentAddDTO, CommentPutRequestDTO
 from src.enums import ContentType
 from src.services.base import BaseService
@@ -60,10 +64,10 @@ class CommentService(BaseService):
         comment_id: UUID,
         comment_data: CommentPutRequestDTO,
     ):
-        if not await self.check_comment_exists(id=comment_id, user_id=user_id):
-            raise CommentNotFoundException
-
-        await self.db.comments.update(id=comment_id, user_id=user_id, data=comment_data)
+        try:
+            await self.db.comments.update(id=comment_id, user_id=user_id, data=comment_data)
+        except ObjectNotFoundException as e:
+            raise CommentNotFoundException from e
         await self.db.commit()
 
     async def delete_comment(self, comment_id: UUID, user_id: UUID):

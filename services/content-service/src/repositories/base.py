@@ -8,7 +8,6 @@ from sqlalchemy.exc import NoResultFound
 from src.enums import SortOrder
 from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
-from src.repositories.utils import normalize_for_insert
 
 
 log = logging.getLogger(__name__)
@@ -42,8 +41,7 @@ class BaseRepository:
         return await self._execute_and_map_one_or_none(query)
 
     async def add(self, data: BaseModel) -> None:
-        data = normalize_for_insert(data.model_dump())
-        stmt = insert(self.model).values(**data)
+        stmt = insert(self.model).values(**data.model_dump())
         await self.session.execute(stmt)
 
     async def add_bulk(self, data: list[BaseModel]) -> None:
@@ -54,9 +52,10 @@ class BaseRepository:
         _model_dump = data.model_dump(exclude_unset=exclude_unset)
         if not _model_dump:
             return
-        data = normalize_for_insert(_model_dump)
-        stmt = update(self.model).values(**data).filter_by(**filter_by)
-        await self.session.execute(stmt)
+        stmt = update(self.model).values(**_model_dump).filter_by(**filter_by)
+        res = await self.session.execute(stmt)
+        if res.rowcount == 0:
+            raise ObjectNotFoundException
 
     async def delete(self, **filter_by) -> None:
         stmt = delete(self.model).filter_by(**filter_by)

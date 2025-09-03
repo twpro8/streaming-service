@@ -2,18 +2,13 @@ import logging
 from uuid import UUID
 
 from pydantic import BaseModel
-from sqlalchemy import select, func, update, insert
+from sqlalchemy import select, func
 from sqlalchemy.exc import IntegrityError
 from asyncpg.exceptions import UniqueViolationError
 
-from src.exceptions import (
-    UniqueEpisodePerSeasonException,
-    UniqueSeasonPerShowException,
-    UniqueFileURLException,
-)
+from src.exceptions import EpisodeAlreadyExistsException, VideoUrlAlreadyExistsException
 from src.repositories.base import BaseRepository
 from src.models import EpisodeORM
-from src.repositories.utils import normalize_for_insert
 from src.schemas.episodes import EpisodeDTO
 from src.repositories.mappers.mappers import EpisodeDataMapper
 
@@ -51,39 +46,34 @@ class EpisodeRepository(BaseRepository):
         episodes = res.scalars().all()
         return [EpisodeDataMapper.map_to_domain_entity(ep) for ep in episodes]
 
-    async def add(self, data: BaseModel) -> None:
-        data = normalize_for_insert(data.model_dump())
-        stmt = insert(self.model).values(**data)
+    async def add_episode(self, data: BaseModel) -> None:
         try:
-            await self.session.execute(stmt)
+            await self.add(data)
         except IntegrityError as exc:
             if isinstance(exc.orig.__cause__, UniqueViolationError):
                 cause = getattr(exc.orig, "__cause__", None)
                 constraint = getattr(cause, "constraint_name", None)
                 match constraint:
                     case "uq_episode":
-                        raise UniqueEpisodePerSeasonException
-                    case "uq_season":
-                        raise UniqueSeasonPerShowException
+                        raise EpisodeAlreadyExistsException
                     case "episodes_video_url_key":
-                        raise UniqueFileURLException
+                        raise VideoUrlAlreadyExistsException
                 raise
-            raise
 
-    async def update(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
-        data = normalize_for_insert(data.model_dump(exclude_unset=exclude_unset))
-        stmt = update(self.model).values(**data).filter_by(**filter_by)
+    async def update_episode(
+        self, data: BaseModel, exclude_unset: bool = False, **filter_by
+    ) -> None:
         try:
-            await self.session.execute(stmt)
+            await self.update(data, exclude_unset=exclude_unset, **filter_by)
         except IntegrityError as exc:
             cause = getattr(exc.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_episode":
-                        raise UniqueEpisodePerSeasonException from exc
+                        raise EpisodeAlreadyExistsException from exc
                     case "episodes_video_url_key":
-                        raise UniqueFileURLException from exc
+                        raise VideoUrlAlreadyExistsException from exc
                 raise
             else:
                 log.exception(

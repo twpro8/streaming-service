@@ -8,7 +8,7 @@ from src.exceptions import (
     ShowNotFoundException,
     ShowNotFoundHTTPException,
     SeasonNotFoundHTTPException,
-    UniqueSeasonPerShowException,
+    SeasonAlreadyExistsException,
     SeasonAlreadyExistsHTTPException,
 )
 from src.factories.service import ServiceFactory
@@ -55,7 +55,7 @@ async def add_season(
         season_id = await service.add_season(season_data=season_data)
     except ShowNotFoundException:
         raise ShowNotFoundHTTPException
-    except UniqueSeasonPerShowException:
+    except SeasonAlreadyExistsException:
         raise SeasonAlreadyExistsHTTPException
     return {"status": "ok", "data": {"id": season_id}}
 
@@ -70,7 +70,7 @@ async def update_season(
         await service.update_season(season_id=season_id, season_data=season_data)
     except SeasonNotFoundException:
         raise SeasonNotFoundHTTPException
-    except UniqueSeasonPerShowException:
+    except SeasonAlreadyExistsException:
         raise SeasonAlreadyExistsHTTPException
     return {"status": "ok"}
 

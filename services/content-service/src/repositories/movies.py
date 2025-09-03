@@ -10,9 +10,11 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
 from src.exceptions import (
-    UniqueCoverURLException,
-    UniqueVideoURLException,
+    CoverUrlAlreadyExistsException,
+    VideoUrlAlreadyExistsException,
     MovieAlreadyExistsException,
+    ObjectNotFoundException,
+    MovieNotFoundException,
 )
 from src.models import MovieORM, MovieGenreORM
 from src.models.associations import MovieActorORM, MovieDirectorORM, MovieCountryORM
@@ -125,21 +127,25 @@ class MovieRepository(BaseRepository):
                     case "uq_movie":
                         raise MovieAlreadyExistsException from exc
                     case "movies_cover_url_key":
-                        raise UniqueCoverURLException from exc
+                        raise CoverUrlAlreadyExistsException from exc
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
     async def update_movie(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         try:
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
+        except ObjectNotFoundException as e:
+            raise MovieNotFoundException from e
         except IntegrityError as exc:
             cause = getattr(exc.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
+                    case "uq_movie":
+                        raise MovieAlreadyExistsException from exc
                     case "movies_cover_url_key":
-                        raise UniqueCoverURLException from exc
+                        raise CoverUrlAlreadyExistsException from exc
                     case "movies_video_url_key":
-                        raise UniqueVideoURLException from exc
+                        raise VideoUrlAlreadyExistsException from exc
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise

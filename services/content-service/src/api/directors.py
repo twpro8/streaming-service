@@ -65,6 +65,8 @@ async def update_director(
             director_id=director_id,
             director_data=director_data,
         )
+    except DirectorNotFoundException:
+        raise DirectorNotFoundHTTPException
     except DirectorAlreadyExistsException:
         raise DirectorAlreadyExistsHTTPException
     return {"status": "ok"}

@@ -5,7 +5,11 @@ from pydantic import BaseModel
 from sqlalchemy import insert, select, delete
 from sqlalchemy.exc import IntegrityError
 
-from src.exceptions import DirectorAlreadyExistsException, DirectorNotFoundException
+from src.exceptions import (
+    DirectorAlreadyExistsException,
+    DirectorNotFoundException,
+    ObjectNotFoundException,
+)
 from src.models import MovieDirectorORM, ShowDirectorORM
 from src.models.directors import DirectorORM
 from src.repositories.base import BaseRepository
@@ -34,6 +38,8 @@ class DirectorRepository(BaseRepository):
     ) -> None:
         try:
             await self.update(id=director_id, data=data, exclude_unset=exclude_unset)
+        except ObjectNotFoundException as e:
+            raise DirectorNotFoundException from e
         except IntegrityError as e:
             raise DirectorAlreadyExistsException from e
 

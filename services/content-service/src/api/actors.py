@@ -62,6 +62,8 @@ async def update_actor(
 ):
     try:
         await service.update_actor(actor_id=actor_id, actor_data=actor_data)
+    except ActorNotFoundException:
+        raise ActorNotFoundHTTPException
     except ActorAlreadyExistsException:
         raise ActorAlreadyExistsHTTPException
     return {"status": "ok"}
