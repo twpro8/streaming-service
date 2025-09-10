@@ -28,7 +28,7 @@ def get_current_user_id(token: str = Depends(get_token)) -> UUID:
     return data["user_id"]
 
 
-UserDep = Annotated[UUID, Depends(get_current_user_id)]
+UserIDDep = Annotated[UUID, Depends(get_current_user_id)]
 
 
 def get_admin(token: str = Depends(get_token)):

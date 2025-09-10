@@ -1,6 +1,7 @@
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from pydantic import BaseModel
+from uuid_extensions import uuid7
 
 from src.exceptions import DirectorNotFoundException, DirectorAlreadyExistsException
 from src.schemas.directors import DirectorAddDTO, DirectorPatchDTO, DirectorAddRequestDTO
@@ -19,7 +20,7 @@ class DirectorService(BaseService):
         return director
 
     async def add_director(self, director_data: DirectorAddRequestDTO) -> UUID:
-        director_id = uuid4()
+        director_id = uuid7()
         _director_data = DirectorAddDTO(
             id=director_id,
             **director_data.model_dump(),

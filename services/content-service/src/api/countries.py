@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from src.api.dependencies import PaginationDep
+from src.api.dependencies import PaginationDep, AdminDep
 from src.exceptions import (
     CountryNotFoundException,
     CountryNotFoundHTTPException,
@@ -41,7 +41,7 @@ async def get_country(
     return {"status": "ok", "data": country}
 
 
-@v1_router.post("", status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_country(
     service: Annotated[CountryService, Depends(ServiceFactory.country_service_factory)],
     country_data: CountryAddRequestDTO,
@@ -53,7 +53,7 @@ async def add_country(
     return {"status": "ok", "data": {"id": country_id}}
 
 
-@v1_router.delete("/{country_id}", status_code=204)
+@v1_router.delete("/{country_id}", dependencies=[AdminDep], status_code=204)
 async def delete_country(
     service: Annotated[CountryService, Depends(ServiceFactory.country_service_factory)],
     country_id: int,

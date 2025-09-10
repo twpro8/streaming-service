@@ -14,7 +14,7 @@ from src.factories.service import ServiceFactory
 from src.schemas.comments import CommentAddRequestDTO, CommentPutRequestDTO
 from src.enums import ContentType
 from src.services.comments import CommentService
-from src.api.dependencies import UserDep, PaginationDep
+from src.api.dependencies import UserIDDep, PaginationDep
 
 
 v1_router = APIRouter(prefix="/v1/comments", tags=["comments"])
@@ -40,7 +40,7 @@ async def get_comments(
 async def get_user_comments(
     service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
     pagination: PaginationDep,
-    user_id: UserDep,
+    user_id: UserIDDep,
 ):
     comments = await service.get_user_comments(
         user_id=user_id,
@@ -65,7 +65,7 @@ async def get_comment(
 @v1_router.post("", status_code=201)
 async def add_comment(
     service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
-    user_id: UserDep,
+    user_id: UserIDDep,
     comment_data: CommentAddRequestDTO,
 ):
     try:
@@ -78,7 +78,7 @@ async def add_comment(
 @v1_router.put("/{comment_id}")
 async def update_comment(
     service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
-    user_id: UserDep,
+    user_id: UserIDDep,
     comment_id: UUID,
     comment_data: CommentPutRequestDTO,
 ):
@@ -96,7 +96,7 @@ async def update_comment(
 @v1_router.delete("/{comment_id}", status_code=204)
 async def delete_comment(
     service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
-    user_id: UserDep,
+    user_id: UserIDDep,
     comment_id: UUID,
 ):
     await service.delete_comment(comment_id=comment_id, user_id=user_id)

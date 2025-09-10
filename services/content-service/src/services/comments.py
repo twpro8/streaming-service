@@ -1,4 +1,6 @@
-from uuid import UUID, uuid4
+from uuid import UUID
+
+from uuid_extensions import uuid7
 
 from src.exceptions import (
     ContentNotFoundException,
@@ -47,7 +49,7 @@ class CommentService(BaseService):
         ):
             raise ContentNotFoundException
 
-        comment_id = uuid4()
+        comment_id = uuid7()
         _new_data = CommentAddDTO(
             id=comment_id,
             user_id=user_id,

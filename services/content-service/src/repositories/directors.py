@@ -54,15 +54,15 @@ class MovieDirectorRepository(BaseRepository):
         except IntegrityError as e:
             raise DirectorNotFoundException from e
 
-    async def update_movie_directors(self, movie_id: UUID, directors_ids: List[int]):
+    async def update_movie_directors(self, movie_id: UUID, directors_ids: List[UUID]):
         query = select(self.model.director_id).filter_by(movie_id=movie_id)
         res = await self.session.execute(query)
 
         existed_ids = set(res.scalars().all())
         new_ids = set(directors_ids)
 
-        to_add: set[int] = new_ids - existed_ids
-        to_del: set[int] = existed_ids - new_ids
+        to_add: set[UUID] = new_ids - existed_ids
+        to_del: set[UUID] = existed_ids - new_ids
 
         if to_del:
             await self.session.execute(
@@ -95,15 +95,15 @@ class ShowDirectorRepository(BaseRepository):
         except IntegrityError as e:
             raise DirectorNotFoundException from e
 
-    async def update_show_directors(self, show_id: UUID, directors_ids: List[int]):
+    async def update_show_directors(self, show_id: UUID, directors_ids: List[UUID]):
         query = select(self.model.director_id).filter_by(show_id=show_id)
         res = await self.session.execute(query)
 
         existed_ids = set(res.scalars().all())
         new_ids = set(directors_ids)
 
-        to_add: set[int] = new_ids - existed_ids
-        to_del: set[int] = existed_ids - new_ids
+        to_add: set[UUID] = new_ids - existed_ids
+        to_del: set[UUID] = existed_ids - new_ids
 
         if to_del:
             await self.session.execute(

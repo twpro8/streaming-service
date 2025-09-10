@@ -1,4 +1,6 @@
-from uuid import UUID, uuid4
+from uuid import UUID
+
+from uuid_extensions import uuid7
 
 from src.exceptions import ActorAlreadyExistsException, ActorNotFoundException
 from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO, ActorAddDTO
@@ -16,7 +18,7 @@ class ActorService(BaseService):
         return actor
 
     async def add_actor(self, actor_data: ActorAddRequestDTO) -> UUID:
-        actor_id = uuid4()
+        actor_id = uuid7()
         _actor_data = ActorAddDTO(id=actor_id, **actor_data.model_dump())
         try:
             await self.db.actors.add_actor(actor_data=_actor_data)

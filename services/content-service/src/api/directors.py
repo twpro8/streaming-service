@@ -3,7 +3,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends
 
-from src.api.dependencies import PaginationDep
+from src.api.dependencies import PaginationDep, AdminDep
 from src.exceptions import (
     DirectorNotFoundException,
     DirectorNotFoundHTTPException,
@@ -42,7 +42,7 @@ async def get_director(
     return {"status": "ok", "data": director}
 
 
-@v1_router.post("", status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_director(
     service: Annotated[DirectorService, Depends(ServiceFactory.director_service_factory)],
     director_data: DirectorAddRequestDTO,
@@ -54,7 +54,7 @@ async def add_director(
     return {"status": "ok", "data": {"id": director_id}}
 
 
-@v1_router.patch("/{director_id}")
+@v1_router.patch("/{director_id}", dependencies=[AdminDep])
 async def update_director(
     service: Annotated[DirectorService, Depends(ServiceFactory.director_service_factory)],
     director_id: UUID,
@@ -72,7 +72,7 @@ async def update_director(
     return {"status": "ok"}
 
 
-@v1_router.delete("/{director_id}", status_code=204)
+@v1_router.delete("/{director_id}", dependencies=[AdminDep], status_code=204)
 async def delete_director(
     service: Annotated[DirectorService, Depends(ServiceFactory.director_service_factory)],
     director_id: UUID,

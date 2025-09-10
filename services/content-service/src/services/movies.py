@@ -1,6 +1,8 @@
 from decimal import Decimal
 from typing import List
-from uuid import UUID, uuid4
+from uuid import UUID
+
+from uuid_extensions import uuid7
 
 from src.enums import SortBy, SortOrder
 from src.schemas.actors import MovieActorDTO
@@ -71,13 +73,12 @@ class MovieService(BaseService):
         return movie
 
     async def add_movie(self, movie_data: MovieAddRequestDTO) -> UUID:
-        movie_id = uuid4()
+        movie_id = uuid7()
         _movie_data = MovieAddDTO(id=movie_id, **movie_data.model_dump())
         try:
             await self.db.movies.add_movie(_movie_data)
         except (MovieAlreadyExistsException, CoverUrlAlreadyExistsException):
             raise
-
         if movie_data.genres_ids:
             _movie_genres_data = [
                 MovieGenreDTO(movie_id=movie_id, genre_id=genre_id)

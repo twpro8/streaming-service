@@ -6,7 +6,7 @@ from src.exceptions import ContentNotFoundException, ContentNotFoundHTTPExceptio
 from src.factories.service import ServiceFactory
 from src.schemas.rating import RatingAddRequestDTO
 from src.services.rating import RatingService
-from src.api.dependencies import UserDep
+from src.api.dependencies import UserIDDep
 
 
 v1_router = APIRouter(prefix="/v1/ratings", tags=["ratings"])
@@ -15,7 +15,7 @@ v1_router = APIRouter(prefix="/v1/ratings", tags=["ratings"])
 @v1_router.post("")
 async def rate_content(
     service: Annotated[RatingService, Depends(ServiceFactory.rating_service_factory)],
-    user_id: UserDep,
+    user_id: UserIDDep,
     rating_data: RatingAddRequestDTO,
 ):
     try:

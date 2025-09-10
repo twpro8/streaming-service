@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Annotated
-from uuid import UUID, uuid4
+from uuid import UUID
 
+from uuid_extensions import uuid7
 from sqlalchemy import String, DateTime, text
 from sqlalchemy.orm import DeclarativeBase, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
@@ -13,7 +14,7 @@ uuid_pk = Annotated[
     mapped_column(
         PG_UUID(as_uuid=True),
         primary_key=True,
-        default=uuid4,
+        default=uuid7,
     ),
 ]
 

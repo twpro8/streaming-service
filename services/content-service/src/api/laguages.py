@@ -2,7 +2,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from src.api.dependencies import PaginationDep
+from src.api.dependencies import PaginationDep, AdminDep
 from src.exceptions import (
     LanguageAlreadyExistsException,
     LanguageAlreadyExistsHTTPException,
@@ -41,7 +41,7 @@ async def get_language(
     return {"status": "ok", "data": lang}
 
 
-@v1_router.post("", status_code=201)
+@v1_router.post("", dependencies=[AdminDep], status_code=201)
 async def add_language(
     service: Annotated[LanguageService, Depends(ServiceFactory.language_service_factory)],
     lang_data: LanguageAddRequestDTO,
@@ -53,7 +53,7 @@ async def add_language(
     return {"status": "ok", "data": {"id": lang_id}}
 
 
-@v1_router.delete("/{lang_id}", status_code=204)
+@v1_router.delete("/{lang_id}", dependencies=[AdminDep], status_code=204)
 async def delete_language(
     service: Annotated[LanguageService, Depends(ServiceFactory.language_service_factory)],
     lang_id: int,

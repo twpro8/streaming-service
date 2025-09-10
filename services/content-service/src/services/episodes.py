@@ -1,4 +1,6 @@
-from uuid import UUID, uuid4
+from uuid import UUID
+
+from uuid_extensions import uuid7
 
 from src.schemas.episodes import (
     EpisodePatchRequestDTO,
@@ -63,7 +65,7 @@ class EpisodeService(BaseService):
         ):
             raise SeasonNotFoundException
 
-        episode_id = uuid4()
+        episode_id = uuid7()
         _episode_data = EpisodeAddDTO(id=episode_id, **episode_data.model_dump())
 
         try:

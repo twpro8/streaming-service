@@ -1,6 +1,8 @@
 from decimal import Decimal
 from typing import List
-from uuid import UUID, uuid4
+from uuid import UUID
+
+from uuid_extensions import uuid7
 
 from src.enums import SortBy, SortOrder
 from src.schemas.actors import ShowActorDTO
@@ -70,7 +72,7 @@ class ShowService(BaseService):
         return show
 
     async def add_show(self, show_data: ShowAddRequestDTO) -> UUID:
-        show_id = uuid4()
+        show_id = uuid7()
         _show_data = ShowAddDTO(id=show_id, **show_data.model_dump())
         try:
             await self.db.shows.add_show(_show_data)

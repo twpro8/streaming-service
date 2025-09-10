@@ -1,4 +1,6 @@
-from uuid import UUID, uuid4
+from uuid import UUID
+
+from uuid_extensions import uuid7
 
 from src.exceptions import (
     SeasonNotFoundException,
@@ -28,7 +30,7 @@ class SeasonService(BaseService):
         if not await self.check_show_exists(id=season_data.show_id):
             raise ShowNotFoundException
 
-        season_id = uuid4()
+        season_id = uuid7()
         _season_data = SeasonAddDTO(id=season_id, **season_data.model_dump())
 
         try:
