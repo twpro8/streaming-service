@@ -35,8 +35,8 @@ class MovieCountryRepository(BaseRepository):
     async def add_movie_countries(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise CountryNotFoundException from exc
+        except IntegrityError as e:
+            raise CountryNotFoundException from e
 
     async def update_movie_countries(self, movie_id: UUID, countries_ids: List[int]):
         query = select(self.model.country_id).filter_by(movie_id=movie_id)
@@ -65,8 +65,8 @@ class MovieCountryRepository(BaseRepository):
             ]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise CountryNotFoundException from exc
+            except IntegrityError as e:
+                raise CountryNotFoundException from e
 
 
 class ShowCountryRepository(BaseRepository):
@@ -76,8 +76,8 @@ class ShowCountryRepository(BaseRepository):
     async def add_show_countries(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise CountryNotFoundException from exc
+        except IntegrityError as e:
+            raise CountryNotFoundException from e
 
     async def update_show_countries(self, show_id: UUID, countries_ids: List[int]):
         query = select(self.model.country_id).filter_by(show_id=show_id)
@@ -106,5 +106,5 @@ class ShowCountryRepository(BaseRepository):
             ]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise CountryNotFoundException from exc
+            except IntegrityError as e:
+                raise CountryNotFoundException from e

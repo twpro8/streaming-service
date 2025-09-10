@@ -51,8 +51,8 @@ class MovieDirectorRepository(BaseRepository):
     async def add_movie_directors(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise DirectorNotFoundException from exc
+        except IntegrityError as e:
+            raise DirectorNotFoundException from e
 
     async def update_movie_directors(self, movie_id: UUID, directors_ids: List[int]):
         query = select(self.model.director_id).filter_by(movie_id=movie_id)
@@ -81,8 +81,8 @@ class MovieDirectorRepository(BaseRepository):
             ]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise DirectorNotFoundException from exc
+            except IntegrityError as e:
+                raise DirectorNotFoundException from e
 
 
 class ShowDirectorRepository(BaseRepository):
@@ -92,8 +92,8 @@ class ShowDirectorRepository(BaseRepository):
     async def add_show_directors(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise DirectorNotFoundException from exc
+        except IntegrityError as e:
+            raise DirectorNotFoundException from e
 
     async def update_show_directors(self, show_id: UUID, directors_ids: List[int]):
         query = select(self.model.director_id).filter_by(show_id=show_id)
@@ -122,5 +122,5 @@ class ShowDirectorRepository(BaseRepository):
             ]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise DirectorNotFoundException from exc
+            except IntegrityError as e:
+                raise DirectorNotFoundException from e

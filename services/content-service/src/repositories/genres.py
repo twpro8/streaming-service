@@ -13,12 +13,10 @@ from src.repositories.mappers.mappers import (
     MovieGenreDataMapper,
     ShowGenreDataMapper,
 )
-from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
 
 
 class GenreRepository(BaseRepository):
     model = GenreORM
-    schema = GenreDTO
     mapper = GenreDataMapper
 
     async def add_genre(self, data: BaseModel) -> int:
@@ -29,14 +27,13 @@ class GenreRepository(BaseRepository):
 
 class MovieGenreRepository(BaseRepository):
     model = MovieGenreORM
-    schema = MovieGenreDTO
     mapper = MovieGenreDataMapper
 
     async def add_movie_genres(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise GenreNotFoundException from exc
+        except IntegrityError as e:
+            raise GenreNotFoundException from e
 
     async def update_movie_genres(self, movie_id: UUID, genres_ids: List[int]):
         query = select(self.model.genre_id).filter_by(movie_id=movie_id)
@@ -59,20 +56,19 @@ class MovieGenreRepository(BaseRepository):
             values = [{"movie_id": movie_id, "genre_id": genre_id} for genre_id in to_add]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise GenreNotFoundException from exc
+            except IntegrityError as e:
+                raise GenreNotFoundException from e
 
 
 class ShowGenreRepository(BaseRepository):
     model = ShowGenreORM
-    schema = ShowGenreDTO
     mapper = ShowGenreDataMapper
 
     async def add_show_genres(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise GenreNotFoundException from exc
+        except IntegrityError as e:
+            raise GenreNotFoundException from e
 
     async def update_show_genres(self, show_id: UUID, genres_ids: List[int]):
         query = select(self.model.genre_id).filter_by(show_id=show_id)
@@ -95,5 +91,5 @@ class ShowGenreRepository(BaseRepository):
             values = [{"show_id": show_id, "genre_id": genre_id} for genre_id in to_add]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise GenreNotFoundException from exc
+            except IntegrityError as e:
+                raise GenreNotFoundException from e

@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 
 class BaseRepository:
     model = None
-    schema: Type[BaseModel] = None
     mapper: Type[DataMapper] = None
 
     def __init__(self, session):

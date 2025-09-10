@@ -55,7 +55,7 @@ class MovieAddRequestDTO(BaseSchema):
 
 class MovieDTO(MovieAddDTO):
     rating: RatingDecimal
-    video_url: AnyUrl | None = None
+    video_url: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -72,7 +72,7 @@ class MoviePatchDTO(BaseModel):
 class MoviePatchRequestDTO(MoviePatchDTO, AtLeastOneFieldMixin):
     video_url: AnyUrl | None = None
     cover_url: AnyUrl | None = None
-    directors_ids: List[conint(strict=True, ge=1)] | None = Field(
+    directors_ids: List[UUID] | None = Field(
         default=None,
         examples=[
             [],

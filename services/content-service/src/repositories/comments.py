@@ -3,12 +3,10 @@ from sqlalchemy import select
 from src.models import CommentORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import CommentDataMapper
-from src.schemas.comments import CommentDTO
 
 
 class CommentRepository(BaseRepository):
     model = CommentORM
-    schema = CommentDTO
     mapper = CommentDataMapper
 
     async def get_comments(self, offset: int, limit: int, **filter_by):

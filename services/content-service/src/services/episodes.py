@@ -26,7 +26,6 @@ class EpisodeService(BaseService):
         self,
         show_id: UUID | None,
         season_id: UUID | None,
-        title: str | None,
         episode_number: int | None,
         page: int,
         per_page: int,
@@ -37,7 +36,6 @@ class EpisodeService(BaseService):
         episodes = await self.db.episodes.get_episodes(
             show_id=show_id,
             season_id=season_id,
-            episode_title=title,
             episode_number=episode_number,
             limit=per_page,
             offset=per_page * (page - 1),
@@ -59,7 +57,10 @@ class EpisodeService(BaseService):
         """
         if not await self.check_show_exists(id=episode_data.show_id):
             raise ShowNotFoundException
-        if not await self.check_season_exists(id=episode_data.season_id):
+        if not await self.check_season_exists(
+            id=episode_data.season_id,
+            show_id=episode_data.show_id,
+        ):
             raise SeasonNotFoundException
 
         episode_id = uuid4()

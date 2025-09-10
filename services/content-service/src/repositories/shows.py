@@ -20,7 +20,6 @@ from src.models import ShowORM, ShowGenreORM
 from src.models.associations import ShowActorORM, ShowDirectorORM, ShowCountryORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import ShowDataMapper, ShowWithRelsDataMapper
-from src.schemas.shows import ShowDTO
 
 
 log = logging.getLogger(__name__)
@@ -28,7 +27,6 @@ log = logging.getLogger(__name__)
 
 class ShowRepository(BaseRepository):
     model = ShowORM
-    schema = ShowDTO
     mapper = ShowDataMapper
 
     async def get_filtered_shows(
@@ -45,7 +43,6 @@ class ShowRepository(BaseRepository):
     ):
         filters = {
             "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
-            "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
             "year": lambda v: (self.model.release_date >= date(v, 1, 1))
             & (self.model.release_date <= date(v, 12, 31)),
             "year_gt": lambda v: self.model.release_date > date(v, 1, 1),
@@ -119,15 +116,15 @@ class ShowRepository(BaseRepository):
     async def add_show(self, data: BaseModel) -> None:
         try:
             await self.add(data)
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
+        except IntegrityError as e:
+            cause = getattr(e.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_show":
-                        raise ShowAlreadyExistsException from exc
+                        raise ShowAlreadyExistsException from e
                     case "shows_cover_url_key":
-                        raise CoverUrlAlreadyExistsException from exc
+                        raise CoverUrlAlreadyExistsException from e
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
@@ -141,14 +138,14 @@ class ShowRepository(BaseRepository):
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
         except ObjectNotFoundException as e:
             raise ShowNotFoundException from e
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
+        except IntegrityError as e:
+            cause = getattr(e.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_show":
-                        raise ShowAlreadyExistsException from exc
+                        raise ShowAlreadyExistsException from e
                     case "shows_cover_url_key":
-                        raise CoverUrlAlreadyExistsException from exc
+                        raise CoverUrlAlreadyExistsException from e
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise

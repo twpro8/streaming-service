@@ -7,12 +7,10 @@ from src.models import RatingORM, ShowORM, MovieORM, RatingAggregateORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import RatingDataMapper
 from src.enums import ContentType
-from src.schemas.rating import RatingDTO
 
 
 class RatingRepository(BaseRepository):
     model = RatingORM
-    schema = RatingDTO
     mapper = RatingDataMapper
 
     async def add_or_update_rating(

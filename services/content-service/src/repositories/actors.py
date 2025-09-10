@@ -27,8 +27,8 @@ class ActorRepository(BaseRepository):
     async def add_actor(self, actor_data: BaseModel) -> None:
         try:
             await self.add(data=actor_data)
-        except IntegrityError as exc:
-            raise ActorAlreadyExistsException from exc
+        except IntegrityError as e:
+            raise ActorAlreadyExistsException from e
 
     async def update_actor(
         self,
@@ -40,8 +40,8 @@ class ActorRepository(BaseRepository):
             await self.update(id=actor_id, data=actor_data, exclude_unset=exclude_unset)
         except ObjectNotFoundException:
             raise ActorNotFoundException
-        except IntegrityError as exc:
-            raise ActorAlreadyExistsException from exc
+        except IntegrityError as e:
+            raise ActorAlreadyExistsException from e
 
 
 class MovieActorRepository(BaseRepository):
@@ -51,8 +51,8 @@ class MovieActorRepository(BaseRepository):
     async def add_movie_actors(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise ActorNotFoundException from exc
+        except IntegrityError as e:
+            raise ActorNotFoundException from e
 
     async def update_movie_actors(self, movie_id: UUID, actors_ids: List[UUID]):
         query = select(self.model.actor_id).filter_by(movie_id=movie_id)
@@ -75,8 +75,8 @@ class MovieActorRepository(BaseRepository):
             values = [{"movie_id": movie_id, "actor_id": actor_id} for actor_id in to_add]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise ActorNotFoundException from exc
+            except IntegrityError as e:
+                raise ActorNotFoundException from e
 
 
 class ShowActorRepository(BaseRepository):
@@ -86,8 +86,8 @@ class ShowActorRepository(BaseRepository):
     async def add_show_actors(self, data: List[BaseModel]):
         try:
             await self.add_bulk(data)
-        except IntegrityError as exc:
-            raise ActorNotFoundException from exc
+        except IntegrityError as e:
+            raise ActorNotFoundException from e
 
     async def update_show_actors(self, show_id: UUID, actors_ids: List[UUID]):
         query = select(self.model.actor_id).filter_by(show_id=show_id)
@@ -110,5 +110,5 @@ class ShowActorRepository(BaseRepository):
             values = [{"show_id": show_id, "actor_id": actor_id} for actor_id in to_add]
             try:
                 await self.session.execute(insert(self.model).values(values))
-            except IntegrityError as exc:
-                raise ActorNotFoundException from exc
+            except IntegrityError as e:
+                raise ActorNotFoundException from e

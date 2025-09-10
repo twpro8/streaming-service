@@ -67,7 +67,7 @@ class ShowPatchDTO(BaseModel):
 
 class ShowPatchRequestDTO(ShowPatchDTO, AtLeastOneFieldMixin):
     cover_url: AnyUrl | None = None
-    directors_ids: List[conint(strict=True, ge=1)] | None = Field(
+    directors_ids: List[UUID] | None = Field(
         default=None,
         examples=[
             [],

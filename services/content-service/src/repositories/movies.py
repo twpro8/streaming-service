@@ -20,7 +20,6 @@ from src.models import MovieORM, MovieGenreORM
 from src.models.associations import MovieActorORM, MovieDirectorORM, MovieCountryORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import MovieDataMapper, MovieWithRelsDataMapper
-from src.schemas.movies import MovieDTO
 
 
 log = logging.getLogger(__name__)
@@ -28,7 +27,6 @@ log = logging.getLogger(__name__)
 
 class MovieRepository(BaseRepository):
     model = MovieORM
-    schema = MovieDTO
     mapper = MovieDataMapper
 
     async def get_filtered_movies(
@@ -45,7 +43,6 @@ class MovieRepository(BaseRepository):
     ):
         filters = {
             "title": lambda v: func.lower(self.model.title).contains(v.strip().lower()),
-            "description": lambda v: func.lower(self.model.description).contains(v.strip().lower()),
             "year": lambda v: (self.model.release_date >= date(v, 1, 1))
             & (self.model.release_date <= date(v, 12, 31)),
             "year_gt": lambda v: self.model.release_date > date(v, 1, 1),
@@ -119,15 +116,15 @@ class MovieRepository(BaseRepository):
     async def add_movie(self, data: BaseModel) -> None:
         try:
             await self.add(data)
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
+        except IntegrityError as e:
+            cause = getattr(e.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_movie":
-                        raise MovieAlreadyExistsException from exc
+                        raise MovieAlreadyExistsException from e
                     case "movies_cover_url_key":
-                        raise CoverUrlAlreadyExistsException from exc
+                        raise CoverUrlAlreadyExistsException from e
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
@@ -136,16 +133,16 @@ class MovieRepository(BaseRepository):
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
         except ObjectNotFoundException as e:
             raise MovieNotFoundException from e
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
+        except IntegrityError as e:
+            cause = getattr(e.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_movie":
-                        raise MovieAlreadyExistsException from exc
+                        raise MovieAlreadyExistsException from e
                     case "movies_cover_url_key":
-                        raise CoverUrlAlreadyExistsException from exc
+                        raise CoverUrlAlreadyExistsException from e
                     case "movies_video_url_key":
-                        raise VideoUrlAlreadyExistsException from exc
+                        raise VideoUrlAlreadyExistsException from e
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise

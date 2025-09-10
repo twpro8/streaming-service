@@ -13,7 +13,6 @@ from src.exceptions import (
 from src.models import SeasonORM
 from src.repositories.base import BaseRepository
 from src.repositories.mappers.mappers import SeasonDataMapper
-from src.schemas.seasons import SeasonDTO
 
 
 log = logging.getLogger(__name__)
@@ -21,19 +20,18 @@ log = logging.getLogger(__name__)
 
 class SeasonRepository(BaseRepository):
     model = SeasonORM
-    schema = SeasonDTO
     mapper = SeasonDataMapper
 
     async def add_season(self, data: BaseModel) -> None:
         try:
             await self.add(data)
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
+        except IntegrityError as e:
+            cause = getattr(e.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_season":
-                        raise SeasonAlreadyExistsException from exc
+                        raise SeasonAlreadyExistsException from e
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
 
@@ -42,13 +40,13 @@ class SeasonRepository(BaseRepository):
             data = await self.update(id=season_id, data=data, exclude_unset=exclude_unset)
         except ObjectNotFoundException as e:
             raise SeasonNotFoundException from e
-        except IntegrityError as exc:
-            cause = getattr(exc.orig, "__cause__", None)
+        except IntegrityError as e:
+            cause = getattr(e.orig, "__cause__", None)
             constraint = getattr(cause, "constraint_name", None)
             if isinstance(cause, UniqueViolationError):
                 match constraint:
                     case "uq_season":
-                        raise SeasonAlreadyExistsException from exc
+                        raise SeasonAlreadyExistsException from e
             log.exception("Unknown error: failed to add data to database, input data: %s", data)
             raise
         return data
