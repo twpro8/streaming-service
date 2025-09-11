@@ -31,14 +31,14 @@ class MovieRepository(BaseRepository):
 
     async def get_filtered_movies(
         self,
-        page: int | None,
-        per_page: int | None,
-        directors_ids: List[UUID] | None,
-        actors_ids: List[UUID] | None,
-        genres_ids: List[int] | None,
-        countries_ids: List[int] | None,
-        sort_by: str | None,
-        sort_order: str | None,
+        directors_ids: List[UUID] | None = None,
+        actors_ids: List[UUID] | None = None,
+        genres_ids: List[int] | None = None,
+        countries_ids: List[int] | None = None,
+        page: int | None = None,
+        per_page: int | None = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
         **kwargs,
     ):
         filters = {
@@ -84,10 +84,8 @@ class MovieRepository(BaseRepository):
 
         sort_by = "release_date" if sort_by == "year" else sort_by
 
-        # apply sorting and pagination
         query = self._apply_sorting_and_pagination(
             query=query,
-            model=self.model,
             sort_by=sort_by,
             sort_order=sort_order,
             page=page,

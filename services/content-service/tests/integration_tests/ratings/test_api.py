@@ -1,10 +1,9 @@
-from uuid import uuid4
-from decimal import Decimal, ROUND_HALF_UP
-
 import pytest
+from uuid_extensions import uuid7str
 
 from src.main import app
 from src.api.dependencies import get_current_user_id
+from tests.utils import get_and_validate, calculate_expected_rating
 
 
 users_ratings = {
@@ -13,42 +12,40 @@ users_ratings = {
 }
 
 
-def calculate_expected_rating(ratings: dict[int, float]) -> str:
-    avg = sum(ratings.values()) / len(ratings)
-    return str(Decimal(str(avg)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
-
-
 @pytest.mark.order(3)
 @pytest.mark.parametrize("content_type", ("movie", "show"))
-@pytest.mark.parametrize("val", (4.5, 7.5, 4.5, 8.5, 4.5, 9.5))
-async def test_add_movie_rating_valid(ac, get_all_movies, get_all_shows, content_type, val):
-    user_id = str(uuid4())
-    app.dependency_overrides[get_current_user_id] = lambda: user_id  # noqa
+@pytest.mark.parametrize("value", (4.5, 7.5, 4.5, 8.5, 4.5, 9.5))
+async def test_add_rating_valid(ac, get_all_movies, get_all_shows, content_type, value):
+    user_id = uuid7str()
+    app.dependency_overrides[get_current_user_id] = lambda: user_id
 
-    content_id = get_all_movies[0]["id"] if content_type == "movie" else get_all_shows[0]["id"]
+    if content_type == "movie":
+        content_id = get_all_movies[0]["id"]
+    else:
+        content_id = get_all_shows[0]["id"]
 
     res = await ac.post(
         "/v1/ratings",
         json={
-            "content_id": str(content_id),
+            "content_id": content_id,
             "content_type": content_type,
-            "value": val,
+            "value": value,
         },
     )
-
     assert res.status_code == 200
 
-    users_ratings[content_type][user_id] = val
+    users_ratings[content_type][user_id] = value
     expected_avg = calculate_expected_rating(users_ratings[content_type])
 
-    endpoint = "/v1/movies" if content_type == "movie" else "/v1/shows"
-    res = await ac.get(f"{endpoint}/{content_id}")
-    assert res.status_code == 200
+    content = await get_and_validate(
+        ac=ac,
+        url=f"/v1/{content_type}s/{content_id}",
+        expect_list=False,
+    )
+    assert content["rating"] == expected_avg
 
-    data = res.json()["data"]
-    assert data["rating"] == expected_avg
 
-
+@pytest.mark.parametrize("content_type", ("movie", "show"))
 @pytest.mark.parametrize(
     "field, value",
     [
@@ -57,38 +54,44 @@ async def test_add_movie_rating_valid(ac, get_all_movies, get_all_shows, content
         ("content_type", "unknown"),
     ],
 )
-async def test_add_rating_invalid(ac, get_all_movies, field, value):
-    movie_id = str(get_all_movies[0]["id"])
+async def test_add_rating_invalid(
+    ac,
+    get_all_movies,
+    get_all_shows,
+    content_type,
+    field,
+    value,
+):
+    if content_type == "movie":
+        content_id = get_all_movies[0]["id"]
+    else:
+        content_id = get_all_shows[0]["id"]
+
     req_body = (
         {
-            "content_id": movie_id,
-            "content_type": "movie",
+            "content_id": content_id,
+            "content_type": content_type,
             "value": 7.0,
             field: value,
         },
     )
-
     res = await ac.post(
         "/v1/ratings",
         json=req_body,
     )
-
     assert res.status_code == 422
-    data = res.json()
-    assert "detail" in data
+    assert "detail" in res.json()
 
 
 @pytest.mark.parametrize("content_type", ["movie", "show"])
-async def test_add_rating_not_found(ac, content_type):
-    content_id = str(uuid4())
+async def test_add_rating_content_not_found(ac, content_type):
     res = await ac.post(
         "/v1/ratings",
         json={
-            "content_id": content_id,
+            "content_id": uuid7str(),
             "content_type": content_type,
             "value": 1.0,
         },
     )
     assert res.status_code == 404
-    data = res.json()
-    assert "detail" in data
+    assert "detail" in res.json()

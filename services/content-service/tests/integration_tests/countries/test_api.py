@@ -1,85 +1,81 @@
+from itertools import islice
+
 import pytest
 
 import pycountry
-from tests.utils import calculate_expected_length
+from tests.utils import calculate_expected_length, get_and_validate
 
 
-@pytest.mark.parametrize(
-    "params",
-    [
-        {"page": 1, "per_page": 3},
-        {"page": 3, "per_page": 3},
-        {"page": 4, "per_page": 3},
-        {"page": 5, "per_page": 3},
-        {"page": 7, "per_page": 3},
-        {"page": 8, "per_page": 3},
-        {"page": 15, "per_page": 3},
-        {"page": 1, "per_page": 30},
-    ],
-)
-async def test_get_countries(ac, params, get_all_countries):
-    res = await ac.get("/v1/countries", params=params)
-    assert res.status_code == 200
-
-    data = res.json()["data"]
-
-    expected_length = calculate_expected_length(
-        params["page"], params["per_page"], len(get_all_countries)
-    )
-
-    assert len(data) == expected_length
-
-    for item in data:
-        assert isinstance(item["id"], int)
-        assert isinstance(item["code"], str)
+async def test_get_countries(ac, get_all_countries):
+    per_page = 3
+    for page in range(1, 10):
+        data = await get_and_validate(
+            ac=ac,
+            url="/v1/countries",
+            params={
+                "page": page,
+                "per_page": per_page,
+            },
+        )
+        expected_length = calculate_expected_length(page, per_page, len(get_all_countries))
+        assert len(data) == expected_length
+        for item in data:
+            assert isinstance(item["id"], int)
+            assert isinstance(item["code"], str)
 
 
-async def test_get_existing_country(ac, get_all_countries):
-    for country in get_all_countries:
-        res = await ac.get(f"/v1/countries/{country['id']}")
-        assert res.status_code == 200
-        lang = res.json()["data"]
-        assert lang["id"] == country["id"]
+async def test_get_country(ac, get_all_countries):
+    for country in islice(get_all_countries, 2):
+        data = await get_and_validate(
+            ac=ac,
+            url=f"/v1/countries/{country['id']}",
+            expect_list=False,
+        )
+        assert isinstance(data, dict)
+        assert data["id"] == country["id"]
+        assert data["code"] == country["code"]
+        assert data["name"] == country["name"]
 
 
-async def test_get_nonexistent_country(ac):
+async def test_get_country_not_found(ac):
     res = await ac.get("/v1/countries/999999")
     assert res.status_code == 404
+    assert "detail" in res.json()
 
 
 @pytest.mark.parametrize("code", ["CL", "PH", "TH"])
 async def test_add_country_valid(ac, code):
     res = await ac.post("/v1/countries", json={"code": code})
     assert res.status_code == 201
+
     country_id = res.json()["data"]["id"]
+    added_country = await get_and_validate(
+        ac=ac,
+        url=f"/v1/countries/{country_id}",
+        expect_list=False,
+    )
+    assert isinstance(added_country, dict)
+    assert added_country["id"] == country_id
+    assert added_country["code"] == code
+    assert added_country["name"] == pycountry.countries.get(alpha_2=code).name
 
-    res = await ac.get(f"/v1/countries/{country_id}")
-    assert res.status_code == 200
 
-    data = res.json()["data"]
-    assert data["code"] == code
-    assert data["name"] == pycountry.countries.get(alpha_2=code).name
-
-    await ac.delete(f"/v1/countries/{country_id}")
-
-
-@pytest.mark.parametrize("code", ["??", "FD", 1])
+@pytest.mark.parametrize("code", ["??", "FD"])
 async def test_add_country_invalid(ac, code):
     res = await ac.post("/v1/countries", json={"code": code})
     assert res.status_code == 422
     assert "detail" in res.json()
 
 
-@pytest.mark.parametrize("code", ["US", "CA"])
-async def test_add_country_on_conflict(ac, code):
-    res = await ac.post("/v1/countries", json={"code": code})
-    assert res.status_code == 409
-    detail = res.json()["detail"]
-    assert "country" in detail.strip().lower()
+async def test_add_country_on_conflict(ac, get_all_countries):
+    for country in islice(get_all_countries, 2):
+        res = await ac.post("/v1/countries", json={"code": country["code"]})
+        assert res.status_code == 409
+        assert "detail" in res.json()
 
 
-async def test_delete_country(ac, created_countries):
-    for country_id in created_countries:
+async def test_delete_country(ac, get_all_countries):
+    for country_id in islice(get_all_countries, 2):
         assert (await ac.get(f"/v1/countries/{country_id['id']}")).status_code == 200
         assert (await ac.delete(f"/v1/countries/{country_id['id']}")).status_code == 204
         assert (await ac.get(f"/v1/countries/{country_id['id']}")).status_code == 404

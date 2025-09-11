@@ -16,7 +16,8 @@
     "description": "Two people living the same life in parallel universes.",
     "release_date": "2001-01-01",
     "duration": 120,
-    "cover_url": null,
+    "cover_url": "https://2a8513f3-f255-4040-aaa6-971974b1f069/pic.jpeg",
+    "video_url": "https://2a8513f3-f255-4040-aaa6-971974b1f069/video.mp4",
     "rating": "7.5",
     "created_at": "2025-07-02T17:17:28.998256Z",
     "updated_at": "2025-08-02T17:17:28.998256Z"
@@ -38,7 +39,8 @@
     "description": "Sci-fi horror in a post-apocalyptic wasteland.",
     "release_date": "2003-01-01",
     "duration": 101,
-    "cover_url": null,
+    "cover_url": "https://4ac0591c-09cf-47c2-afe5-427bb411819c/pic.jpeg",
+    "video_url": "https://4ac0591c-09cf-47c2-afe5-427bb411819c/video.mp4",
     "rating": "4.5",
     "created_at": "2025-07-04T17:17:28.998256Z",
     "updated_at": "2025-08-04T17:17:28.998256Z"

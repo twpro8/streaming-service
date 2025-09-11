@@ -1,16 +1,18 @@
 from typing import Any, AsyncGenerator
-from uuid import uuid4, UUID
 
 import pytest
+from alembic import command
+from alembic.config import Config
 
 from httpx import AsyncClient, ASGITransport
+from sqlalchemy.util import greenlet_spawn
+from uuid_extensions import uuid7str
 
 from src.config import settings
 from src.api.dependencies import get_admin, get_current_user_id
 from src.db import null_pool_engine, null_pool_session_maker
 from src.factories.db_manager import DBManagerFactory
 from src.managers.db import DBManager
-from src.models.base import Base
 from src.models import *  # noqa
 from src.main import app
 from src.schemas.actors import ActorAddDTO, MovieActorDTO, ShowActorDTO
@@ -26,7 +28,7 @@ from src.schemas.shows import ShowDTO
 from tests.utils import read_json
 
 
-user_id = uuid4()
+user_id = uuid7str()
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -45,16 +47,18 @@ async def db() -> AsyncGenerator[Any, Any]:
         yield db
 
 
-app.dependency_overrides[DBManagerFactory.get_db] = get_db_null_pool  # noqa
-app.dependency_overrides[get_admin] = lambda: None  # noqa
-app.dependency_overrides[get_current_user_id] = lambda: user_id  # The number is a user_id | # noqa
+app.dependency_overrides[DBManagerFactory.get_db] = get_db_null_pool
+app.dependency_overrides[get_admin] = lambda: None
+app.dependency_overrides[get_current_user_id] = lambda: user_id
 
 
 @pytest.fixture(scope="session", autouse=True)
 async def setup_database(check_test_mode):
     async with null_pool_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.drop_all)
-        await conn.run_sync(Base.metadata.create_all)
+        alembic_cfg = Config("alembic.ini")
+        alembic_cfg.attributes["connection"] = conn
+        await greenlet_spawn(lambda: command.downgrade(alembic_cfg, "base"))
+        await greenlet_spawn(lambda: command.upgrade(alembic_cfg, "head"))
 
     movies_data = [MovieDTO.model_validate(obj) for obj in read_json("movies")]
     shows_data = [ShowDTO.model_validate(obj) for obj in read_json("shows")]
@@ -111,12 +115,6 @@ async def setup_database(check_test_mode):
 async def ac() -> AsyncGenerator[AsyncClient, Any]:
     async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as ac:
         yield ac
-
-
-@pytest.fixture(scope="session")
-async def get_shows_ids():
-    data = read_json("shows")
-    return [show_id["id"] for show_id in data]
 
 
 @pytest.fixture
@@ -208,62 +206,46 @@ async def created_languages(ac):
             await ac.delete(f"/v1/shows/{s['id']}")
 
 
-@pytest.fixture
-async def created_countries(ac):
-    countries = []
-    mock_data = ["EG", "NG", "SE", "FI", "NZ"]
-    try:
-        for code in mock_data:
-            res = await ac.post("/v1/countries", json={"code": code})
-            assert res.status_code == 201
-            country = res.json()["data"]
-            countries.append(country)
-        yield countries
-    finally:
-        for s in countries:
-            await ac.delete(f"/v1/shows/{s['id']}")
-
-
 @pytest.fixture(scope="function")
 async def get_all_comments():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         comments = await db_.comments.get_filtered()
-        return [comment.model_dump() for comment in comments]
+        return [comment.model_dump(mode="json") for comment in comments]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def get_all_movies():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
-        movies = await db_.movies.get_filtered()
-        return [movie.model_dump() for movie in movies]
+        movies = await db_.movies.get_filtered_movies(sort_by="id", sort_order="desc")
+        return [movie.model_dump(mode="json") for movie in movies]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def get_all_shows():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
-        shows = await db_.shows.get_filtered()
-        return [show.model_dump() for show in shows]
+        shows = await db_.shows.get_filtered_shows(sort_by="id", sort_order="desc")
+        return [show.model_dump(mode="json") for show in shows]
 
 
 @pytest.fixture(scope="session")
 async def get_all_genres():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         genres = await db_.genres.get_filtered()
-        return [genre.model_dump() for genre in genres]
+        return [genre.model_dump(mode="json") for genre in genres]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def get_all_actors():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         actors = await db_.actors.get_filtered()
-        return [actor.model_dump() for actor in actors]
+        return [actor.model_dump(mode="json") for actor in actors]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def get_all_directors():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         directors = await db_.directors.get_filtered()
-        return [director.model_dump() for director in directors]
+        return [director.model_dump(mode="json") for director in directors]
 
 
 @pytest.fixture(scope="session")
@@ -277,34 +259,34 @@ async def get_all_shows_with_rels(ac):
     return shows
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def get_all_seasons():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         seasons = await db_.seasons.get_filtered()
-        return [season.model_dump() for season in seasons]
+        return [season.model_dump(mode="json") for season in seasons]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 async def get_all_episodes():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         episodes = await db_.episodes.get_filtered()
-        return [episode.model_dump() for episode in episodes]
+        return [episode.model_dump(mode="json") for episode in episodes]
 
 
 @pytest.fixture(scope="session")
 async def get_all_languages():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         languages = await db_.languages.get_filtered()
-        return [lang.model_dump() for lang in languages]
+        return [lang.model_dump(mode="json") for lang in languages]
 
 
 @pytest.fixture(scope="session")
 async def get_all_countries():
     async with DBManager(session_factory=null_pool_session_maker) as db_:
         countries = await db_.countries.get_filtered()
-        return [country.model_dump() for country in countries]
+        return [country.model_dump(mode="json") for country in countries]
 
 
 @pytest.fixture(scope="session")
-async def current_user_id() -> UUID:
+async def current_user_id() -> str:
     return user_id

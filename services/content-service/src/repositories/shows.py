@@ -9,7 +9,6 @@ from sqlalchemy import select, func, exists
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
-from src.enums import SortBy, SortOrder
 from src.exceptions import (
     CoverUrlAlreadyExistsException,
     ShowAlreadyExistsException,
@@ -31,14 +30,14 @@ class ShowRepository(BaseRepository):
 
     async def get_filtered_shows(
         self,
-        page: int | None,
-        per_page: int | None,
-        directors_ids: List[UUID] | None,
-        actors_ids: List[UUID] | None,
-        genres_ids: List[int] | None,
-        countries_ids: List[int] | None,
-        sort_by: SortBy | None,
-        sort_order: SortOrder | None,
+        directors_ids: List[UUID] | None = None,
+        actors_ids: List[UUID] | None = None,
+        genres_ids: List[int] | None = None,
+        countries_ids: List[int] | None = None,
+        page: int | None = None,
+        per_page: int = None,
+        sort_by: str | None = None,
+        sort_order: str | None = None,
         **kwargs,
     ):
         filters = {
@@ -84,10 +83,8 @@ class ShowRepository(BaseRepository):
 
         sort_by = "release_date" if sort_by == "year" else sort_by
 
-        # apply sorting and pagination
         query = self._apply_sorting_and_pagination(
             query=query,
-            model=self.model,
             sort_by=sort_by,
             sort_order=sort_order,
             page=page,

@@ -14,7 +14,7 @@
     "title": "Stranger Things",
     "description": "A group of young friends witnesses supernatural forces and secret experiments in their town.",
     "release_date": "2001-01-01",
-    "cover_url": null,
+    "cover_url": "https://ef66e5c2-0931-4c43-bb6d-bb2b2ec3c9c4/pic.jpeg",
     "rating": "7.5",
     "created_at": "2025-07-02T17:17:28.998256Z",
     "updated_at": "2025-08-02T17:17:28.998256Z"
@@ -34,7 +34,7 @@
     "title": "The Office",
     "description": "A mockumentary on a group of typical office workers, where the workday consists of ego clashes and inappropriate behavior.",
     "release_date": "2003-01-01",
-    "cover_url": null,
+    "cover_url": "https://49f7cbdb-ec47-4807-8ed4-dc78d206a9ad/pic.jpeg",
     "rating": "4.5",
     "created_at": "2025-07-04T17:17:28.998256Z",
     "updated_at": "2025-08-04T17:17:28.998256Z"

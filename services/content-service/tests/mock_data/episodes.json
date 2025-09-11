@@ -13,7 +13,8 @@
     "season_id":  "d5ed6e69-5d07-474f-81e4-86627a576d45",
     "title": "Serial 1 Season 1 Episode 2",
     "episode_number":  2,
-    "duration": 40
+    "duration": 40,
+    "video_url": "https://d2d887fa-ac59-4be1-b92e-eb1fb0d4260f/video.mp4"
   },
   {
     "id": "b2b85024-3cdf-40be-9f3c-b2121ebfe074",
@@ -29,7 +30,8 @@
     "season_id":  "81c29ee1-db3e-4d81-a257-d05e29773deb",
     "title": "Serial 1 Season 2 Episode 2",
     "episode_number":  2,
-    "duration": 40
+    "duration": 40,
+    "video_url": "https://735d6e12-fe7d-47b8-82c6-c4fddc005791/video.mp4"
   },
   {
     "id": "a6b73d38-3974-44c6-802a-344d0ff62735",

@@ -5,7 +5,6 @@ from pydantic import BaseModel
 from sqlalchemy import select, insert, delete, update
 from sqlalchemy.exc import NoResultFound
 
-from src.enums import SortOrder
 from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 
@@ -22,8 +21,8 @@ class BaseRepository:
 
     async def get_filtered(
         self,
-        page: int = None,
-        per_page: int = None,
+        page: int | None = None,
+        per_page: int | None = None,
         *filter,
         **filter_by,
     ) -> list[BaseModel]:
@@ -82,35 +81,33 @@ class BaseRepository:
     @staticmethod
     def _paginate(query, page: int, per_page: int):
         """Applies limit and offset to query."""
-        if page is not None and per_page is not None:
+        if page and per_page:
             return query.limit(per_page).offset((page - 1) * per_page)
         return query
 
-    @staticmethod
     def _apply_sorting(
+        self,
         query,
-        model,
-        sort_by: str = "id",
-        sort_order: str = "desc",
+        sort_by: str,
+        sort_order: str,
     ):
         """Applies sorting to query."""
         if sort_by:
-            column = getattr(model, sort_by, None)
+            column = getattr(self.model, sort_by, None)
             if column is not None:
-                if sort_order == SortOrder.desc:
-                    return query.order_by(column.desc())
-                return query.order_by(column.asc())
+                if sort_order == "asc":
+                    return query.order_by(column.asc())
+                return query.order_by(column.desc())
         return query
 
     def _apply_sorting_and_pagination(
         self,
         query,
-        model,
         sort_by: str,
         sort_order: str,
-        page: int = None,
-        per_page: int = None,
+        page: int,
+        per_page: int,
     ):
-        query = self._apply_sorting(query, model, sort_by, sort_order)
+        query = self._apply_sorting(query, sort_by, sort_order)
         query = self._paginate(query, page, per_page)
         return query

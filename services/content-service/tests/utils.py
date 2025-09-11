@@ -1,5 +1,7 @@
 import json
+from decimal import Decimal, ROUND_HALF_UP
 from math import ceil
+from typing import Any, Hashable, Callable
 
 
 def pretty_print(obj):
@@ -39,3 +41,49 @@ def calculate_expected_length(page, per_page, total_count):
     else:
         expected_length = 0
     return expected_length
+
+
+def first_group(
+    items: list[dict[str, Any]],
+    group_by: str,
+    n: int,
+) -> list[dict[str, Any]]:
+    seen: dict[Hashable, list[dict[str, Any]]] = {}
+    for item in items:
+        group = item[group_by]
+        seen.setdefault(group, []).append(item)
+        if len(seen[group]) == n:
+            return seen[group]
+
+    raise ValueError(f"No group found with {n} items")
+
+
+def first_different(
+    items: list[dict[str, Any]],
+    attr_name: str,
+    n: int,
+) -> list[dict[str, Any]]:
+    seen: dict[Any, dict[str, Any]] = {}
+    result: list[dict[str, Any]] = []
+
+    for item in items:
+        value = item[attr_name]
+        if value not in seen:
+            seen[value] = item
+            result.append(item)
+            if len(result) == n:
+                return result
+
+    raise ValueError(f"No different {n} items found")
+
+
+def next_number(
+    items: list[dict[str, Any]], key: str, condition: Callable[[dict[str, Any]], bool] | None = None
+) -> int:
+    filtered = (item[key] for item in items if condition is None or condition(item))
+    return max(filtered, default=0) + 1
+
+
+def calculate_expected_rating(ratings: dict[int, float]) -> str:
+    avg = sum(ratings.values()) / len(ratings)
+    return str(Decimal(str(avg)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
