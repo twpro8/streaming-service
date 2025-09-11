@@ -8,9 +8,10 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 import uvicorn
 from fastapi import FastAPI
 
+from src.log_config import configure_logging
+from src import redis_manager
 from src.middleware import MetricsMiddleware
 from src.api import master_router
-from src.log_config import configure_logging
 
 
 # Configuring the logging level and format
@@ -20,9 +21,9 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    ...
+    await redis_manager.connect()
     yield
-    ...
+    await redis_manager.close()
 
 
 app = FastAPI(lifespan=lifespan, title="Content Service")
