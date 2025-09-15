@@ -1,8 +1,8 @@
 [project]
-name = "files-service"
+name = "media-processor-service"
 version = "0.1.0"
 description = ""
-readme = ""
+readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
     "aiobotocore>=2.22.0",

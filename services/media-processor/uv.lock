@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.13.2"
 
 [[package]]
@@ -291,45 +291,6 @@ wheels = [
 ]
 
 [[package]]
-name = "files-service"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "aiobotocore" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "black" },
-    { name = "celery" },
-    { name = "fastapi" },
-    { name = "jinja2" },
-    { name = "pydantic-settings" },
-    { name = "pyjwt" },
-    { name = "python-multipart" },
-    { name = "redis" },
-    { name = "ruff" },
-    { name = "sqlalchemy" },
-    { name = "uvicorn" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aiobotocore", specifier = ">=2.22.0" },
-    { name = "alembic", specifier = ">=1.15.2" },
-    { name = "asyncpg", specifier = ">=0.30.0" },
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "celery", specifier = ">=5.5.2" },
-    { name = "fastapi", specifier = ">=0.115.12" },
-    { name = "jinja2", specifier = ">=3.1.6" },
-    { name = "pydantic-settings", specifier = ">=2.9.1" },
-    { name = "pyjwt", specifier = ">=2.10.1" },
-    { name = "python-multipart", specifier = ">=0.0.20" },
-    { name = "redis", specifier = ">=6.1.0" },
-    { name = "ruff", specifier = ">=0.11.9" },
-    { name = "sqlalchemy", specifier = ">=2.0.40" },
-    { name = "uvicorn", specifier = ">=0.34.2" },
-]
-
-[[package]]
 name = "frozenlist"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -488,6 +449,45 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/0d/80/0985960e4b89922cb5a0bac0ed39c5b96cbc1a536a99f30e8c220a996ed9/MarkupSafe-3.0.2-cp313-cp313t-musllinux_1_2_x86_64.whl", hash = "sha256:131a3c7689c85f5ad20f9f6fb1b866f402c445b220c19fe4308c0b147ccd2ad9", size = 24098, upload-time = "2024-10-18T15:21:40.813Z" },
     { url = "https://files.pythonhosted.org/packages/82/78/fedb03c7d5380df2427038ec8d973587e90561b2d90cd472ce9254cf348b/MarkupSafe-3.0.2-cp313-cp313t-win32.whl", hash = "sha256:ba8062ed2cf21c07a9e295d5b8a2a5ce678b913b45fdf68c32d95d6c1291e0b6", size = 15208, upload-time = "2024-10-18T15:21:41.814Z" },
     { url = "https://files.pythonhosted.org/packages/4f/65/6079a46068dfceaeabb5dcad6d674f5f5c61a6fa5673746f42a9f4c233b3/MarkupSafe-3.0.2-cp313-cp313t-win_amd64.whl", hash = "sha256:e444a31f8db13eb18ada366ab3cf45fd4b31e4db1236a4448f68778c1d1a5a2f", size = 15739, upload-time = "2024-10-18T15:21:42.784Z" },
+]
+
+[[package]]
+name = "media-processor-service"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "aiobotocore" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "black" },
+    { name = "celery" },
+    { name = "fastapi" },
+    { name = "jinja2" },
+    { name = "pydantic-settings" },
+    { name = "pyjwt" },
+    { name = "python-multipart" },
+    { name = "redis" },
+    { name = "ruff" },
+    { name = "sqlalchemy" },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aiobotocore", specifier = ">=2.22.0" },
+    { name = "alembic", specifier = ">=1.15.2" },
+    { name = "asyncpg", specifier = ">=0.30.0" },
+    { name = "black", specifier = ">=25.1.0" },
+    { name = "celery", specifier = ">=5.5.2" },
+    { name = "fastapi", specifier = ">=0.115.12" },
+    { name = "jinja2", specifier = ">=3.1.6" },
+    { name = "pydantic-settings", specifier = ">=2.9.1" },
+    { name = "pyjwt", specifier = ">=2.10.1" },
+    { name = "python-multipart", specifier = ">=0.0.20" },
+    { name = "redis", specifier = ">=6.1.0" },
+    { name = "ruff", specifier = ">=0.11.9" },
+    { name = "sqlalchemy", specifier = ">=2.0.40" },
+    { name = "uvicorn", specifier = ">=0.34.2" },
 ]
 
 [[package]]

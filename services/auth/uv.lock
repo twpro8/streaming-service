@@ -94,6 +94,49 @@ wheels = [
 ]
 
 [[package]]
+name = "auth-service"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "aio-pika" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "authlib" },
+    { name = "black" },
+    { name = "celery" },
+    { name = "fastapi", extra = ["all"] },
+    { name = "greenlet" },
+    { name = "grpcio" },
+    { name = "grpcio-tools" },
+    { name = "passlib", extra = ["bcrypt"] },
+    { name = "prometheus-client" },
+    { name = "pyjwt" },
+    { name = "redis" },
+    { name = "ruff" },
+    { name = "sqlalchemy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aio-pika", specifier = ">=9.5.5" },
+    { name = "alembic", specifier = ">=1.15.2" },
+    { name = "asyncpg", specifier = ">=0.30.0" },
+    { name = "authlib", specifier = ">=1.5.1" },
+    { name = "black", specifier = ">=25.1.0" },
+    { name = "celery", specifier = ">=5.5.0" },
+    { name = "fastapi", extras = ["all"], specifier = ">=0.115.12" },
+    { name = "greenlet", specifier = ">=3.1.1" },
+    { name = "grpcio", specifier = ">=1.71.0" },
+    { name = "grpcio-tools", specifier = ">=1.71.0" },
+    { name = "passlib", extras = ["bcrypt"], specifier = ">=1.7.4" },
+    { name = "prometheus-client", specifier = ">=0.21.1" },
+    { name = "pyjwt", specifier = ">=2.10.1" },
+    { name = "redis", specifier = ">=5.2.1" },
+    { name = "ruff", specifier = ">=0.11.2" },
+    { name = "sqlalchemy", specifier = ">=2.0.40" },
+]
+
+[[package]]
 name = "authlib"
 version = "1.5.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1159,49 +1202,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/45/ed/582c4daba0f3e1688d923b5cb914ada1f9defa702df38a1916c899f7c4d1/ujson-5.10.0-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:b9500e61fce0cfc86168b248104e954fead61f9be213087153d272e817ec7b4f", size = 1043580, upload-time = "2024-05-14T02:01:31.447Z" },
     { url = "https://files.pythonhosted.org/packages/d7/0c/9837fece153051e19c7bade9f88f9b409e026b9525927824cdf16293b43b/ujson-5.10.0-cp313-cp313-win32.whl", hash = "sha256:4c4fc16f11ac1612f05b6f5781b384716719547e142cfd67b65d035bd85af165", size = 38766, upload-time = "2024-05-14T02:01:32.856Z" },
     { url = "https://files.pythonhosted.org/packages/d7/72/6cb6728e2738c05bbe9bd522d6fc79f86b9a28402f38663e85a28fddd4a0/ujson-5.10.0-cp313-cp313-win_amd64.whl", hash = "sha256:4573fd1695932d4f619928fd09d5d03d917274381649ade4328091ceca175539", size = 42212, upload-time = "2024-05-14T02:01:33.97Z" },
-]
-
-[[package]]
-name = "users-microservice"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "aio-pika" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "authlib" },
-    { name = "black" },
-    { name = "celery" },
-    { name = "fastapi", extra = ["all"] },
-    { name = "greenlet" },
-    { name = "grpcio" },
-    { name = "grpcio-tools" },
-    { name = "passlib", extra = ["bcrypt"] },
-    { name = "prometheus-client" },
-    { name = "pyjwt" },
-    { name = "redis" },
-    { name = "ruff" },
-    { name = "sqlalchemy" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "aio-pika", specifier = ">=9.5.5" },
-    { name = "alembic", specifier = ">=1.15.2" },
-    { name = "asyncpg", specifier = ">=0.30.0" },
-    { name = "authlib", specifier = ">=1.5.1" },
-    { name = "black", specifier = ">=25.1.0" },
-    { name = "celery", specifier = ">=5.5.0" },
-    { name = "fastapi", extras = ["all"], specifier = ">=0.115.12" },
-    { name = "greenlet", specifier = ">=3.1.1" },
-    { name = "grpcio", specifier = ">=1.71.0" },
-    { name = "grpcio-tools", specifier = ">=1.71.0" },
-    { name = "passlib", extras = ["bcrypt"], specifier = ">=1.7.4" },
-    { name = "prometheus-client", specifier = ">=0.21.1" },
-    { name = "pyjwt", specifier = ">=2.10.1" },
-    { name = "redis", specifier = ">=5.2.1" },
-    { name = "ruff", specifier = ">=0.11.2" },
-    { name = "sqlalchemy", specifier = ">=2.0.40" },
 ]
 
 [[package]]
