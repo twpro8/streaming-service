@@ -26,7 +26,7 @@ async def lifespan(app: FastAPI):
     await redis_manager.close()
 
 
-app = FastAPI(lifespan=lifespan, title="Content Service")
+app = FastAPI(lifespan=lifespan, title="Catalog Service")
 app.add_middleware(MetricsMiddleware)
 app.include_router(master_router)
 
