@@ -170,3 +170,16 @@ class PlaylistItemAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
 
 class PlaylistItemNotFoundException(ObjectNotFoundException):
     detail = "Playlist item not found"
+
+
+class InvalidStateException(MasterException):
+    detail = "State is invalid or expired"
+
+
+class InvalidStateHTTPException(MasterHTTPException):
+    status_code = 422
+    detail = "State is invalid or expired"
+
+
+class NoIDTokenHTTPException(MasterHTTPException):
+    detail = "No ID token found in the response"

@@ -3,7 +3,8 @@ from typing import Annotated
 
 from fastapi import Depends, Request, HTTPException, Query
 
-from src.db import DBManager, session_maker
+from src.db import session_maker
+from src.managers.db import DBManager
 from src.services.auth import AuthService
 
 
@@ -20,7 +21,7 @@ DBDep = Annotated[DBManager, Depends(get_db)]
 
 
 def get_token(request: Request) -> str:
-    token = request.cookies.get("access_token", None)  # cookie method returns a dict of str cookies
+    token = request.cookies.get("access_token")
     if not token:
         raise HTTPException(status_code=401, detail="No token")
     return token
@@ -28,20 +29,15 @@ def get_token(request: Request) -> str:
 
 def get_current_user_id(token: str = Depends(get_token)):
     data = AuthService().decode_token(token)
-    return data.get("user_id", None)
+    return data.get("user_id")
 
 
-UserDep = Annotated[int, Depends(get_current_user_id)]
+UserIDDep = Annotated[int, Depends(get_current_user_id)]
 
 
 class PaginationParams(BaseModel):
-    page: Annotated[int, Query(1, ge=1, le=999999)]
-    per_page: Annotated[int, Query(5, ge=1, le=30)]
+    page: Annotated[int | None, Query(default=1, ge=1)]
+    per_page: Annotated[int | None, Query(default=5, ge=1, le=100)]
 
 
 PaginationDep = Annotated[PaginationParams, Depends()]
-
-
-async def get_grpc_manager():
-    async with GRPCClientManager() as grpc_manager:
-        yield grpc_manager

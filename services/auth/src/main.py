@@ -7,13 +7,10 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import uvicorn
 from fastapi import FastAPI
-from starlette.middleware.sessions import SessionMiddleware
 
-from src.config import settings
-from src.views import master_router
-from src.middleware import MetricsMiddleware
+from src import redis_manager, aiohttp_client
+from src.api import master_router
 from src.log_config import configure_logging
-from src import rabbitmq_manager
 
 
 # Configuring the logging level and format
@@ -23,17 +20,14 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    log.info("RabbitMQ: Connecting...")
-    await rabbitmq_manager.connect()
-    log.info("RabbitMQ: Connected")
+    await redis_manager.connect()
+    await aiohttp_client.startup()
     yield
-    await rabbitmq_manager.close()
-    log.info("RabbitMQ: Connection closed")
+    await redis_manager.close()
+    await aiohttp_client.shutdown()
 
 
 app = FastAPI(lifespan=lifespan)
-app.add_middleware(SessionMiddleware, secret_key=settings.FASTAPI_SECRET_KEY)
-app.add_middleware(MetricsMiddleware)
 app.include_router(master_router)
 
 

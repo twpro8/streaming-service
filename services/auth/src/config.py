@@ -5,6 +5,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     MODE: Literal["TEST", "LOCAL", "DEV", "PROD"]
+    LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR"]
+
+    JWT_SECRET_KEY: str
+    JWT_ALGORITHM: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int
 
     DB_HOST: str
     DB_PORT: int
@@ -12,46 +17,27 @@ class Settings(BaseSettings):
     DB_PASS: str
     DB_NAME: str
 
-    GITHUB_CLIENT_ID: str
-    GITHUB_CLIENT_SECRET: str
-    GOOGLE_CLIENT_ID: str
-    GOOGLE_CLIENT_SECRET: str
-
-    GOOGLE_REDIRECT_URL: str
-    GITHUB_REDIRECT_URL: str
-    FRONTEND_URL: str
-    JWT_SECRET_KEY: str
-    JWT_ALGORITHM: str
-    ACCESS_TOKEN_EXPIRE_MINUTES: int
-    OAUTH_SECRET_KEY: str
-    FASTAPI_SECRET_KEY: str
-
-    CONTENT_SERVICE_URL: str
-
     REDIS_HOST: str
     REDIS_PORT: int
+    REDIS_PASS: str
 
-    RABBITMQ_USER: str
-    RABBITMQ_PASSWORD: str
-    RABBITMQ_HOST: str
-    RABBITMQ_PORT: int
+    OAUTH_GOOGLE_CLIENT_ID: str
+    OAUTH_GOOGLE_CLIENT_SECRET: str
+    OAUTH_GOOGLE_REDIRECT_URL: str
+    FRONTEND_URL: str
 
-    LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR"]
+    GOOGLE_JWKS_URL: str
+    GOOGLE_TOKEN_URL: str
 
-    GRPC_HOST: str
-    GRPC_PORT: int
-
-    @property
-    def REDIS_URL(self):
-        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
-
-    @property
-    def RABBITMQ_URL(self):
-        return f"amqp://{self.RABBITMQ_USER}:{self.RABBITMQ_PASSWORD}@{self.RABBITMQ_HOST}:{self.RABBITMQ_PORT}"
+    SIZE_POOL_AIOHTTP: int
 
     @property
     def DB_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
+
+    @property
+    def REDIS_URL(self) -> str:
+        return f"redis://default:{self.REDIS_PASS}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
     model_config = SettingsConfigDict(env_file=".env")
 

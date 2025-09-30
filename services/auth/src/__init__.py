@@ -1,10 +1,7 @@
-from src.connectors.redis_conn import RedisManager
-from src.connectors.rabbit_conn import RabbitManager
 from src.config import settings
+from src.managers.redis import RedisManager
+from src.adapters.aiohttp import HTTPClient
 
 
-redis_manager = RedisManager(
-    host=settings.REDIS_HOST,
-    port=settings.REDIS_PORT,
-)
-rabbitmq_manager = RabbitManager(amqp_url=settings.RABBITMQ_URL)
+redis_manager = RedisManager(url=settings.REDIS_URL)
+aiohttp_client = HTTPClient()
