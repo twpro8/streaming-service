@@ -19,6 +19,8 @@ uuid_pk = Annotated[
 
 str_48 = Annotated[str, 48]
 str_256 = Annotated[str, 256]
+str_128 = Annotated[str, 128]
+str_512 = Annotated[str, 512]
 str_1024 = Annotated[str, 1024]
 
 created_at = Annotated[
@@ -34,6 +36,8 @@ class Base(DeclarativeBase):
     type_annotation_map = {
         UUID: PG_UUID(as_uuid=True),
         str_48: String(48),
+        str_128: String(128),
         str_256: String(256),
+        str_512: String(512),
         str_1024: String(1024),
     }
