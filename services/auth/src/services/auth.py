@@ -91,6 +91,10 @@ class AuthService(BaseService):
 
         user_data = await self.verify_google_token(id_token, settings.OAUTH_GOOGLE_CLIENT_ID)
 
+        db_user = await self.db.users.get_one_or_none(email=user_data["email"])
+        if db_user:
+            return self.create_access_token(data=db_user.model_dump(mode="json"))
+
         user_id = uuid7()
         to_add = UserAddDTO(
             id=user_id,
@@ -102,10 +106,10 @@ class AuthService(BaseService):
             provider_name="google",
         )
 
-        db_user = await self.db.users.add_one(to_add)
+        new_user = await self.db.users.add_one(to_add)
         await self.db.commit()
 
-        return db_user
+        return self.create_access_token(data=new_user.model_dump(mode="json"))
 
     async def fetch_google_jwks(self) -> tuple[dict, int]:
         jwks, resp = await self.ac.get_json(url=settings.GOOGLE_JWKS_URL)

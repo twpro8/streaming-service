@@ -1,23 +1,21 @@
+from uuid import UUID
+
 from pydantic import BaseModel
 from typing import Annotated
 
 from fastapi import Depends, Request, HTTPException, Query
 
-from src.db import session_maker
+from src.factories.db_manager import DBManagerFactory
 from src.managers.db import DBManager
+from src.managers.redis import RedisManager
+from src.adapters.aiohttp import HTTPClient
 from src.services.auth import AuthService
-
-
-def get_db_manager():
-    return DBManager(session_factory=session_maker)
+from src import redis_manager, aiohttp_client
 
 
 async def get_db():
-    async with get_db_manager() as db:
+    async with DBManagerFactory.create() as db:
         yield db
-
-
-DBDep = Annotated[DBManager, Depends(get_db)]
 
 
 def get_token(request: Request) -> str:
@@ -28,11 +26,8 @@ def get_token(request: Request) -> str:
 
 
 def get_current_user_id(token: str = Depends(get_token)):
-    data = AuthService().decode_token(token)
+    data = AuthService.decode_token(token)
     return data.get("user_id")
-
-
-UserIDDep = Annotated[int, Depends(get_current_user_id)]
 
 
 class PaginationParams(BaseModel):
@@ -40,4 +35,16 @@ class PaginationParams(BaseModel):
     per_page: Annotated[int | None, Query(default=5, ge=1, le=100)]
 
 
+def get_redis_manager() -> RedisManager:
+    return redis_manager
+
+
+def get_async_http_client() -> HTTPClient:
+    return aiohttp_client
+
+
+DBDep = Annotated[DBManager, Depends(get_db)]
+UserIDDep = Annotated[UUID, Depends(get_current_user_id)]
 PaginationDep = Annotated[PaginationParams, Depends()]
+RedisManagerDep = Annotated[RedisManager, Depends(get_redis_manager)]
+HTTPClientDep = Annotated[HTTPClient, Depends(get_async_http_client)]
