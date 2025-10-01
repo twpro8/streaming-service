@@ -24,13 +24,13 @@ class HTTPClient:
             connector=connector,
             raise_for_status=True,
         )
-        log.info(f"Aiohttp: client session created")
+        log.info("Aiohttp: client session created")
         return self
 
     async def shutdown(self):
         if self._session:
             await self._session.close()
-            log.info(f"Aiohttp: client session closed")
+            log.info("Aiohttp: client session closed")
 
     def _ensure_session(self):
         if self._session is None:

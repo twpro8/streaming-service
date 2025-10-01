@@ -1,11 +1,26 @@
+import json
+import logging
+import secrets
 from datetime import datetime, timezone, timedelta
 
 import jwt
+from jwt import PyJWKClient
 from passlib.context import CryptContext
+from uuid_extensions import uuid7
 
 from src.config import settings
-from src.exceptions import InvalidCredentialsException, SignatureExpiredException
+from src.exceptions import (
+    InvalidCredentialsException,
+    SignatureExpiredException,
+    NoIDTokenException,
+    InvalidStateException,
+)
+from src.google_oauth import generate_google_oauth_redirect_uri
+from src.schemas.users import UserAddDTO
 from src.services.base import BaseService
+
+
+log = logging.getLogger(__name__)
 
 
 class AuthService(BaseService):
@@ -46,3 +61,78 @@ class AuthService(BaseService):
         except jwt.exceptions.ExpiredSignatureError:
             raise SignatureExpiredException
         return data
+
+    async def get_google_oauth_redirect_uri(self):
+        state = secrets.token_urlsafe(16)
+        await self.redis.set(state, "1", expire=60)
+        url = generate_google_oauth_redirect_uri(state)
+
+        return url
+
+    async def handle_google_callback(self, state: str, code: str):
+        s = await self.redis.get(state)
+        if not s:
+            raise InvalidStateException
+
+        resp = await self.ac.post(
+            url=settings.GOOGLE_TOKEN_URL,
+            data={
+                "client_id": settings.OAUTH_GOOGLE_CLIENT_ID,
+                "client_secret": settings.OAUTH_GOOGLE_CLIENT_SECRET,
+                "code": code,
+                "grant_type": "authorization_code",
+                "redirect_uri": settings.OAUTH_GOOGLE_REDIRECT_URL,
+            },
+        )
+
+        id_token = resp.get("id_token")
+        if not id_token:
+            raise NoIDTokenException
+
+        user_data = await self.verify_google_token(id_token, settings.OAUTH_GOOGLE_CLIENT_ID)
+
+        user_id = uuid7()
+        to_add = UserAddDTO(
+            id=user_id,
+            name=user_data["name"],
+            first_name=user_data["given_name"],
+            last_name=user_data["family_name"],
+            email=user_data["email"],
+            picture=user_data["picture"],
+            provider_name="google",
+        )
+
+        db_user = await self.db.users.add_one(to_add)
+        await self.db.commit()
+
+        return db_user
+
+    async def fetch_google_jwks(self) -> tuple[dict, int]:
+        jwks, resp = await self.ac.get_json(url=settings.GOOGLE_JWKS_URL)
+        cache_control = resp.headers.get("Cache-Control", None)
+        ttl = int(cache_control.split("max-age=")[1].split(",")[0])
+        return jwks, ttl
+
+    async def verify_google_token(self, id_token: str, client_id: str) -> dict:
+        try:
+            jwks_raw = await self.redis.get("google_jwks")
+            if jwks_raw:
+                jwks = json.loads(jwks_raw)
+            else:
+                jwks, ttl = await self.fetch_google_jwks()
+                await self.redis.set("google_jwks", json.dumps(jwks), expire=ttl)
+
+            jwks_client = PyJWKClient(settings.GOOGLE_JWKS_URL, cache_keys=jwks)
+            signing_key = jwks_client.get_signing_key_from_jwt(id_token)
+
+            payload = jwt.decode(
+                id_token,
+                signing_key.key,
+                algorithms=["RS256"],
+                audience=client_id,
+                issuer="https://accounts.google.com",
+            )
+        except Exception as e:
+            log.error(f"Failed to verify Google ID token: {e}")
+            raise
+        return payload

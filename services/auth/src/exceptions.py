@@ -9,8 +9,8 @@ class MasterException(Exception):
 
 
 class MasterHTTPException(HTTPException):
-    status_code = 418
-    detail = "I'm a teapot"
+    status_code = 500
+    detail = "Unexpected error"
 
     def __init__(self):
         super().__init__(status_code=self.status_code, detail=self.detail)
@@ -71,10 +71,6 @@ class UserNotFoundException(UsersException, ObjectNotFoundException):
     detail = "User not found"
 
 
-class IncorrectPasswordException(UsersException):
-    detail = "Incorrect password"
-
-
 class InvalidUsersDataException(UsersException):
     detail = "Incorrect user data"
 
@@ -84,92 +80,13 @@ class UserNotFoundHTTPException(UsersHTTPException, ObjectNotFoundHTTPException)
     detail = "User not found"
 
 
-class IncorrectPasswordHTTPException(UsersHTTPException):
-    status_code = 401
+class IncorrectPasswordException(UsersException):
     detail = "Incorrect password"
 
 
-class InvalidFriendIdException(UsersHTTPException):
-    status_code = 422
-    detail = "Friend ID cannot be equal to users one"
-
-
-# Friendships
-class FriendshipAlreadyExistsException(ObjectAlreadyExistsException):
-    detail = "Friendship already exists"
-
-
-class FriendshipAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    status_code = 409
-    detail = "Friendship already exists"
-
-
-# Films and Series exceptions
-class ContentNotFoundException(ObjectNotFoundException):
-    detail = "Content not found"
-
-
-class ContentNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
-    detail = "Content not found"
-
-
-class AlreadyInFavoritesException(ObjectAlreadyExistsException):
-    detail = "Content is already in favorites"
-
-
-class AlreadyInFavoritesHTTPException(ObjectAlreadyExistsHTTPException):
-    status_code = 409
-    detail = "Content is already in favorites"
-
-
-class FriendshipNotFoundException(ObjectNotFoundException):
-    detail = "Friendship not found"
-
-
-class FavoriteNotFoundException(ObjectNotFoundException):
-    detail = "Favorite not found"
-
-
-class FavoriteNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 204
-    detail = "Provided content is not in favorites"
-
-
-class NoContentHTTPException(MasterHTTPException):
-    status_code = 204
-
-
-# Playlists
-class PlaylistAlreadyExistsException(ObjectAlreadyExistsException):
-    detail = "Playlist already exists"
-
-
-class PlaylistNotFoundException(ObjectNotFoundException):
-    detail = "Playlist does not exist"
-
-
-class PlaylistAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    status_code = 409
-    detail = "Playlist with the provided name already exists"
-
-
-class PlaylistNotFoundHTTPException(ObjectNotFoundHTTPException):
-    status_code = 404
-    detail = "Playlist does not exist"
-
-
-class PlaylistItemAlreadyExistsException(ObjectAlreadyExistsException):
-    detail = "Playlist item already exists"
-
-
-class PlaylistItemAlreadyExistsHTTPException(ObjectAlreadyExistsHTTPException):
-    status_code = 409
-    detail = "Content already in playlist"
-
-
-class PlaylistItemNotFoundException(ObjectNotFoundException):
-    detail = "Playlist item not found"
+class IncorrectPasswordHTTPException(UsersHTTPException):
+    status_code = 401
+    detail = "Incorrect password"
 
 
 class InvalidStateException(MasterException):
@@ -179,6 +96,10 @@ class InvalidStateException(MasterException):
 class InvalidStateHTTPException(MasterHTTPException):
     status_code = 422
     detail = "State is invalid or expired"
+
+
+class NoIDTokenException(MasterException):
+    detail = "No ID token found in the response"
 
 
 class NoIDTokenHTTPException(MasterHTTPException):
