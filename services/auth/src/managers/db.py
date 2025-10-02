@@ -1,3 +1,4 @@
+from src.repositories.refresh_tokens import RefreshTokenRepository
 from src.repositories.users import UserRepository
 
 
@@ -8,6 +9,7 @@ class DBManager:
     async def __aenter__(self):
         self.session = self.session_factory()
         self.users = UserRepository(self.session)
+        self.refresh_tokens = RefreshTokenRepository(self.session)
         return self
 
     async def __aexit__(self, *args):

@@ -18,7 +18,6 @@ class UserORM(Base):
     bio: Mapped[str_1024 | None]
     picture: Mapped[str_256 | None]
     password_hash: Mapped[str_256 | None]
-    refresh_token_hash: Mapped[str_256 | None]
     provider_name: Mapped[str_48 | None]
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)

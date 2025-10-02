@@ -1,9 +1,11 @@
 from typing import Annotated
 
 from fastapi import APIRouter, Depends
+from fastapi.params import Query
 from fastapi.responses import RedirectResponse, Response
 
 from src.api.dependencies import RedisManagerDep
+from src.exceptions import InvalidStateException, InvalidStateHTTPException
 from src.factories.service import ServiceFactory
 from src.services.auth import AuthService
 
@@ -21,9 +23,14 @@ async def get_google_oauth_redirect_uri(redis_manager: RedisManagerDep):
 async def google_callback(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     response: Response,
-    state: str,
-    code: str,
+    state: str = Query(),
+    code: str = Query(),
 ):
-    access_token = await service.handle_google_callback(state, code)
-    response.set_cookie("access_token", access_token)
-    return {"status": "ok", "access_token": access_token}
+    try:
+        access_token, refresh_token = await service.handle_google_callback(state, code)
+    except InvalidStateException:
+        raise InvalidStateHTTPException
+    response.set_cookie(
+        "access_token", access_token, httponly=True
+    )  # use secure=True to ensure HTTPS
+    return {"status": "ok", "access_token": access_token, "refresh_token": refresh_token}

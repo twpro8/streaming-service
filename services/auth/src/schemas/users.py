@@ -15,7 +15,6 @@ class UserAddDTO(BaseModel):
     picture: str | None = None
     provider_name: str | None = None
     password_hash: str | None = None
-    refresh_token_hash: str | None = None
 
 
 class UserDTO(BaseModel):
@@ -36,4 +35,3 @@ class UserDTO(BaseModel):
 
 class DBUserDTO(UserDTO):
     password_hash: str | None
-    refresh_token_hash: str | None

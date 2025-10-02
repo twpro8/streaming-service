@@ -1,7 +1,9 @@
+import hashlib
 import json
 import logging
 import secrets
 from datetime import datetime, timezone, timedelta
+from uuid import UUID
 
 import jwt
 from jwt import PyJWKClient
@@ -16,6 +18,7 @@ from src.exceptions import (
     InvalidStateException,
 )
 from src.google_oauth import generate_google_oauth_redirect_uri
+from src.schemas.auth import RefreshTokenAddDTO
 from src.schemas.users import UserAddDTO
 from src.services.base import BaseService
 
@@ -47,6 +50,21 @@ class AuthService(BaseService):
             algorithm=settings.JWT_ALGORITHM,
         )
         return encoded_jwt
+
+    @staticmethod
+    def create_refresh_token(user_id: UUID, token_id: UUID) -> tuple[str, str]:
+        expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+        refresh_token = jwt.encode(
+            payload={
+                "sub": str(user_id),
+                "jti": str(token_id),
+                "exp": expire,
+            },
+            key=settings.JWT_SECRET_KEY,
+            algorithm=settings.JWT_ALGORITHM,
+        )
+        refresh_token_hash = hashlib.sha256(refresh_token.encode()).hexdigest()
+        return refresh_token, refresh_token_hash
 
     @staticmethod
     def decode_token(token: str) -> dict:
@@ -93,23 +111,51 @@ class AuthService(BaseService):
 
         db_user = await self.db.users.get_one_or_none(email=user_data["email"])
         if db_user:
-            return self.create_access_token(data=db_user.model_dump(mode="json"))
+            access_token = self.create_access_token(data=db_user.model_dump(mode="json"))
+
+            refresh_token_id = uuid7()
+            refresh_token, refresh_token_hash = self.create_refresh_token(
+                db_user.id, refresh_token_id
+            )
+
+            await self.db.refresh_tokens.add_one(
+                RefreshTokenAddDTO(
+                    id=refresh_token_id,
+                    user_id=db_user.id,
+                    token_hash=refresh_token_hash,
+                )
+            )
+            await self.db.commit()
+
+            return access_token, refresh_token
 
         user_id = uuid7()
         to_add = UserAddDTO(
             id=user_id,
             name=user_data["name"],
             first_name=user_data["given_name"],
-            last_name=user_data["family_name"],
+            last_name=user_data.get("family_name"),
             email=user_data["email"],
-            picture=user_data["picture"],
+            picture=user_data.get("picture"),
             provider_name="google",
         )
 
         new_user = await self.db.users.add_one(to_add)
-        await self.db.commit()
 
-        return self.create_access_token(data=new_user.model_dump(mode="json"))
+        refresh_token_id = uuid7()
+        refresh_token, refresh_token_hash = self.create_refresh_token(user_id, refresh_token_id)
+        await self.db.refresh_tokens.add_one(
+            RefreshTokenAddDTO(
+                id=refresh_token_id,
+                user_id=user_id,
+                token_hash=refresh_token_hash,
+            )
+        )
+
+        await self.db.commit()
+        access_token = self.create_access_token(data=new_user.model_dump(mode="json"))
+
+        return access_token, refresh_token
 
     async def fetch_google_jwks(self) -> tuple[dict, int]:
         jwks, resp = await self.ac.get_json(url=settings.GOOGLE_JWKS_URL)
