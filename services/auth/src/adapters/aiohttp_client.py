@@ -3,13 +3,13 @@ from socket import AF_INET
 
 import aiohttp
 
-from src import settings
+from src.config import settings
 
 
 log = logging.getLogger(__name__)
 
 
-class HTTPClient:
+class AiohttpClient:
     def __init__(self):
         self._session: aiohttp.ClientSession | None = None
 

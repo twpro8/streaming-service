@@ -104,3 +104,25 @@ class NoIDTokenException(MasterException):
 
 class NoIDTokenHTTPException(MasterHTTPException):
     detail = "No ID token found in the response"
+
+
+class InvalidRefreshTokenException(MasterException):
+    detail = "Invalid refresh token"
+
+
+class InvalidRefreshTokenHTTPException(MasterHTTPException):
+    status_code = 403
+    detail = "Invalid refresh token"
+
+
+class RefreshTokenNotFoundException(ObjectNotFoundException):
+    detail = "Refresh token not found"
+
+
+class RefreshTokenNotFoundHTTPException(MasterHTTPException):
+    status_code = 403
+    detail = "Refresh token not found"
+
+
+class InvalidHashValueException(MasterException):
+    detail = "Invalid hash value"

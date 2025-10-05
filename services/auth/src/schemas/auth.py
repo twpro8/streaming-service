@@ -5,6 +5,12 @@ from src.schemas.base import BaseSchema
 from src.schemas.pydatic_types import Str256
 
 
+class TokenDTO(BaseSchema):
+    access: str
+    refresh: str
+    type: str = "bearer"
+
+
 class RefreshTokenAddDTO(BaseSchema):
     id: UUID
     user_id: UUID

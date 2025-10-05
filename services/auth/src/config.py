@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     OAUTH_GOOGLE_CLIENT_ID: str
     OAUTH_GOOGLE_CLIENT_SECRET: str
+    OAUTH_GOOGLE_BASE_URL: str
     OAUTH_GOOGLE_REDIRECT_URL: str
     FRONTEND_URL: str
 
