@@ -1,27 +1,33 @@
+from typing import Type
+
 from pydantic import BaseModel
 from sqlalchemy import insert, select, delete, update
-from sqlalchemy.exc import NoResultFound, IntegrityError
+from sqlalchemy.exc import NoResultFound
 
-from src.exceptions import ObjectNotFoundException, ObjectAlreadyExistsException
+from src.exceptions import ObjectNotFoundException
 from src.repositories.mappers.base import DataMapper
 
 
 class BaseRepository:
     model = None
-    schema: BaseModel = None
-    mapper: DataMapper = None
+    mapper: Type[DataMapper] = None
 
     def __init__(self, session):
         self.session = session
 
-    async def get_filtered(self, limit: int = None, offset: int = None, *filter, **filter_by):
+    async def get_filtered(
+        self,
+        page: int | None = None,
+        per_page: int | None = None,
+        *filter,
+        **filter_by,
+    ) -> list[BaseModel]:
         query = select(self.model).filter(*filter).filter_by(**filter_by)
-        if limit is not None and offset is not None:
-            query = query.limit(limit).offset(offset)
+        query = self._paginate(query, page, per_page)
         res = await self.session.execute(query)
-        return [self.mapper.map_to_domain_entity(model) for model in res.scalars().all()]
+        return [self.mapper.map_to_domain_entity(m) for m in res.scalars().all()]
 
-    async def get_one(self, **filter_by):
+    async def get_one(self, **filter_by) -> BaseModel:
         query = select(self.model).filter_by(**filter_by)
         res = await self.session.execute(query)
         try:
@@ -30,7 +36,7 @@ class BaseRepository:
             raise ObjectNotFoundException
         return self.mapper.map_to_domain_entity(model)
 
-    async def get_one_or_none(self, **filter_by):
+    async def get_one_or_none(self, **filter_by) -> BaseModel | None:
         query = select(self.model).filter_by(**filter_by)
         res = await self.session.execute(query)
         model = res.scalars().one_or_none()
@@ -38,16 +44,11 @@ class BaseRepository:
             return None
         return self.mapper.map_to_domain_entity(model)
 
-    async def add_one(self, data: BaseModel):
-        try:
-            stmt = insert(self.model).values(**data.model_dump()).returning(self.model)
-            res = await self.session.execute(stmt)
-            model = res.scalars().one()
-        except IntegrityError:
-            raise ObjectAlreadyExistsException
-        return self.mapper.map_to_domain_entity(model)
+    async def add(self, data: BaseModel) -> None:
+        stmt = insert(self.model).values(**data.model_dump())
+        await self.session.execute(stmt)
 
-    async def add_bulk(self, data: list[BaseModel]):
+    async def add_bulk(self, data: list[BaseModel]) -> None:
         stmt = insert(self.model).values([item.model_dump() for item in data])
         await self.session.execute(stmt)
 
@@ -63,3 +64,10 @@ class BaseRepository:
     async def delete(self, **filter_by) -> None:
         stmt = delete(self.model).filter_by(**filter_by)
         await self.session.execute(stmt)
+
+    @staticmethod
+    def _paginate(query, page: int, per_page: int):
+        """Applies limit and offset to query."""
+        if page and per_page:
+            return query.limit(per_page).offset((page - 1) * per_page)
+        return query

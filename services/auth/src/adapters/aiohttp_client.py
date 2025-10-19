@@ -55,9 +55,7 @@ class AiohttpClient:
 
     def _ensure_session(self):
         if self._session is None:
-            raise AiohttpNotInitializedException(
-                "HTTPClient not started. Call startup() first."
-            )
+            raise AiohttpNotInitializedException("HTTPClient not started. Call startup() first.")
 
     async def get(self, url: str, **kwargs):
         self._ensure_session()

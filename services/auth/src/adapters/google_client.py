@@ -12,7 +12,8 @@ from src.exceptions import (
     GoogleOAuthClientException,
     NoIDTokenException,
     InvalidStateException,
-    TokenVerificationException, JWKSFetchException,
+    TokenVerificationException,
+    JWKSFetchException,
 )
 
 
