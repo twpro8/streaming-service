@@ -6,20 +6,18 @@ from src.adapters.jwt_provider import JwtProvider
 from src.adapters.password_hasher import PasswordHasher
 from src.adapters.google_client import GoogleOAuthClient
 from src.adapters.aiohttp_client import AiohttpClient
+from src.api.dependencies import ClientInfo
 from src.managers.db import DBManager
 from src.managers.redis import RedisManager
 from src.exceptions import (
-    InvalidCredentialsException,
-    SignatureExpiredException,
     NoIDTokenException,
     InvalidStateException,
     UserNotFoundException,
-    InvalidRefreshTokenException,
-    RefreshTokenNotFoundException,
     InvalidHashValueException,
+    IncorrectPasswordException,
 )
-from src.schemas.auth import RefreshTokenAddDTO, TokenDTO
-from src.schemas.users import UserAddDTO
+from src.schemas.auth import RefreshTokenAddDTO
+from src.schemas.users import UserAddDTO, UserAddRequestDTO
 from src.services.base import BaseService
 
 
@@ -49,97 +47,110 @@ class AuthService(BaseService):
         self.hasher = hasher
         self.google = google
 
-    async def get_google_oauth_redirect_uri(self):
+    async def login(
+        self,
+        email: str,
+        client_info: ClientInfo,
+        password: str | None = None,
+    ) -> tuple[str, str]:
+        try:
+            user = await self.db.users.get_db_user(email=email)
+        except UserNotFoundException:
+            raise
+
+        if password:
+            try:
+                self.hasher.verify(password, user.password_hash)
+            except InvalidHashValueException:
+                raise IncorrectPasswordException
+
+        token_id = uuid7()
+        access_token = self.jwt.create_access_token(
+            data=user.model_dump(mode="json", exclude=["password_hash"]),
+        )
+        refresh_token, expire = self.jwt.create_refresh_token(
+            {
+                "sub": str(user.id),
+                "jti": str(token_id),
+            },
+        )
+        await self.db.refresh_tokens.add(
+            RefreshTokenAddDTO(
+                id=token_id,
+                user_id=user.id,
+                ip=client_info.ip,
+                user_agent=client_info.user_agent,
+                expires_at=expire,
+            ),
+        )
+        await self.db.commit()
+
+        return access_token, refresh_token
+
+    async def register(self, data: UserAddRequestDTO | UserAddDTO):
+        if isinstance(data, UserAddRequestDTO):
+            user_id = uuid7()
+            password_hash = self.hasher.hash(data.password)
+
+            data = UserAddDTO(
+                id=user_id,
+                email=data.normalized_email,
+                password_hash=password_hash,
+                name=data.name,
+                first_name=data.first_name,
+                last_name=data.last_name,
+                birth_date=data.birth_date,
+                bio=data.bio,
+            )
+
+        await self.db.users.add(data)
+        await self.db.commit()
+
+    async def get_google_redirect_uri(self):
         return await self.google.get_redirect_uri()
 
-    async def handle_google_callback(self, state: str, code: str):
-        if not await self.google.validate_state(state):
-            raise InvalidStateException
-
-        id_token = (await self.google.exchange_code(code)).get("id_token")
-        if not id_token:
-            raise NoIDTokenException
-        user_data = await self.google.verify_token(id_token)
-
-        db_user = await self.db.users.get_one_or_none(email=user_data["email"])
-        if db_user:
-            access_token = self.jwt.create_access_token(data=db_user.model_dump(mode="json"))
-
-            refresh_token_id = uuid7()
-            refresh_token = self.jwt.create_refresh_token(
-                {
-                    "sub": str(db_user.id),
-                    "jti": str(refresh_token_id),
-                }
-            )
-
-            await self.db.refresh_tokens.add_one(
-                RefreshTokenAddDTO(
-                    id=refresh_token_id,
-                    user_id=db_user.id,
-                    token_hash=self.hasher.hash(refresh_token),
-                )
-            )
-            await self.db.commit()
-
-            return TokenDTO(access=access_token, refresh=refresh_token)
-
-        user_id = uuid7()
-        to_add = UserAddDTO(
-            id=user_id,
-            name=user_data["name"],
-            first_name=user_data["given_name"],
-            last_name=user_data.get("family_name"),
-            email=user_data["email"],
-            picture=user_data.get("picture"),
-            provider_name="google",
-        )
-
-        new_user = await self.db.users.add_one(to_add)
-
-        refresh_token_id = uuid7()
-        refresh_token = self.jwt.create_refresh_token(
-            {
-                "sub": str(db_user.id),
-                "jti": str(refresh_token_id),
-            }
-        )
-        await self.db.refresh_tokens.add_one(
-            RefreshTokenAddDTO(
-                id=refresh_token_id,
-                user_id=user_id,
-                token_hash=self.hasher.hash(refresh_token),
-            )
-        )
-
-        await self.db.commit()
-        access_token = self.jwt.create_access_token(data=new_user.model_dump(mode="json"))
-
-        return TokenDTO(access=access_token, refresh=refresh_token)
-
-    async def refresh_token(self, refresh_token: str):
+    async def handle_google_callback(self, state: str, code: str, client_info: ClientInfo):
         try:
-            payload = self.jwt.decode_token(refresh_token)
-            old_token_id = payload.get("jti")
-        except (InvalidCredentialsException, SignatureExpiredException):
-            raise InvalidRefreshTokenException
-
-        token_in_db = await self.db.refresh_tokens.get_one_or_none(id=old_token_id)
-        if not token_in_db:
-            raise RefreshTokenNotFoundException
+            await self.google.validate_state(state)
+        except InvalidStateException:
+            raise
 
         try:
-            self.hasher.verify(refresh_token, token_in_db.token_hash)
-        except InvalidHashValueException:
-            raise InvalidRefreshTokenException
+            user_data = await self.google.exchange_code(code)
+        except NoIDTokenException:
+            log.exception("No ID token received from Google")
+            raise
 
-        user = await self.db.users.get_one_or_none(id=payload["sub"])
+        try:
+            return await self.login(email=user_data["email"], client_info=client_info)
+        except UserNotFoundException:
+            pass
+
+        await self.register(
+            UserAddDTO(
+                id=uuid7(),
+                email=user_data["email"],
+                name=user_data["name"],
+                first_name=user_data["given_name"],
+                last_name=user_data.get("family_name"),
+                provider_name="google",
+                picture=user_data.get("picture"),
+            )
+        )
+
+        return await self.login(email=user_data["email"], client_info=client_info)
+
+    async def refresh_token(self, refresh_token_data: dict, client: ClientInfo):
+        token_id = refresh_token_data.get("jti")
+        user_id = refresh_token_data["sub"]
+
+        user = await self.db.users.get_one_or_none(id=user_id)
         if not user:
             raise UserNotFoundException
 
         new_access = self.jwt.create_access_token(user.model_dump(mode="json"))
         new_token_id = uuid7()
-        new_refresh = self.jwt.create_refresh_token(
+        new_refresh, expire = self.jwt.create_refresh_token(
             {
                 "sub": str(user.id),
                 "jti": str(new_token_id),
@@ -147,34 +158,21 @@ class AuthService(BaseService):
         )
 
         # Token rotation: delete old and insert new
-        await self.db.refresh_tokens.delete(id=old_token_id)
-        await self.db.refresh_tokens.add_one(
+        await self.db.refresh_tokens.delete(id=token_id)
+        await self.db.refresh_tokens.add(
             RefreshTokenAddDTO(
                 id=new_token_id,
                 user_id=user.id,
-                token_hash=self.hasher.hash(str(new_token_id)),
+                ip=client.ip,
+                user_agent=client.user_agent,
+                expires_at=expire,
             ),
         )
 
         await self.db.commit()
 
-        return TokenDTO(access=new_access, refresh=new_refresh)
+        return new_access, new_refresh
 
-    async def revoke_refresh_token(self, refresh_token: str):
-        try:
-            payload = self.jwt.decode_token(refresh_token)
-            token_id = payload.get("jti")
-        except (InvalidCredentialsException, SignatureExpiredException):
-            raise InvalidRefreshTokenException
-
-        token_in_db = await self.db.refresh_tokens.get_one_or_none(id=token_id)
-        if not token_in_db:
-            raise RefreshTokenNotFoundException
-
-        try:
-            self.hasher.verify(refresh_token, token_in_db.token_hash)
-        except InvalidHashValueException:
-            raise InvalidRefreshTokenException
-
-        await self.db.refresh_tokens.delete(id=token_id)
+    async def delete_refresh_token(self, token_data: dict):
+        await self.db.refresh_tokens.delete(id=token_data["jti"])
         await self.db.commit()

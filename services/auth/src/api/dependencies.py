@@ -3,23 +3,30 @@ from uuid import UUID
 from pydantic import BaseModel
 from typing import Annotated
 
-from fastapi import Depends, Request, HTTPException, Query
+from fastapi import Depends, Request, Query, Cookie
 
+from src.exceptions import (
+    JWTProviderException,
+    InvalidRefreshTokenHTTPException,
+    NoRefreshTokenHTTPException,
+    NoAccessTokenHTTPException,
+    InvalidAccessTokenHTTPException,
+)
 from src.factories.db_manager import DBManagerFactory
+from src.adapters.aiohttp_client import AiohttpClient
+from src.adapters.google_client import GoogleOAuthClient
+from src.adapters.jwt_provider import JwtProvider
+from src.adapters.password_hasher import PasswordHasher
 from src.managers.db import DBManager
 from src.managers.redis import RedisManager
-from src.adapters.aiohttp_client import AiohttpClient
-from src.services.auth import AuthService
 from src import (
     redis_manager,
     aiohttp_client,
-    GoogleOAuthClient,
     google_oauth_client,
     jwt_provider,
     password_hasher,
-    JwtProvider,
-    PasswordHasher,
 )
+from src.schemas.auth import ClientInfo
 
 
 async def get_db():
@@ -27,16 +34,11 @@ async def get_db():
         yield db
 
 
-def get_token(request: Request) -> str:
-    token = request.cookies.get("access_token")
-    if not token:
-        raise HTTPException(status_code=401, detail="No token")
-    return token
+def get_access_token(access_token: Annotated[str | None, Cookie()] = None) -> str:
+    if not access_token:
+        raise NoAccessTokenHTTPException
 
-
-def get_current_user_id(token: str = Depends(get_token)):
-    data = AuthService.decode_token(token)
-    return data.get("user_id")
+    return access_token
 
 
 class PaginationParams(BaseModel):
@@ -56,12 +58,52 @@ def get_google_oauth_client() -> GoogleOAuthClient:
     return google_oauth_client
 
 
+def get_password_hasher() -> PasswordHasher:
+    return password_hasher
+
+
 def get_jwt_provider() -> JwtProvider:
     return jwt_provider
 
 
-def get_password_hasher() -> PasswordHasher:
-    return password_hasher
+def get_current_user_id(
+    jwt: Annotated[JwtProvider, Depends(get_jwt_provider)],
+    token: Annotated[str, Depends(get_access_token)],
+) -> UUID:
+    try:
+        data = jwt.decode_token(token)
+    except JWTProviderException:
+        raise InvalidAccessTokenHTTPException
+
+    return data.get("user_id")
+
+
+def get_client_info(request: Request) -> ClientInfo:
+    ip = request.headers.get("x-forwarded-for") or request.client.host
+    user_agent = request.headers.get("user-agent", "unknown")
+
+    return ClientInfo(ip=ip, user_agent=user_agent)
+
+
+def get_refresh_token(
+    refresh_token: Annotated[str | None, Cookie()] = None,
+) -> str:
+    if not refresh_token:
+        raise NoRefreshTokenHTTPException
+
+    return refresh_token
+
+
+def get_refresh_token_data(
+    refresh_token: Annotated[str, Depends(get_refresh_token)],
+    jwt: Annotated[JwtProvider, Depends(get_jwt_provider)] = None,
+) -> dict:
+    try:
+        payload = jwt.decode_token(refresh_token)
+    except JWTProviderException:
+        raise InvalidRefreshTokenHTTPException
+
+    return payload
 
 
 DBDep = Annotated[DBManager, Depends(get_db)]
@@ -72,3 +114,5 @@ HTTPClientDep = Annotated[AiohttpClient, Depends(get_async_http_client)]
 GoogleOAuthClientDep = Annotated[GoogleOAuthClient, Depends(get_google_oauth_client)]
 JwtProviderDep = Annotated[JwtProvider, Depends(get_jwt_provider)]
 PasswordHasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
+ClientInfoDep = Annotated[ClientInfo, Depends(get_client_info)]
+RefreshTokenDep = Annotated[dict, Depends(get_refresh_token_data)]

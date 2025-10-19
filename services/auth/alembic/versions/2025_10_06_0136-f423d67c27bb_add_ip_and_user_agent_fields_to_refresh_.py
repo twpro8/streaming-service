@@ -23,7 +23,7 @@ def upgrade() -> None:
     """Upgrade schema."""
     op.add_column(
         "refresh_tokens",
-        sa.Column("ip", sa.String(length=128), nullable=False),
+        sa.Column("ip", sa.String(length=15), nullable=False),
     )
     op.add_column(
         "refresh_tokens",

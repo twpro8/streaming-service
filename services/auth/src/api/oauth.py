@@ -2,9 +2,9 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 from fastapi.params import Query
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 
-from src.api.dependencies import RedisManagerDep, GoogleOAuthClientDep
+from src.api.dependencies import RedisManagerDep, GoogleOAuthClientDep, ClientInfoDep
 from src.exceptions import InvalidStateException, InvalidStateHTTPException
 from src.factories.service import ServiceFactory
 from src.services.auth import AuthService
@@ -21,18 +21,26 @@ async def get_google_oauth_redirect_uri(
     uri = await AuthService(
         redis=redis_manager,
         google=google_oauth_client,
-    ).get_google_oauth_redirect_uri()
+    ).get_google_redirect_uri()
     return RedirectResponse(url=uri, status_code=302)
 
 
 @v1_router.get("/google")
 async def google_callback(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+    client_info: ClientInfoDep,
+    response: Response,
     state: str = Query(),
     code: str = Query(),
 ):
     try:
-        tokens = await service.handle_google_callback(state, code)
+        access, refresh = await service.handle_google_callback(
+            state=state,
+            code=code,
+            client_info=client_info,
+        )
     except InvalidStateException:
         raise InvalidStateHTTPException
-    return {"status": "ok", "data": tokens}
+    response.set_cookie("access_token", access, httponly=True)
+    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth/refresh")
+    return {"status": "ok"}
