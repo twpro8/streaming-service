@@ -28,13 +28,16 @@ async def login(
     client_info: ClientInfoDep,
     response: Response,
 ):
-    access, refresh = await service.login(
-        email=user.email,
-        password=user.password,
-        client_info=client_info,
-    )
+    try:
+        access, refresh = await service.login(
+            email=user.email,
+            password=user.password,
+            client_info=client_info,
+        )
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth/refresh")
+    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth")
     return {"status": "ok"}
 
 
@@ -63,7 +66,7 @@ async def refresh_token(
     except UserNotFoundException:
         raise UserNotFoundHTTPException
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth/refresh")
+    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth")
     return {"status": "ok"}
 
 
@@ -80,5 +83,5 @@ async def logout(
     except RefreshTokenNotFoundException:
         raise NoRefreshTokenHTTPException
     response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token")
+    response.delete_cookie("refresh_token", path="/v1/auth")
     return {"status": "ok"}

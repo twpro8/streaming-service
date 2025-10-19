@@ -14,7 +14,7 @@ from src.exceptions import (
     InvalidStateException,
     UserNotFoundException,
     InvalidHashValueException,
-    IncorrectPasswordException,
+    IncorrectPasswordException, RefreshTokenNotFoundException,
 )
 from src.schemas.auth import RefreshTokenAddDTO
 from src.schemas.users import UserAddDTO, UserAddRequestDTO
@@ -143,6 +143,10 @@ class AuthService(BaseService):
     async def refresh_token(self, refresh_token_data: dict, client: ClientInfo):
         token_id = refresh_token_data.get("jti")
         user_id = refresh_token_data["sub"]
+
+        token = await self.db.refresh_tokens.get_one_or_none(id=token_id)
+        if not token:
+            raise RefreshTokenNotFoundException
 
         user = await self.db.users.get_one_or_none(id=user_id)
         if not user:

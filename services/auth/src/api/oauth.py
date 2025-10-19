@@ -42,5 +42,5 @@ async def google_callback(
     except InvalidStateException:
         raise InvalidStateHTTPException
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth/refresh")
+    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth")
     return {"status": "ok"}

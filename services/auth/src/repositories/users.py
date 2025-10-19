@@ -15,6 +15,6 @@ class UserRepository(BaseRepository):
         query = select(UserORM).filter_by(**filter_by)
         res = await self.session.execute(query)
         model = res.scalars().one_or_none()
-        if not model:
+        if model is None:
             raise UserNotFoundException
         return DBUserDataMapper.map_to_domain_entity(model)

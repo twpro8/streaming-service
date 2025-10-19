@@ -57,5 +57,5 @@ class DBUserDTO(UserDTO):
 
 
 class UserLoginDTO(BaseSchema):
-    email: str
+    email: EmailStr
     password: str
