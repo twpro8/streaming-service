@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import ForeignKey, DateTime, String
+from sqlalchemy import ForeignKey, DateTime, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 
@@ -10,6 +10,7 @@ from src.models.base import Base, uuid_pk, str_256, created_at
 
 class RefreshTokenORM(Base):
     __tablename__ = "refresh_tokens"
+    __table_args__ = (UniqueConstraint("user_id", "ip", "user_agent", name="uq_user_client"),)
 
     id: Mapped[uuid_pk]
     user_id: Mapped[UUID] = mapped_column(
