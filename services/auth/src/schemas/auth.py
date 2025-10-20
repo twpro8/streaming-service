@@ -19,6 +19,11 @@ class RefreshTokenDTO(RefreshTokenAddDTO):
     created_at: datetime
 
 
+class RefreshTokenUpdateDTO(BaseSchema):
+    id: UUID
+    expires_at: datetime
+
+
 class ClientInfo(BaseSchema):
     ip: str = Field(min_length=7, max_length=15)
     user_agent: str

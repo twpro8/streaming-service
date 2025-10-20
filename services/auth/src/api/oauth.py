@@ -4,7 +4,12 @@ from fastapi import APIRouter, Depends
 from fastapi.params import Query
 from fastapi.responses import RedirectResponse, Response
 
-from src.api.dependencies import RedisManagerDep, GoogleOAuthClientDep, ClientInfoDep
+from src.api.dependencies import (
+    RedisManagerDep,
+    GoogleOAuthClientDep,
+    ClientInfoDep,
+    PreventDuplicateLoginDep,
+)
 from src.exceptions import InvalidStateException, InvalidStateHTTPException
 from src.factories.service import ServiceFactory
 from src.services.auth import AuthService
@@ -25,7 +30,7 @@ async def get_google_oauth_redirect_uri(
     return RedirectResponse(url=uri, status_code=302)
 
 
-@v1_router.get("/google")
+@v1_router.get("/google", dependencies=[PreventDuplicateLoginDep])
 async def google_callback(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     client_info: ClientInfoDep,
@@ -42,5 +47,5 @@ async def google_callback(
     except InvalidStateException:
         raise InvalidStateHTTPException
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth")
+    response.set_cookie("refresh_token", refresh, httponly=True)  # Add path here
     return {"status": "ok"}

@@ -52,8 +52,9 @@ class GoogleOAuthClient:
             log.exception("Google OAuth: Failed to generate redirect URI.")
             raise GoogleOAuthClientException("Failed to generate redirect URI.") from e
 
-    async def exchange_code(self, code: str) -> dict:
+    async def exchange_code(self, code: str, state: str) -> dict:
         """Exchange an authorization code for an ID token and verify it."""
+        await self._validate_state(state)
         try:
             response = await self.ac.post(
                 url=self.token_url,
@@ -76,7 +77,7 @@ class GoogleOAuthClient:
             log.exception("Google OAuth: Failed to exchange code for token.")
             raise GoogleOAuthClientException("Failed to exchange code for token.") from e
 
-    async def validate_state(self, state: str) -> bool:
+    async def _validate_state(self, state: str) -> bool:
         """Validate the stored OAuth state token."""
         try:
             valid = await self.redis.get(state) is not None

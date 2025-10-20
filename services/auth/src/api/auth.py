@@ -4,7 +4,7 @@ from fastapi import APIRouter
 from fastapi.responses import Response
 from fastapi.params import Depends
 
-from src.api.dependencies import ClientInfoDep, RefreshTokenDep
+from src.api.dependencies import ClientInfoDep, RefreshTokenDep, PreventDuplicateLoginDep
 from src.exceptions import (
     UserNotFoundException,
     UserNotFoundHTTPException,
@@ -12,6 +12,16 @@ from src.exceptions import (
     InvalidRefreshTokenHTTPException,
     RefreshTokenNotFoundException,
     NoRefreshTokenHTTPException,
+    IncorrectPasswordException,
+    IncorrectPasswordHTTPException,
+    UserAlreadyExistsException,
+    UserAlreadyExistsHTTPException,
+    TokenRevokedException,
+    TokenRevokedHTTPException,
+    ClientMismatchException,
+    ClientMismatchHTTPException,
+    UserAlreadyAuthorizedException,
+    UserAlreadyAuthorizedHTTPException,
 )
 from src.factories.service import ServiceFactory
 from src.schemas.users import UserAddRequestDTO, UserLoginDTO
@@ -21,7 +31,7 @@ from src.services.auth import AuthService
 v1_router = APIRouter(prefix="/v1/auth", tags=["auth"])
 
 
-@v1_router.post("/login")
+@v1_router.post("/login", dependencies=[PreventDuplicateLoginDep])
 async def login(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     user: UserLoginDTO,
@@ -36,8 +46,12 @@ async def login(
         )
     except UserNotFoundException:
         raise UserNotFoundHTTPException
+    except IncorrectPasswordException:
+        raise IncorrectPasswordHTTPException
+    except UserAlreadyAuthorizedException:
+        raise UserAlreadyAuthorizedHTTPException
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth")
+    response.set_cookie("refresh_token", refresh, httponly=True)
     return {"status": "ok"}
 
 
@@ -46,7 +60,10 @@ async def signup(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     user_data: UserAddRequestDTO,
 ):
-    await service.register(user_data)
+    try:
+        await service.register(user_data)
+    except UserAlreadyExistsException:
+        raise UserAlreadyExistsHTTPException
     return {"status": "ok"}
 
 
@@ -59,14 +76,14 @@ async def refresh_token(
 ):
     try:
         access, refresh = await service.refresh_token(refresh_token_data, client)
-    except InvalidRefreshTokenException:
-        raise InvalidRefreshTokenHTTPException
-    except RefreshTokenNotFoundException:
-        raise NoRefreshTokenHTTPException
+    except TokenRevokedException:
+        raise TokenRevokedHTTPException
     except UserNotFoundException:
         raise UserNotFoundHTTPException
+    except ClientMismatchException:
+        raise ClientMismatchHTTPException
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True, path="/v1/auth")
+    response.set_cookie("refresh_token", refresh, httponly=True)  # Add path here
     return {"status": "ok"}
 
 
@@ -83,5 +100,5 @@ async def logout(
     except RefreshTokenNotFoundException:
         raise NoRefreshTokenHTTPException
     response.delete_cookie("access_token")
-    response.delete_cookie("refresh_token", path="/v1/auth")
+    response.delete_cookie("refresh_token")  # Add path here
     return {"status": "ok"}
