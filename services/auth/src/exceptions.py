@@ -7,8 +7,9 @@ HTTP-specific exceptions for web responses, and specialized exceptions for
 different application services like JWT, Authentication, Redis, etc.
 """
 
-from fastapi.exceptions import HTTPException
 from typing import Dict, Any, Optional
+
+from fastapi.exceptions import HTTPException
 
 
 class MasterException(Exception):
@@ -104,25 +105,38 @@ class SignatureExpiredException(JWTProviderException):
 # === User Exceptions ===
 
 
-class UserException(MasterException):
+class BaseUserException(MasterException):
     """Base exception for user-related errors."""
 
 
-class UserHTTPException(MasterHTTPException):
+class BaseUserHTTPException(MasterHTTPException):
     """Base HTTP exception for user-related errors."""
 
 
-class UserNotFoundException(UserException, ObjectNotFoundException):
+class UserNotFoundException(BaseUserException, ObjectNotFoundException):
     """Raised when a specific user is not found."""
 
     detail = "User not found."
 
 
-class UserNotFoundHTTPException(UserHTTPException, ObjectNotFoundHTTPException):
+class UserNotFoundHTTPException(BaseUserHTTPException, ObjectNotFoundHTTPException):
     """HTTP exception for when a user is not found (404)."""
 
     status_code = 404
     detail = "User not found."
+
+
+class UserAlreadyExistsException(BaseUserException, ObjectAlreadyExistsException):
+    """Raised when a user already exists."""
+
+    detail = "User already exists."
+
+
+class UserAlreadyExistsHTTPException(BaseUserHTTPException, ObjectAlreadyExistsHTTPException):
+    """HTTP exception for when a user already exists."""
+
+    status_code = 409
+    detail = "User with the provided email already exists."
 
 
 # === Auth Exceptions ===
@@ -139,13 +153,26 @@ class BaseAuthHTTPException(MasterHTTPException):
     detail = "Authentication failed."
 
 
-class IncorrectPasswordException(UserException):
+class UserAlreadyAuthorizedException(BaseAuthException):
+    """Raised when the user already has an active refresh token for this client."""
+
+    detail = "User is already authorized on this device."
+
+
+class UserAlreadyAuthorizedHTTPException(BaseAuthHTTPException):
+    """HTTP exception for attempting to create a second active refresh token (409)."""
+
+    status_code = 409  # Conflict
+    detail = "User is already authorized on this device."
+
+
+class IncorrectPasswordException(BaseAuthException):
     """Raised when the provided password is incorrect."""
 
     detail = "Incorrect password."
 
 
-class IncorrectPasswordHTTPException(UserHTTPException):
+class IncorrectPasswordHTTPException(BaseAuthHTTPException):
     """HTTP exception for an incorrect password (401)."""
 
     status_code = 401
@@ -159,9 +186,9 @@ class InvalidRefreshTokenException(BaseAuthException):
 
 
 class InvalidRefreshTokenHTTPException(BaseAuthHTTPException):
-    """HTTP exception for an invalid refresh token (403)."""
+    """HTTP exception for an invalid refresh token (401)."""
 
-    status_code = 403
+    status_code = 401
     detail = "Invalid refresh token."
 
 
@@ -171,25 +198,57 @@ class RefreshTokenNotFoundException(BaseAuthException, ObjectNotFoundException):
     detail = "Refresh token not found."
 
 
-class NoRefreshTokenHTTPException(BaseAuthHTTPException):
-    """HTTP exception for when a required refresh token is missing (403)."""
+class NoRefreshTokenHTTPException(MasterHTTPException):
+    """HTTP exception for when a required refresh token is missing (400)."""
 
-    status_code = 403
+    status_code = 400
     detail = "No refresh token provided."
 
 
 class NoAccessTokenHTTPException(MasterHTTPException):
-    """HTTP exception for when a required access token is missing (403)."""
+    """HTTP exception for when a required access token is missing (400)."""
 
-    status_code = 403
+    status_code = 400
     detail = "No access token provided."
 
 
-class InvalidAccessTokenHTTPException(MasterHTTPException):
-    """HTTP exception for an invalid or expired access token (403)."""
+class RefreshTokenAlreadyExists(BaseAuthException):
+    """Raised when a refresh token already exists in database."""
+
+    detail = "Refresh token already exists."
+
+
+class InvalidAccessTokenHTTPException(BaseAuthHTTPException):
+    """HTTP exception for an invalid or expired access token (401)."""
+
+    status_code = 401
+    detail = "Invalid access token."
+
+
+class TokenRevokedException(BaseAuthException):
+    """Raised when the provided token has been revoked."""
+
+    detail = "Token has been revoked."
+
+
+class TokenRevokedHTTPException(BaseAuthHTTPException):
+    """HTTP exception for a revoked token (401)."""
+
+    status_code = 401
+    detail = "Token has been revoked."
+
+
+class ClientMismatchException(BaseAuthException):
+    """Raised when the token does not match the client or device."""
+
+    detail = "Client mismatch."
+
+
+class ClientMismatchHTTPException(BaseAuthHTTPException):
+    """HTTP exception for a client mismatch (403)."""
 
     status_code = 403
-    detail = "Invalid access token."
+    detail = "Client mismatch."
 
 
 # === Password Hasher Exceptions ===
