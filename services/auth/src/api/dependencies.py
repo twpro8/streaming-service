@@ -11,6 +11,7 @@ from src.exceptions import (
     NoRefreshTokenHTTPException,
     NoAccessTokenHTTPException,
     InvalidAccessTokenHTTPException,
+    UserAlreadyAuthorizedHTTPException,
 )
 from src.factories.db_manager import DBManagerFactory
 from src.adapters.aiohttp_client import AiohttpClient
@@ -75,7 +76,7 @@ def get_current_user_id(
     except JWTProviderException:
         raise InvalidAccessTokenHTTPException
 
-    return data.get("user_id")
+    return data.get("id")
 
 
 def get_client_info(request: Request) -> ClientInfo:
@@ -106,6 +107,23 @@ def get_refresh_token_data(
     return payload
 
 
+def prevent_duplicate_login(
+    access_token: Annotated[str | None, Cookie()] = None,
+    jwt: Annotated[JwtProvider, Depends(get_jwt_provider)] = None,
+):
+    if not access_token:
+        return None
+
+    try:
+        jwt.decode_token(access_token)
+    except JWTProviderException:
+        # token is invalid or expired, a new one can be issued
+        return None
+
+    # token is valid, user is already authorized
+    raise UserAlreadyAuthorizedHTTPException
+
+
 DBDep = Annotated[DBManager, Depends(get_db)]
 UserIDDep = Annotated[UUID, Depends(get_current_user_id)]
 PaginationDep = Annotated[PaginationParams, Depends()]
@@ -116,3 +134,4 @@ JwtProviderDep = Annotated[JwtProvider, Depends(get_jwt_provider)]
 PasswordHasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 ClientInfoDep = Annotated[ClientInfo, Depends(get_client_info)]
 RefreshTokenDep = Annotated[dict, Depends(get_refresh_token_data)]
+PreventDuplicateLoginDep = Depends(prevent_duplicate_login)
