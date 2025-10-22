@@ -27,7 +27,7 @@ class JwtProvider:
         self.access_expire_minutes = access_expire_minutes
         self.refresh_expire_days = refresh_expire_days
 
-    def create_access_token(self, data: dict) -> str:
+    def issue_access_token(self, data: dict) -> str:
         """Generate a short-lived access token."""
         try:
             expire = datetime.now(timezone.utc) + timedelta(minutes=self.access_expire_minutes)
@@ -39,7 +39,7 @@ class JwtProvider:
             log.exception("JWT: Failed to create access token.")
             raise JWTProviderException("Failed to create access token.") from e
 
-    def create_refresh_token(self, data: dict) -> tuple[str, datetime]:
+    def issue_refresh_token(self, data: dict) -> tuple[str, datetime]:
         """Generate a long-lived refresh token."""
         try:
             expire = datetime.now(timezone.utc) + timedelta(days=self.refresh_expire_days)
@@ -48,7 +48,7 @@ class JwtProvider:
             log.debug("JWT: Refresh token created successfully.")
             return token, expire
         except Exception as e:
-            log.exception("JWT: Failed to create refresh token.")
+            log.exception(f"JWT: Failed to create refresh token. {e}")
             raise JWTProviderException("Failed to create refresh token.") from e
 
     def decode_token(self, token: str) -> dict:

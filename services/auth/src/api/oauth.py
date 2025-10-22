@@ -42,7 +42,7 @@ async def google_callback(
         access, refresh = await service.handle_google_callback(
             state=state,
             code=code,
-            client_info=client_info,
+            info=client_info,
         )
     except InvalidStateException:
         raise InvalidStateHTTPException

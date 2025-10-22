@@ -1,5 +1,7 @@
 import logging
+from uuid import UUID
 
+from pydantic import BaseModel
 from uuid_extensions import uuid7
 
 from src.adapters.jwt_provider import JwtProvider
@@ -51,7 +53,7 @@ class AuthService(BaseService):
 
     async def login(
         self,
-        client_info: ClientInfo,
+        info: ClientInfo,
         email: str,
         password: str | None = None,
     ) -> tuple[str, str]:
@@ -63,49 +65,22 @@ class AuthService(BaseService):
         if password and not self.hasher.verify(password, user.password_hash):
             raise IncorrectPasswordException
 
-        # Create new access and refresh tokens
         existing_token = await self.db.refresh_tokens.get_one_or_none(
             user_id=user.id,
-            ip=client_info.ip,
-            user_agent=client_info.user_agent,
+            ip=info.ip,
+            user_agent=info.user_agent,
         )
-
-        refresh_token_id = uuid7()
-        refresh_token, expire = self.jwt.create_refresh_token(
-            {"sub": str(user.id), "jti": str(refresh_token_id)}
-        )
-        access_token = self.jwt.create_access_token(
-            data=user.model_dump(mode="json", exclude=["password_hash"])
-        )
-
         if existing_token:
-            await self.db.refresh_tokens.update(
-                data=RefreshTokenUpdateDTO(
-                    id=refresh_token_id,
-                    expires_at=expire,
-                ),
-                # filter
-                user_id=user.id,
-                ip=client_info.ip,
-                user_agent=client_info.user_agent,
-            )
+            access_token, refresh_token = await self._issue_tokens(user, info, update=True)
         else:
-            await self.db.refresh_tokens.add(
-                RefreshTokenAddDTO(
-                    id=refresh_token_id,
-                    user_id=user.id,
-                    ip=client_info.ip,
-                    user_agent=client_info.user_agent,
-                    expires_at=expire,
-                ),
-            )
+            access_token, refresh_token = await self._issue_tokens(user, info)
 
         await self.db.commit()
 
         log.debug("User %s logged in successfully", user.email)
         return access_token, refresh_token
 
-    async def register(self, data: UserAddRequestDTO | UserAddDTO):
+    async def register(self, data: UserAddRequestDTO | UserAddDTO) -> None:
         if isinstance(data, UserAddRequestDTO):
             user_id = uuid7()
             password_hash = self.hasher.hash(data.password)
@@ -128,10 +103,15 @@ class AuthService(BaseService):
         await self.db.commit()
         log.debug("User %s registered successfully", data.email)
 
-    async def get_google_redirect_uri(self):
+    async def get_google_redirect_uri(self) -> str:
         return await self.google.get_redirect_uri()
 
-    async def handle_google_callback(self, state: str, code: str, client_info: ClientInfo):
+    async def handle_google_callback(
+        self,
+        state: str,
+        code: str,
+        info: ClientInfo,
+    ) -> tuple[str, str]:
         try:
             user_data = await self.google.exchange_code(code, state)
         except InvalidStateException:
@@ -142,7 +122,7 @@ class AuthService(BaseService):
             raise
 
         try:
-            return await self.login(email=user_data["email"], client_info=client_info)
+            return await self.login(email=user_data["email"], info=info)
         except UserNotFoundException:
             pass
 
@@ -161,14 +141,14 @@ class AuthService(BaseService):
         except UserAlreadyExistsException:
             pass
 
-        return await self.login(email=user_data["email"], client_info=client_info)
+        return await self.login(email=user_data["email"], info=info)
 
     async def refresh_token(
         self,
         refresh_token_data: dict,
-        client: ClientInfo,
+        info: ClientInfo,
         user: UserDTO | None = None,
-    ):
+    ) -> tuple[str, str]:
         old_token_id = refresh_token_data["jti"]
         user_id = refresh_token_data["sub"]
 
@@ -182,40 +162,65 @@ class AuthService(BaseService):
             if not user:
                 raise UserNotFoundException
 
-        if db_token.ip != client.ip or db_token.user_agent != client.user_agent:
+        if db_token.ip != info.ip or db_token.user_agent != info.user_agent:
             log.warning(
                 "Client mismatch for token %s: expected %s/%s, got %s/%s",
                 old_token_id,
                 db_token.ip,
                 db_token.user_agent,
-                client.ip,
-                client.user_agent,
+                info.ip,
+                info.user_agent,
             )
             raise ClientMismatchException
 
         # Token rotation: delete old and insert new
-        new_refresh_token_id = uuid7()
-        new_refresh, expire = self.jwt.create_refresh_token(
-            {"sub": user_id, "jti": str(new_refresh_token_id)}
-        )
-        new_access = self.jwt.create_access_token(user.model_dump(mode="json"))
-
         await self.db.refresh_tokens.delete(id=old_token_id)
-        await self.db.refresh_tokens.add(
-            RefreshTokenAddDTO(
-                id=new_refresh_token_id,
-                user_id=user_id,
-                ip=client.ip,
-                user_agent=client.user_agent,
-                expires_at=expire,
-            ),
-        )
+        new_access, new_refresh = await self._issue_tokens(user, info)
+
         await self.db.commit()
 
         log.debug("Refreshed tokens for user %s", user.email)
         return new_access, new_refresh
 
-    async def delete_refresh_token(self, token_data: dict):
+    async def delete_refresh_token(self, token_data: dict) -> None:
         await self.db.refresh_tokens.delete(id=token_data["jti"])
         await self.db.commit()
         log.debug("Deleted refresh token %s", token_data["jti"])
+
+    async def _issue_tokens(
+        self,
+        user: BaseModel,
+        info: ClientInfo,
+        token_id: UUID | None = None,
+        update: bool = False,
+    ) ->  tuple[str, str]:
+        if token_id is None:
+            token_id = uuid7()
+
+        refresh, expire = self.jwt.issue_refresh_token({"sub": str(user.id), "jti": str(token_id)})
+        access = self.jwt.issue_access_token(user.model_dump(mode="json", exclude=("password_hash", "bio")))
+
+        # If update=True, update the refresh token for the current device.
+        if update:
+            await self.db.refresh_tokens.update(
+                data=RefreshTokenUpdateDTO(
+                    id=token_id,
+                    expires_at=expire,
+                ),
+                # filter
+                user_id=user.id,
+                ip=info.ip,
+                user_agent=info.user_agent,
+            )
+        else:
+            await self.db.refresh_tokens.add(
+                RefreshTokenAddDTO(
+                    id=token_id,
+                    user_id=user.id,
+                    ip=info.ip,
+                    user_agent=info.user_agent,
+                    expires_at=expire,
+                ),
+            )
+
+        return access, refresh

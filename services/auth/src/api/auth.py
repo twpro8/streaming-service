@@ -42,7 +42,7 @@ async def login(
         access, refresh = await service.login(
             email=user.email,
             password=user.password,
-            client_info=client_info,
+            info=client_info,
         )
     except UserNotFoundException:
         raise UserNotFoundHTTPException
@@ -71,11 +71,11 @@ async def signup(
 async def refresh_token(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     response: Response,
-    client: ClientInfoDep,
+    client_info: ClientInfoDep,
     refresh_token_data: RefreshTokenDep,
 ):
     try:
-        access, refresh = await service.refresh_token(refresh_token_data, client)
+        access, refresh = await service.refresh_token(refresh_token_data, client_info)
     except TokenRevokedException:
         raise TokenRevokedHTTPException
     except UserNotFoundException:
