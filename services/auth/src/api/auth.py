@@ -55,7 +55,7 @@ async def login(
     return {"status": "ok"}
 
 
-@v1_router.post("/signup")
+@v1_router.post("/signup", status_code=201)
 async def signup(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     user_data: UserAddRequestDTO,

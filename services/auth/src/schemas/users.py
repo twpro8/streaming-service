@@ -4,15 +4,16 @@ from uuid import UUID
 from pydantic import BaseModel, EmailStr
 
 from src.schemas.base import BaseSchema
+from src.schemas.pydatic_types import Str48, Date, PasswordStr, Str1024
 
 
 class UserAddRequestDTO(BaseSchema):
     email: EmailStr
-    password: str
-    first_name: str
-    last_name: str | None = None
-    birth_date: date | None = None
-    bio: str | None = None
+    password: PasswordStr
+    first_name: Str48
+    last_name: Str48 | None = None
+    birth_date: Date | None = None
+    bio: Str1024 | None = None
 
     @property
     def name(self):
@@ -58,4 +59,4 @@ class DBUserDTO(UserDTO):
 
 class UserLoginDTO(BaseSchema):
     email: EmailStr
-    password: str
+    password: PasswordStr

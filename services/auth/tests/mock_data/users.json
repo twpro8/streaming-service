@@ -1,0 +1,42 @@
+[
+  {
+    "email": "alice@example.com",
+    "password": "password123",
+    "first_name": "Alice",
+    "last_name": "Johnson",
+    "birth_date": "1990-04-15",
+    "bio": "Love hiking and reading."
+  },
+  {
+    "email": "bob@example.com",
+    "password": "securepass456",
+    "first_name": "Bob",
+    "last_name": "Smith",
+    "birth_date": "1985-08-23",
+    "bio": "Coffee enthusiast and gamer."
+  },
+  {
+    "email": "carol@example.com",
+    "password": "mypassword789",
+    "first_name": "Carol",
+    "last_name": "Williams",
+    "birth_date": "1992-12-05",
+    "bio": "Enjoys painting and traveling."
+  },
+  {
+    "email": "dave@example.com",
+    "password": "pass321word",
+    "first_name": "Dave",
+    "last_name": "Brown",
+    "birth_date": "1988-03-11",
+    "bio": "Tech geek and foodie."
+  },
+  {
+    "email": "eve@example.com",
+    "password": "123securepass",
+    "first_name": "Eve",
+    "last_name": "Davis",
+    "birth_date": "1995-07-30",
+    "bio": "Yoga lover and blogger."
+  }
+]

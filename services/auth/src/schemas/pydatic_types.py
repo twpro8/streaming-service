@@ -1,13 +1,13 @@
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated
 
 from pydantic import Field, EmailStr, BeforeValidator
 
 
-email_str = Annotated[EmailStr, Field(min_length=5, max_length=256)]
-password_str = Annotated[str, Field(min_length=6, max_length=256)]
+EmailStr = Annotated[EmailStr, Field(min_length=5, max_length=128)]
+PasswordStr = Annotated[str, Field(min_length=6, max_length=128)]
 
-Date = Annotated[date, Field(le=date.today(), ge=date(1000, 1, 1))]
+Date = Annotated[date, Field(le=date.today() - timedelta(weeks=365), ge=date(1900, 1, 1))]
 Str48 = Annotated[str, Field(min_length=2, max_length=48)]
 Str100 = Annotated[str, Field(min_length=2, max_length=100)]
 Str128 = Annotated[str, Field(min_length=2, max_length=128)]

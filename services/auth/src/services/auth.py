@@ -193,12 +193,14 @@ class AuthService(BaseService):
         info: ClientInfo,
         token_id: UUID | None = None,
         update: bool = False,
-    ) ->  tuple[str, str]:
+    ) -> tuple[str, str]:
         if token_id is None:
             token_id = uuid7()
 
         refresh, expire = self.jwt.issue_refresh_token({"sub": str(user.id), "jti": str(token_id)})
-        access = self.jwt.issue_access_token(user.model_dump(mode="json", exclude=("password_hash", "bio")))
+        access = self.jwt.issue_access_token(
+            user.model_dump(mode="json", exclude=("password_hash", "bio"))
+        )
 
         # If update=True, update the refresh token for the current device.
         if update:
