@@ -1,10 +1,12 @@
 from uuid import UUID
+from functools import lru_cache
 
 from pydantic import BaseModel
 from typing import Annotated
 
 from fastapi import Depends, Request, Query, Cookie
 
+from src.config import settings
 from src.exceptions import (
     JWTProviderException,
     InvalidRefreshTokenHTTPException,
@@ -18,15 +20,9 @@ from src.adapters.aiohttp_client import AiohttpClient
 from src.adapters.google_client import GoogleOAuthClient
 from src.adapters.jwt_provider import JwtProvider
 from src.adapters.password_hasher import PasswordHasher
+from src.adapters.smtp_client import SMTPClient
 from src.managers.db import DBManager
 from src.managers.redis import RedisManager
-from src import (
-    redis_manager,
-    aiohttp_client,
-    google_oauth_client,
-    jwt_provider,
-    password_hasher,
-)
 from src.schemas.auth import ClientInfo
 
 
@@ -47,24 +43,58 @@ class PaginationParams(BaseModel):
     per_page: Annotated[int | None, Query(default=5, ge=1, le=100)]
 
 
+@lru_cache
 def get_redis_manager() -> RedisManager:
-    return redis_manager
+    return RedisManager(url=settings.REDIS_URL)
 
 
+@lru_cache
 def get_async_http_client() -> AiohttpClient:
-    return aiohttp_client
+    return AiohttpClient()
 
 
-def get_google_oauth_client() -> GoogleOAuthClient:
-    return google_oauth_client
+@lru_cache
+def get_google_oauth_client(
+    aiohttp_client: Annotated[AiohttpClient, Depends(get_async_http_client)],
+    redis_manager: Annotated[RedisManager, Depends(get_redis_manager)],
+) -> GoogleOAuthClient:
+    return GoogleOAuthClient(
+        ac=aiohttp_client,
+        redis=redis_manager,
+        client_id=settings.OAUTH_GOOGLE_CLIENT_ID,
+        client_secret=settings.OAUTH_GOOGLE_CLIENT_SECRET,
+        base_url=settings.OAUTH_GOOGLE_BASE_URL,
+        redirect_uri=settings.OAUTH_GOOGLE_REDIRECT_URL,
+        token_url=settings.GOOGLE_TOKEN_URL,
+        jwks_url=settings.GOOGLE_JWKS_URL,
+    )
 
 
+@lru_cache
 def get_password_hasher() -> PasswordHasher:
-    return password_hasher
+    return PasswordHasher(schemes=["bcrypt"], deprecated="auto")
 
 
+@lru_cache
 def get_jwt_provider() -> JwtProvider:
-    return jwt_provider
+    return JwtProvider(
+        secret_key=settings.JWT_SECRET_KEY,
+        algorithm=settings.JWT_ALGORITHM,
+        access_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+        refresh_expire_days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
+    )
+
+
+@lru_cache
+def get_smtp_client() -> SMTPClient:
+    return SMTPClient(
+        host=settings.SMTP_HOST,
+        port=settings.SMTP_PORT,
+        username=settings.SMTP_USER,
+        password=settings.SMTP_PASS,
+        app_name=settings.SMTP_APP_NAME,
+        timeout=settings.SMTP_TIMEOUT,
+    )
 
 
 def get_current_user_id(
@@ -135,3 +165,4 @@ PasswordHasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 ClientInfoDep = Annotated[ClientInfo, Depends(get_client_info)]
 RefreshTokenDep = Annotated[dict, Depends(get_refresh_token_data)]
 PreventDuplicateLoginDep = Depends(prevent_duplicate_login)
+SMTPClientDep = Annotated[SMTPClient, Depends(get_smtp_client)]

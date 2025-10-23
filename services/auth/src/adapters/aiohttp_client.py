@@ -92,10 +92,10 @@ class AiohttpClient:
             log.exception(f"Aiohttp: unexpected error during get_json {url}")
             raise AiohttpClientException(f"Unexpected error during get_json {url}") from e
 
-    async def post(self, url: str, data: dict):
+    async def post(self, url: str, data: dict, headers: dict = None):
         self._ensure_session()
         try:
-            async with self._session.post(url=url, data=data) as resp:
+            async with self._session.post(url=url, json=data, headers=headers) as resp:
                 log.info(f"Aiohttp POST {url}: got status {resp.status}")
                 return await resp.json()
         except ClientConnectionError as e:

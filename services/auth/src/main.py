@@ -1,6 +1,6 @@
 import logging
-import sys
 from contextlib import asynccontextmanager
+import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -8,9 +8,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 import uvicorn
 from fastapi import FastAPI
 
-from src import redis_manager, aiohttp_client
 from src.api import master_router
 from src.log_config import configure_logging
+from src.api.dependencies import get_redis_manager, get_async_http_client
 
 
 # Configuring the logging level and format
@@ -20,6 +20,9 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    redis_manager = get_redis_manager()
+    aiohttp_client = get_async_http_client()
+
     await redis_manager.connect()
     await aiohttp_client.startup()
     yield

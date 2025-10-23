@@ -5,7 +5,7 @@ import pytest
 
 from httpx import AsyncClient, ASGITransport
 
-from src import settings
+from src.config import settings
 from src.managers.db import DBManager
 from src.models.base import Base
 from src.api.dependencies import get_db

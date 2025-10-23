@@ -33,6 +33,13 @@ class Settings(BaseSettings):
 
     SIZE_POOL_AIOHTTP: int
 
+    SMTP_HOST: str
+    SMTP_PORT: int
+    SMTP_USER: str
+    SMTP_PASS: str
+    SMTP_APP_NAME: str
+    SMTP_TIMEOUT: float
+
     @property
     def DB_URL(self) -> str:
         return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASS}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
