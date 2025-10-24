@@ -21,13 +21,26 @@ def check_test_mode():
 
 
 class FakeRedis(RedisManager):
-    async def connect(self): pass
-    async def set(self, key, value, expire = None): pass
-    async def get(self, key): return None
-    async def getdel(self, key): return None
-    async def delete(self, key): pass
-    async def delete_many(self, key): pass
-    async def close(self): pass
+    async def connect(self):
+        pass
+
+    async def set(self, key, value, expire=None):
+        pass
+
+    async def get(self, key):
+        return None
+
+    async def getdel(self, key):
+        return None
+
+    async def delete(self, key):
+        pass
+
+    async def delete_many(self, key):
+        pass
+
+    async def close(self):
+        pass
 
 
 async def get_db_null_pool():

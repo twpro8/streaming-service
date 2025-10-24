@@ -21,7 +21,9 @@ from src.exceptions import (
     TokenRevokedException,
     ClientMismatchException,
     InvalidVerificationCodeException,
-    UserAlreadyVerifiedException, TooManyRequestsException,
+    UserAlreadyVerifiedException,
+    TooManyRequestsException,
+    SamePasswordException,
 )
 from src.schemas.auth import RefreshTokenAddDTO, RefreshTokenUpdateDTO, VerifyEmailRequestDTO
 from src.schemas.users import UserAddDTO, UserAddRequestDTO, UserDTO, UserUpdateDTO
@@ -109,7 +111,9 @@ class AuthService(BaseService):
         # Email verification
         code = generate_upper_code()
         await self.redis.set(code, user_data.email, expire=600)
-        send_verification_email.delay(user_data.email, code)  # Sending an email as a background task
+        send_verification_email.delay(
+            user_data.email, code
+        )  # Sending an email as a background task
 
         log.debug("User %s registered successfully", user_data.email)
 
@@ -122,12 +126,16 @@ class AuthService(BaseService):
         if not user:
             raise UserNotFoundException
 
-        await self.db.users.update(data=UserUpdateDTO(is_active=True), email=form_data.email)
+        await self.db.users.update(
+            data=UserUpdateDTO(is_active=True),
+            email=form_data.email,
+            exclude_unset=True,
+        )
         await self.db.commit()
 
     async def resend_verification_code(self, email: str) -> None:
         # checking rate limit
-        rate_limit_key = f"rate-limit:{email}"
+        rate_limit_key = f"verify-rate-limit:{email}"
         if await self.redis.get(rate_limit_key):
             raise TooManyRequestsException
 
@@ -146,6 +154,43 @@ class AuthService(BaseService):
         send_verification_email.delay(user.email, code)
 
         log.debug("Verification code resent to %s", user.email)
+
+    async def forgot_password(self, email: str) -> None:
+        # checking rate limit
+        rate_limit_key = f"reset-rate-limit:{email}"
+        if await self.redis.get(rate_limit_key):
+            raise TooManyRequestsException
+
+        user = await self.db.users.get_one_or_none(email=email)
+        if not user:
+            raise UserNotFoundException
+
+        # setting rate limit
+        await self.redis.set(rate_limit_key, "1", expire=60)
+
+        code = generate_upper_code()
+        await self.redis.set(f"reset:{code}", user.email, expire=600)
+        send_verification_email.delay(user.email, code)
+
+    async def reset_password(self, code: str, new_password: str):
+        email = await self.redis.getdel(f"reset:{code}")
+        if not email:
+            raise InvalidVerificationCodeException
+
+        user = await self.db.users.get_db_user(email=email)
+        if not user:
+            raise UserNotFoundException
+
+        if self.hasher.verify(new_password, user.password_hash):
+            raise SamePasswordException
+
+        password_hash = self.hasher.hash(new_password)
+        await self.db.users.update(
+            UserUpdateDTO(password_hash=password_hash),
+            email=email,
+            exclude_unset=True,
+        )
+        await self.db.commit()
 
     async def get_google_redirect_uri(self) -> str:
         return await self.google.get_redirect_uri()

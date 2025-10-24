@@ -30,7 +30,7 @@ async def lifespan(app: FastAPI):
     await aiohttp_client.shutdown()
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(lifespan=lifespan, title="Auth Service")
 app.include_router(master_router)
 
 

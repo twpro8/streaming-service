@@ -266,24 +266,41 @@ class InvalidVerificationCodeHTTPException(BaseAuthHTTPException):
 
 class UserAlreadyVerifiedException(BaseAuthException):
     """Raised when the user is already active."""
+
     detail = "User is already verified."
 
 
 class UserAlreadyVerifiedHTTPException(BaseAuthHTTPException):
     """Raised when the user is already verified."""
+
     status_code = 409
     detail = "User is already verified."
 
 
 class TooManyRequestsException(BaseAuthException):
     """Raised when the number of requests exceeds the allowed limit."""
+
     detail = "Too many requests."
 
 
 class TooManyRequestsHTTPException(BaseAuthHTTPException):
     """Raised when the number of requests exceeds the allowed limit."""
+
     status_code = 429
     detail = "Too many requests. Try again later."
+
+
+class SamePasswordException(BaseAuthException):
+    """Raised when the provided password is the same."""
+
+    detail = "The provided password is the same as old."
+
+
+class SamePasswordHTTPException(BaseAuthHTTPException):
+    """Raised when the provided password is the same as old."""
+
+    status_code = 400
+    detail = "New password must be different."
 
 
 # === Password Hasher Exceptions ===

@@ -64,4 +64,5 @@ class UserLoginDTO(BaseSchema):
 
 
 class UserUpdateDTO(BaseModel):
-    is_active: bool
+    is_active: bool | None = None
+    password_hash: str | None = None

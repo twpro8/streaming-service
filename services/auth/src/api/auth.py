@@ -28,6 +28,8 @@ from src.exceptions import (
     UserAlreadyVerifiedHTTPException,
     TooManyRequestsException,
     TooManyRequestsHTTPException,
+    SamePasswordException,
+    SamePasswordHTTPException,
 )
 from src.factories.service import ServiceFactory
 from src.schemas.auth import VerifyEmailRequestDTO
@@ -110,8 +112,8 @@ async def verify_email(
 
 @v1_router.post("/resend-code")
 async def resend_verification_code(
-        service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-        email: str = Body(embed=True),
+    service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+    email: str = Body(embed=True),
 ):
     try:
         await service.resend_verification_code(email)
@@ -121,6 +123,37 @@ async def resend_verification_code(
         raise UserAlreadyVerifiedHTTPException
     except TooManyRequestsException:
         raise TooManyRequestsHTTPException
+    return {"status": "ok"}
+
+
+@v1_router.post("/forgot-password")
+async def forgot_password(
+    service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+    email: str = Body(embed=True),
+):
+    try:
+        await service.forgot_password(email)
+    except TooManyRequestsException:
+        raise TooManyRequestsHTTPException
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
+    return {"status": "ok"}
+
+
+@v1_router.post("/reset-password")
+async def reset_password(
+    service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+    code: str = Body(),
+    new_password: str = Body(),
+):
+    try:
+        await service.reset_password(code, new_password)
+    except InvalidVerificationCodeException:
+        raise InvalidVerificationCodeHTTPException
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
+    except SamePasswordException:
+        raise SamePasswordHTTPException
     return {"status": "ok"}
 
 
