@@ -21,6 +21,7 @@ from src.exceptions import (
     TokenRevokedException,
     ClientMismatchException,
     InvalidVerificationCodeException,
+    UserAlreadyVerifiedException, TooManyRequestsException,
 )
 from src.schemas.auth import RefreshTokenAddDTO, RefreshTokenUpdateDTO, VerifyEmailRequestDTO
 from src.schemas.users import UserAddDTO, UserAddRequestDTO, UserDTO, UserUpdateDTO
@@ -123,6 +124,28 @@ class AuthService(BaseService):
 
         await self.db.users.update(data=UserUpdateDTO(is_active=True), email=form_data.email)
         await self.db.commit()
+
+    async def resend_verification_code(self, email: str) -> None:
+        # checking rate limit
+        rate_limit_key = f"rate-limit:{email}"
+        if await self.redis.get(rate_limit_key):
+            raise TooManyRequestsException
+
+        user = await self.db.users.get_one_or_none(email=email)
+        if not user:
+            raise UserNotFoundException
+
+        if user.is_active:
+            raise UserAlreadyVerifiedException
+
+        # setting rate limit
+        await self.redis.set(rate_limit_key, "1", expire=60)
+
+        code = generate_upper_code()
+        await self.redis.set(code, user.email, expire=600)
+        send_verification_email.delay(user.email, code)
+
+        log.debug("Verification code resent to %s", user.email)
 
     async def get_google_redirect_uri(self) -> str:
         return await self.google.get_redirect_uri()

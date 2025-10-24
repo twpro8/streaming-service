@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Body
 from fastapi.responses import Response
 from fastapi.params import Depends
 
@@ -24,6 +24,10 @@ from src.exceptions import (
     UserAlreadyAuthorizedHTTPException,
     InvalidVerificationCodeException,
     InvalidVerificationCodeHTTPException,
+    UserAlreadyVerifiedException,
+    UserAlreadyVerifiedHTTPException,
+    TooManyRequestsException,
+    TooManyRequestsHTTPException,
 )
 from src.factories.service import ServiceFactory
 from src.schemas.auth import VerifyEmailRequestDTO
@@ -31,7 +35,7 @@ from src.schemas.users import UserAddRequestDTO, UserLoginDTO
 from src.services.auth import AuthService
 
 
-v1_router = APIRouter(prefix="/v1/auth", tags=["auth"])
+v1_router = APIRouter(prefix="/v1/auth", tags=["Auth"])
 
 
 @v1_router.post("/login", dependencies=[PreventDuplicateLoginDep])
@@ -105,7 +109,19 @@ async def verify_email(
 
 
 @v1_router.post("/resend-code")
-async def resend_verification_code(): ...
+async def resend_verification_code(
+        service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+        email: str = Body(embed=True),
+):
+    try:
+        await service.resend_verification_code(email)
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
+    except UserAlreadyVerifiedException:
+        raise UserAlreadyVerifiedHTTPException
+    except TooManyRequestsException:
+        raise TooManyRequestsHTTPException
+    return {"status": "ok"}
 
 
 @v1_router.post("/logout")

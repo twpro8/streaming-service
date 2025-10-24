@@ -264,6 +264,28 @@ class InvalidVerificationCodeHTTPException(BaseAuthHTTPException):
     detail = "Invalid or expired code."
 
 
+class UserAlreadyVerifiedException(BaseAuthException):
+    """Raised when the user is already active."""
+    detail = "User is already verified."
+
+
+class UserAlreadyVerifiedHTTPException(BaseAuthHTTPException):
+    """Raised when the user is already verified."""
+    status_code = 409
+    detail = "User is already verified."
+
+
+class TooManyRequestsException(BaseAuthException):
+    """Raised when the number of requests exceeds the allowed limit."""
+    detail = "Too many requests."
+
+
+class TooManyRequestsHTTPException(BaseAuthHTTPException):
+    """Raised when the number of requests exceeds the allowed limit."""
+    status_code = 429
+    detail = "Too many requests. Try again later."
+
+
 # === Password Hasher Exceptions ===
 
 

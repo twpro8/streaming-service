@@ -15,7 +15,7 @@ from src.factories.service import ServiceFactory
 from src.services.auth import AuthService
 
 
-v1_router = APIRouter(prefix="/v1/oauth", tags=["oauth"])
+v1_router = APIRouter(prefix="/v1/oauth", tags=["OAuth"])
 
 
 @v1_router.get("/google/uri")
