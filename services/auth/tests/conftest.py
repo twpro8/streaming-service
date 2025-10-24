@@ -7,8 +7,9 @@ from httpx import AsyncClient, ASGITransport
 
 from src.config import settings
 from src.managers.db import DBManager
+from src.managers.redis import RedisManager
 from src.models.base import Base
-from src.api.dependencies import get_db
+from src.api.dependencies import get_db, get_redis_manager
 from src.db import null_pool_engine, null_pool_session_maker
 from src.models import *  # noqa
 from src.main import app
@@ -17,6 +18,16 @@ from src.main import app
 @pytest.fixture(scope="session", autouse=True)
 def check_test_mode():
     assert settings.MODE == "TEST"
+
+
+class FakeRedis(RedisManager):
+    async def connect(self): pass
+    async def set(self, key, value, expire = None): pass
+    async def get(self, key): return None
+    async def getdel(self, key): return None
+    async def delete(self, key): pass
+    async def delete_many(self, key): pass
+    async def close(self): pass
 
 
 async def get_db_null_pool():
@@ -30,7 +41,9 @@ async def db():
         yield db
 
 
+# Dependency overrides
 app.dependency_overrides[get_db] = get_db_null_pool
+app.dependency_overrides[get_redis_manager] = lambda: FakeRedis("uri")
 
 
 @pytest.fixture(scope="session", autouse=True)
