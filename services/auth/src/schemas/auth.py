@@ -4,7 +4,7 @@ from datetime import datetime
 from pydantic import Field
 
 from src.schemas.base import BaseSchema
-from src.schemas.pydatic_types import Str256, EmailStr
+from src.schemas.pydatic_types import Str256, EmailStr, PasswordStr
 
 
 class RefreshTokenAddDTO(BaseSchema):
@@ -31,4 +31,14 @@ class ClientInfo(BaseSchema):
 
 class VerifyEmailRequestDTO(BaseSchema):
     email: EmailStr
-    code: str
+    code: str = Field(min_length=6, max_length=6)
+
+
+class ResetPasswordRequestDTO(BaseSchema):
+    code: str = Field(min_length=6, max_length=6)
+    new_password: PasswordStr
+
+
+class ChangePasswordRequestDTO(BaseSchema):
+    password: str
+    new_password: PasswordStr

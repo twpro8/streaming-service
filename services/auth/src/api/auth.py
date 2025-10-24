@@ -4,7 +4,7 @@ from fastapi import APIRouter, Body
 from fastapi.responses import Response
 from fastapi.params import Depends
 
-from src.api.dependencies import ClientInfoDep, RefreshTokenDep, PreventDuplicateLoginDep
+from src.api.dependencies import ClientInfoDep, RefreshTokenDep, PreventDuplicateLoginDep, UserIDDep
 from src.exceptions import (
     UserNotFoundException,
     UserNotFoundHTTPException,
@@ -32,7 +32,7 @@ from src.exceptions import (
     SamePasswordHTTPException,
 )
 from src.factories.service import ServiceFactory
-from src.schemas.auth import VerifyEmailRequestDTO
+from src.schemas.auth import VerifyEmailRequestDTO, ChangePasswordRequestDTO, ResetPasswordRequestDTO
 from src.schemas.users import UserAddRequestDTO, UserLoginDTO
 from src.services.auth import AuthService
 
@@ -140,18 +140,32 @@ async def forgot_password(
     return {"status": "ok"}
 
 
-@v1_router.post("/reset-password")
-async def reset_password(
+@v1_router.post("/reset-password-confirmation")
+async def reset_password_confirmation(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-    code: str = Body(),
-    new_password: str = Body(),
+    form_data: ResetPasswordRequestDTO,
 ):
     try:
-        await service.reset_password(code, new_password)
+        await service.reset_password(form_data)
     except InvalidVerificationCodeException:
         raise InvalidVerificationCodeHTTPException
     except UserNotFoundException:
         raise UserNotFoundHTTPException
+    except SamePasswordException:
+        raise SamePasswordHTTPException
+    return {"status": "ok"}
+
+
+@v1_router.post("/change-password")
+async def change_password(
+    service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+    user_id: UserIDDep,
+    form_data: ChangePasswordRequestDTO,
+):
+    try:
+        await service.change_password(user_id, form_data)
+    except IncorrectPasswordException:
+        raise IncorrectPasswordHTTPException
     except SamePasswordException:
         raise SamePasswordHTTPException
     return {"status": "ok"}

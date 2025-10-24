@@ -25,7 +25,8 @@ from src.exceptions import (
     TooManyRequestsException,
     SamePasswordException,
 )
-from src.schemas.auth import RefreshTokenAddDTO, RefreshTokenUpdateDTO, VerifyEmailRequestDTO
+from src.schemas.auth import RefreshTokenAddDTO, RefreshTokenUpdateDTO, VerifyEmailRequestDTO, ChangePasswordRequestDTO, \
+    ResetPasswordRequestDTO
 from src.schemas.users import UserAddDTO, UserAddRequestDTO, UserDTO, UserUpdateDTO
 from src.services.utils import generate_upper_code
 from src.tasks.tasks import send_verification_email
@@ -169,11 +170,11 @@ class AuthService(BaseService):
         await self.redis.set(rate_limit_key, "1", expire=60)
 
         code = generate_upper_code()
-        await self.redis.set(f"reset:{code}", user.email, expire=600)
+        await self.redis.set(code, user.email, expire=600)
         send_verification_email.delay(user.email, code)
 
-    async def reset_password(self, code: str, new_password: str):
-        email = await self.redis.getdel(f"reset:{code}")
+    async def reset_password(self, form_data: ResetPasswordRequestDTO) -> None:
+        email = await self.redis.getdel(form_data.code)
         if not email:
             raise InvalidVerificationCodeException
 
@@ -181,13 +182,30 @@ class AuthService(BaseService):
         if not user:
             raise UserNotFoundException
 
-        if self.hasher.verify(new_password, user.password_hash):
+        if self.hasher.verify(form_data.new_password, user.password_hash):
             raise SamePasswordException
 
-        password_hash = self.hasher.hash(new_password)
+        password_hash = self.hasher.hash(form_data.new_password)
         await self.db.users.update(
             UserUpdateDTO(password_hash=password_hash),
             email=email,
+            exclude_unset=True,
+        )
+        await self.db.commit()
+
+    async def change_password(self, user_id: UUID, form_data: ChangePasswordRequestDTO) -> None:
+        user = await self.db.users.get_db_user(id=user_id)
+
+        if not self.hasher.verify(form_data.password, user.password_hash):
+            raise IncorrectPasswordException
+
+        if self.hasher.verify(form_data.new_password, user.password_hash):
+            raise SamePasswordException
+
+        password_hash = self.hasher.hash(form_data.new_password)
+        await self.db.users.update(
+            UserUpdateDTO(password_hash=password_hash),
+            id=user_id,
             exclude_unset=True,
         )
         await self.db.commit()
