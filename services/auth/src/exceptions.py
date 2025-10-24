@@ -251,6 +251,19 @@ class ClientMismatchHTTPException(BaseAuthHTTPException):
     detail = "Client mismatch."
 
 
+class InvalidVerificationCodeException(BaseAuthException):
+    """Raised when the provided verification code is invalid."""
+
+    detail = "Invalid verification code."
+
+
+class InvalidVerificationCodeHTTPException(BaseAuthHTTPException):
+    """Raised when the provided verification code is invalid."""
+
+    status_code = 400
+    detail = "Invalid or expired code."
+
+
 # === Password Hasher Exceptions ===
 
 

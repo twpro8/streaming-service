@@ -4,6 +4,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from uuid_extensions import uuid7
 
+from src.services.base import BaseService
 from src.adapters.jwt_provider import JwtProvider
 from src.adapters.password_hasher import PasswordHasher
 from src.adapters.google_client import GoogleOAuthClient
@@ -19,10 +20,12 @@ from src.exceptions import (
     UserAlreadyExistsException,
     TokenRevokedException,
     ClientMismatchException,
+    InvalidVerificationCodeException,
 )
-from src.schemas.auth import RefreshTokenAddDTO, RefreshTokenUpdateDTO
-from src.schemas.users import UserAddDTO, UserAddRequestDTO, UserDTO
-from src.services.base import BaseService
+from src.schemas.auth import RefreshTokenAddDTO, RefreshTokenUpdateDTO, VerifyEmailRequestDTO
+from src.schemas.users import UserAddDTO, UserAddRequestDTO, UserDTO, UserUpdateDTO
+from src.services.utils import generate_upper_code
+from src.tasks.tasks import send_verification_email
 
 
 log = logging.getLogger(__name__)
@@ -80,28 +83,46 @@ class AuthService(BaseService):
         log.debug("User %s logged in successfully", user.email)
         return access_token, refresh_token
 
-    async def register(self, data: UserAddRequestDTO | UserAddDTO) -> None:
-        if isinstance(data, UserAddRequestDTO):
-            user_id = uuid7()
-            password_hash = self.hasher.hash(data.password)
-            data = UserAddDTO(
-                id=user_id,
-                email=data.normalized_email,
-                password_hash=password_hash,
-                name=data.name,
-                first_name=data.first_name,
-                last_name=data.last_name,
-                birth_date=data.birth_date,
-                bio=data.bio,
-            )
+    async def register(self, user_data: UserAddRequestDTO) -> None:
+        password_hash = self.hasher.hash(user_data.password)
+
+        user_data = UserAddDTO(
+            id=uuid7(),
+            email=user_data.normalized_email,
+            password_hash=password_hash,
+            name=user_data.name,
+            first_name=user_data.first_name,
+            last_name=user_data.last_name,
+            birth_date=user_data.birth_date,
+            bio=user_data.bio,
+            is_active=False,
+        )
 
         try:
-            await self.db.users.add_user(data)
+            await self.db.users.add_user(user_data)
         except UserAlreadyExistsException:
             raise
 
         await self.db.commit()
-        log.debug("User %s registered successfully", data.email)
+
+        # Email verification
+        code = generate_upper_code()
+        await self.redis.set(code, user_data.email, expire=600)
+        send_verification_email.delay(user_data.email, code)  # Sending an email as a background task
+
+        log.debug("User %s registered successfully", user_data.email)
+
+    async def verify_email(self, form_data: VerifyEmailRequestDTO):
+        email = await self.redis.getdel(form_data.code)
+        if email is None or form_data.email != email:
+            raise InvalidVerificationCodeException
+
+        user = await self.db.users.get_db_user(email=form_data.email)
+        if not user:
+            raise UserNotFoundException
+
+        await self.db.users.update(data=UserUpdateDTO(is_active=True), email=form_data.email)
+        await self.db.commit()
 
     async def get_google_redirect_uri(self) -> str:
         return await self.google.get_redirect_uri()
@@ -127,7 +148,7 @@ class AuthService(BaseService):
             pass
 
         try:
-            await self.register(
+            await self.db.users.add_user(
                 UserAddDTO(
                     id=uuid7(),
                     email=user_data["email"],
@@ -136,10 +157,13 @@ class AuthService(BaseService):
                     last_name=user_data.get("family_name"),
                     provider_name="google",
                     picture=user_data.get("picture"),
+                    is_active=True,
                 )
             )
         except UserAlreadyExistsException:
             pass
+
+        await self.db.commit()
 
         return await self.login(email=user_data["email"], info=info)
 

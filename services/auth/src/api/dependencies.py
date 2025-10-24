@@ -20,7 +20,6 @@ from src.adapters.aiohttp_client import AiohttpClient
 from src.adapters.google_client import GoogleOAuthClient
 from src.adapters.jwt_provider import JwtProvider
 from src.adapters.password_hasher import PasswordHasher
-from src.adapters.smtp_client import SMTPClient
 from src.managers.db import DBManager
 from src.managers.redis import RedisManager
 from src.schemas.auth import ClientInfo
@@ -82,18 +81,6 @@ def get_jwt_provider() -> JwtProvider:
         algorithm=settings.JWT_ALGORITHM,
         access_expire_minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
         refresh_expire_days=settings.REFRESH_TOKEN_EXPIRE_DAYS,
-    )
-
-
-@lru_cache
-def get_smtp_client() -> SMTPClient:
-    return SMTPClient(
-        host=settings.SMTP_HOST,
-        port=settings.SMTP_PORT,
-        username=settings.SMTP_USER,
-        password=settings.SMTP_PASS,
-        app_name=settings.SMTP_APP_NAME,
-        timeout=settings.SMTP_TIMEOUT,
     )
 
 
@@ -165,4 +152,3 @@ PasswordHasherDep = Annotated[PasswordHasher, Depends(get_password_hasher)]
 ClientInfoDep = Annotated[ClientInfo, Depends(get_client_info)]
 RefreshTokenDep = Annotated[dict, Depends(get_refresh_token_data)]
 PreventDuplicateLoginDep = Depends(prevent_duplicate_login)
-SMTPClientDep = Annotated[SMTPClient, Depends(get_smtp_client)]

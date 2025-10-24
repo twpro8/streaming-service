@@ -60,6 +60,13 @@ class RedisManager:
             log.error(f"Redis: Failed to get key '{key}': {e}")
             raise RedisOperationException(f"Failed to get key '{key}'") from e
 
+    async def getdel(self, key: str):
+        try:
+            return await self.redis.getdel(key)
+        except (ConnectionError, TimeoutError, RedisError) as e:
+            log.error(f"Redis: Failed to get key '{key}': {e}")
+            raise RedisOperationException(f"Failed to get key '{key}'") from e
+
     async def delete(self, key: str):
         try:
             await self.redis.delete(key)

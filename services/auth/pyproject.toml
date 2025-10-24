@@ -6,10 +6,11 @@ readme = "README.md"
 requires-python = ">=3.13.2"
 dependencies = [
     "aiohttp>=3.12.15",
-    "aiosmtplib>=5.0.0",
     "alembic>=1.15.2",
     "asyncpg>=0.30.0",
     "black>=25.1.0",
+    "celery>=5.5.3",
+    "celery-types==0.23.0",
     "cryptography>=46.0.3",
     "fastapi[all]>=0.115.12",
     "greenlet>=3.1.1",

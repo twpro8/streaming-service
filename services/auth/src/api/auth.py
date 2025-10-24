@@ -22,8 +22,11 @@ from src.exceptions import (
     ClientMismatchHTTPException,
     UserAlreadyAuthorizedException,
     UserAlreadyAuthorizedHTTPException,
+    InvalidVerificationCodeException,
+    InvalidVerificationCodeHTTPException,
 )
 from src.factories.service import ServiceFactory
+from src.schemas.auth import VerifyEmailRequestDTO
 from src.schemas.users import UserAddRequestDTO, UserLoginDTO
 from src.services.auth import AuthService
 
@@ -85,6 +88,24 @@ async def refresh_token(
     response.set_cookie("access_token", access, httponly=True)
     response.set_cookie("refresh_token", refresh, httponly=True)  # Add path here
     return {"status": "ok"}
+
+
+@v1_router.post("/verify-email")
+async def verify_email(
+    service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
+    form_data: VerifyEmailRequestDTO,
+):
+    try:
+        await service.verify_email(form_data)
+    except InvalidVerificationCodeException:
+        raise InvalidVerificationCodeHTTPException
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
+    return {"status": "verified"}
+
+
+@v1_router.post("/resend-code")
+async def resend_verification_code(): ...
 
 
 @v1_router.post("/logout")

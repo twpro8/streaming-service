@@ -80,7 +80,7 @@ class GoogleOAuthClient:
     async def _validate_state(self, state: str) -> bool:
         """Validate the stored OAuth state token."""
         try:
-            valid = await self.redis.get(state) is not None
+            valid = await self.redis.getdel(state) is not None
             if not valid:
                 log.warning(f"Google OAuth: Invalid or expired state '{state}'.")
             return valid
