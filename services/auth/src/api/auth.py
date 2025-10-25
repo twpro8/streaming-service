@@ -2,9 +2,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Body
 from fastapi.responses import Response
-from fastapi.params import Depends
+from fastapi import Depends
 
-from src.api.dependencies import ClientInfoDep, RefreshTokenDep, PreventDuplicateLoginDep, UserIDDep
+from src.api.dependencies import (
+    ClientInfoDep,
+    RefreshTokenDep,
+    PreventDuplicateLoginDep,
+    UserIDDep,
+    get_email_rate_limiter,
+)
 from src.exceptions import (
     UserNotFoundException,
     UserNotFoundHTTPException,
@@ -30,10 +36,17 @@ from src.exceptions import (
     TooManyRequestsHTTPException,
     SamePasswordException,
     SamePasswordHTTPException,
+    UserUnverifiedException,
+    UserUnverifiedHTTPException,
 )
 from src.factories.service import ServiceFactory
-from src.schemas.auth import VerifyEmailRequestDTO, ChangePasswordRequestDTO, ResetPasswordRequestDTO
-from src.schemas.users import UserAddRequestDTO, UserLoginDTO
+from src.schemas.auth import (
+    EmailVerifyRequestDTO,
+    PasswordChangeRequestDTO,
+    PasswordResetRequestDTO,
+)
+from src.schemas.pydatic_types import EmailStr
+from src.schemas.users import UserAddRequestDTO, UserLoginRequestDTO
 from src.services.auth import AuthService
 
 
@@ -43,22 +56,18 @@ v1_router = APIRouter(prefix="/v1/auth", tags=["Auth"])
 @v1_router.post("/login", dependencies=[PreventDuplicateLoginDep])
 async def login(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-    user: UserLoginDTO,
+    user_data: UserLoginRequestDTO,
     client_info: ClientInfoDep,
     response: Response,
 ):
     try:
-        access, refresh = await service.login(
-            email=user.email,
-            password=user.password,
-            info=client_info,
-        )
+        access, refresh = await service.login(user_data, client_info)
     except UserNotFoundException:
         raise UserNotFoundHTTPException
     except IncorrectPasswordException:
         raise IncorrectPasswordHTTPException
-    except UserAlreadyAuthorizedException:
-        raise UserAlreadyAuthorizedHTTPException
+    except UserUnverifiedException:
+        raise UserUnverifiedHTTPException
     response.set_cookie("access_token", access, httponly=True)
     response.set_cookie("refresh_token", refresh, httponly=True)
     return {"status": "ok"}
@@ -99,7 +108,7 @@ async def refresh_token(
 @v1_router.post("/verify-email")
 async def verify_email(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-    form_data: VerifyEmailRequestDTO,
+    form_data: EmailVerifyRequestDTO,
 ):
     try:
         await service.verify_email(form_data)
@@ -110,10 +119,10 @@ async def verify_email(
     return {"status": "verified"}
 
 
-@v1_router.post("/resend-code")
+@v1_router.post("/resend-code", dependencies=[Depends(get_email_rate_limiter)])
 async def resend_verification_code(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-    email: str = Body(embed=True),
+    email: EmailStr = Body(embed=True),
 ):
     try:
         await service.resend_verification_code(email)
@@ -126,10 +135,10 @@ async def resend_verification_code(
     return {"status": "ok"}
 
 
-@v1_router.post("/forgot-password")
+@v1_router.post("/forgot-password", dependencies=[Depends(get_email_rate_limiter)])
 async def forgot_password(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-    email: str = Body(embed=True),
+    email: EmailStr = Body(embed=True),
 ):
     try:
         await service.forgot_password(email)
@@ -143,16 +152,12 @@ async def forgot_password(
 @v1_router.post("/reset-password-confirmation")
 async def reset_password_confirmation(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
-    form_data: ResetPasswordRequestDTO,
+    form_data: PasswordResetRequestDTO,
 ):
     try:
         await service.reset_password(form_data)
     except InvalidVerificationCodeException:
         raise InvalidVerificationCodeHTTPException
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
-    except SamePasswordException:
-        raise SamePasswordHTTPException
     return {"status": "ok"}
 
 
@@ -160,7 +165,7 @@ async def reset_password_confirmation(
 async def change_password(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     user_id: UserIDDep,
-    form_data: ChangePasswordRequestDTO,
+    form_data: PasswordChangeRequestDTO,
 ):
     try:
         await service.change_password(user_id, form_data)

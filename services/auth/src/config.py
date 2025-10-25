@@ -24,12 +24,12 @@ class Settings(BaseSettings):
 
     OAUTH_GOOGLE_CLIENT_ID: str
     OAUTH_GOOGLE_CLIENT_SECRET: str
-    OAUTH_GOOGLE_BASE_URL: str
+    OAUTH_GOOGLE_BASE_URL: str = "https://accounts.google.com/o/oauth2/v2/auth"
     OAUTH_GOOGLE_REDIRECT_URL: str
     FRONTEND_URL: str
 
-    GOOGLE_JWKS_URL: str
-    GOOGLE_TOKEN_URL: str
+    GOOGLE_JWKS_URL: str = "https://www.googleapis.com/oauth2/v3/certs"
+    GOOGLE_TOKEN_URL: str = "https://oauth2.googleapis.com/token"
 
     SIZE_POOL_AIOHTTP: int
 
@@ -39,6 +39,10 @@ class Settings(BaseSettings):
     SMTP_PASS: str
     SMTP_FROM: str
     SMTP_TIMEOUT: float
+
+    USER_VERIFY_RATE_LIMIT: int = 60
+    USER_VERIFICATION_CODE_EXP: int = 600
+    PASSWORD_RESET_CODE_EXP: int = 600
 
     @property
     def DB_URL(self) -> str:

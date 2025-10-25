@@ -264,6 +264,19 @@ class InvalidVerificationCodeHTTPException(BaseAuthHTTPException):
     detail = "Invalid or expired code."
 
 
+class UserUnverifiedException(BaseAuthException):
+    """Raised when the provided user is unverified."""
+
+    detail = "User unverified."
+
+
+class UserUnverifiedHTTPException(BaseAuthHTTPException):
+    """HTTP exception for an unverified user (401)."""
+
+    status_code = 401
+    detail = "User unverified. Please verify your email first."
+
+
 class UserAlreadyVerifiedException(BaseAuthException):
     """Raised when the user is already active."""
 

@@ -4,7 +4,7 @@ from functools import lru_cache
 from pydantic import BaseModel
 from typing import Annotated
 
-from fastapi import Depends, Request, Query, Cookie
+from fastapi import Depends, Request, Query, Cookie, Body
 
 from src.config import settings
 from src.exceptions import (
@@ -14,6 +14,7 @@ from src.exceptions import (
     NoAccessTokenHTTPException,
     InvalidAccessTokenHTTPException,
     UserAlreadyAuthorizedHTTPException,
+    TooManyRequestsHTTPException,
 )
 from src.factories.db_manager import DBManagerFactory
 from src.adapters.aiohttp_client import AiohttpClient
@@ -23,6 +24,7 @@ from src.adapters.password_hasher import PasswordHasher
 from src.managers.db import DBManager
 from src.managers.redis import RedisManager
 from src.schemas.auth import ClientInfo
+from src.schemas.pydatic_types import EmailStr
 
 
 async def get_db():
@@ -139,6 +141,19 @@ def prevent_duplicate_login(
 
     # token is valid, user is already authorized
     raise UserAlreadyAuthorizedHTTPException
+
+
+async def get_email_rate_limiter(
+    redis: Annotated[RedisManager, Depends(get_redis_manager)],
+    email: EmailStr = Body(embed=True),
+):
+    # checking rate limit
+    rate_limit_key = f"rate-limit:{email}"
+    if await redis.get(rate_limit_key):
+        raise TooManyRequestsHTTPException
+
+    # setting rate limit
+    await redis.set(rate_limit_key, "1", expire=settings.USER_VERIFY_RATE_LIMIT)
 
 
 DBDep = Annotated[DBManager, Depends(get_db)]

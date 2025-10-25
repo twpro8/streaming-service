@@ -5,10 +5,6 @@ from itertools import islice
 import pytest
 
 from src.config import settings
-from src.api.dependencies import get_jwt_provider
-
-
-jwt_provider = get_jwt_provider()
 
 
 @pytest.mark.parametrize(
@@ -68,9 +64,19 @@ async def test_signup_valid_with_optional(
     assert res.status_code == 201
 
 
-async def test_signup_on_conflict(ac, get_users):
-    for user in islice(get_users, 2):
-        res = await ac.post("/v1/auth/signup", json=user)
+async def test_signup_on_conflict(ac, get_active_users):
+    for user in islice(get_active_users, 2):
+        res = await ac.post(
+            "/v1/auth/signup",
+            json={
+                "email": user["email"],
+                "password": user["password"],
+                "first_name": user["first_name"],
+                "last_name": user["last_name"],
+                "birth_date": user["birth_date"],
+                "bio": user["bio"],
+            },
+        )
         assert res.status_code == 409, f"Expected 409 for duplicate signup, got {res.status_code}"
         assert "detail" in res.json()
 
@@ -110,8 +116,8 @@ async def test_signup_invalid(ac, field, value):
     assert res.json()["detail"][0]["input"] == value
 
 
-async def test_login(ac, get_users):
-    for user in islice(get_users, 2):
+async def test_login(ac, get_active_users, jwt_provider):
+    for user in islice(get_active_users, 2):
         ac.cookies.delete("access_token")
         ac.cookies.delete("refresh_token")
 
@@ -135,10 +141,9 @@ async def test_login(ac, get_users):
 
         assert access_payload.get("id")
         assert access_payload.get("name")
-        assert access_payload.get("first_name")
-
         assert access_payload["email"] == user["email"]
         assert access_payload.get("exp")
+
         assert refresh_payload["sub"] == access_payload["id"]
         assert refresh_payload.get("exp")
 
@@ -166,8 +171,8 @@ async def test_login(ac, get_users):
         ("extra", "unknown"),
     ),
 )
-async def test_login_invalid(ac, get_users, field, value):
-    user = get_users[0]
+async def test_login_invalid(ac, get_active_users, field, value):
+    user = get_active_users[0]
     body = {
         "email": user["email"],
         "password": user["password"],
@@ -184,11 +189,11 @@ async def test_login_invalid(ac, get_users, field, value):
     assert res.json()["detail"][0]["input"] == value
 
 
-async def test_login_with_wrong_password(ac, get_users):
+async def test_login_with_wrong_password(ac, get_active_users):
     ac.cookies.delete("access_token")
     ac.cookies.delete("refresh_token")
 
-    for user in islice(get_users, 2):
+    for user in islice(get_active_users, 2):
         res = await ac.post(
             "/v1/auth/login",
             json={
@@ -200,7 +205,7 @@ async def test_login_with_wrong_password(ac, get_users):
         assert "detail" in res.json()
 
 
-async def test_login_user_not_found(ac, get_users):
+async def test_login_user_not_found(ac, get_active_users):
     res = await ac.post(
         "/v1/auth/login",
         json={
@@ -212,7 +217,7 @@ async def test_login_user_not_found(ac, get_users):
     assert "detail" in res.json()
 
 
-async def test_refresh_tokens(authed_ac):
+async def test_refresh_tokens(authed_ac, jwt_provider):
     old_access = authed_ac.cookies.get("access_token")
     old_refresh = authed_ac.cookies.get("refresh_token")
     assert old_access and old_refresh

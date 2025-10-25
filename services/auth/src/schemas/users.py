@@ -58,8 +58,11 @@ class DBUserDTO(UserDTO):
     password_hash: str | None
 
 
-class UserLoginDTO(BaseSchema):
+class GoogleLoginDTO(BaseSchema):
     email: EmailStr
+
+
+class UserLoginRequestDTO(GoogleLoginDTO):
     password: PasswordStr
 
 
