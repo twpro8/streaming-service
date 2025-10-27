@@ -23,15 +23,18 @@ def check_test_mode():
     assert settings.MODE == "TEST"
 
 
+fake_redis = {}
+
+
 class FakeRedis(RedisManager):
     async def connect(self):
         pass
 
     async def set(self, key, value, expire=None):
-        pass
+        fake_redis[key] = value
 
     async def get(self, key):
-        return None
+        return fake_redis.get(key)
 
     async def getdel(self, key):
         return None
@@ -44,6 +47,11 @@ class FakeRedis(RedisManager):
 
     async def close(self):
         pass
+
+
+@pytest.fixture
+def clear_redis():
+    fake_redis.clear()
 
 
 async def get_db_null_pool():
@@ -119,6 +127,13 @@ async def get_active_users(setup_database):
     return [user for user in read_json("users")]
 
 
+@pytest.fixture(scope="function")
+async def get_inactive_users(setup_database):
+    async with DBManager(session_factory=null_pool_session_maker) as _db:
+        users = await _db.users.get_filtered(is_active=False)
+        return [user.model_dump(mode="json") for user in users]
+
+
 @pytest.fixture(scope="session", autouse=True)
 async def register_user(setup_database, ac):
     res = await ac.post(
@@ -137,8 +152,8 @@ async def register_user(setup_database, ac):
 
 @pytest.fixture(scope="session")
 async def authed_ac(ac, get_active_users):
-    user = get_active_users[0]
-
+    user = get_active_users[-1]
+    # login
     res = await ac.post(
         "/v1/auth/login",
         json={
@@ -147,8 +162,11 @@ async def authed_ac(ac, get_active_users):
         },
     )
     assert res.status_code == 200
-    assert ac.cookies.get("access_token")
-    assert ac.cookies.get("refresh_token")
+    assert ac.cookies.get("access_token"), "No access token in cookies"
+    assert ac.cookies.get("refresh_token"), "No refresh token in cookies"
+
+    # save user data for tests
+    ac.user = user
     yield ac
 
 

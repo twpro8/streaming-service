@@ -39,5 +39,5 @@ class PasswordResetRequestDTO(EmailVerifyRequestDTO):
 
 
 class PasswordChangeRequestDTO(BaseSchema):
-    password: str
+    password: PasswordStr
     new_password: PasswordStr

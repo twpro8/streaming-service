@@ -26,14 +26,10 @@ from src.exceptions import (
     TokenRevokedHTTPException,
     ClientMismatchException,
     ClientMismatchHTTPException,
-    UserAlreadyAuthorizedException,
-    UserAlreadyAuthorizedHTTPException,
     InvalidVerificationCodeException,
     InvalidVerificationCodeHTTPException,
     UserAlreadyVerifiedException,
     UserAlreadyVerifiedHTTPException,
-    TooManyRequestsException,
-    TooManyRequestsHTTPException,
     SamePasswordException,
     SamePasswordHTTPException,
     UserUnverifiedException,
@@ -130,8 +126,6 @@ async def resend_verification_code(
         raise UserNotFoundHTTPException
     except UserAlreadyVerifiedException:
         raise UserAlreadyVerifiedHTTPException
-    except TooManyRequestsException:
-        raise TooManyRequestsHTTPException
     return {"status": "ok"}
 
 
@@ -142,8 +136,6 @@ async def forgot_password(
 ):
     try:
         await service.forgot_password(email)
-    except TooManyRequestsException:
-        raise TooManyRequestsHTTPException
     except UserNotFoundException:
         raise UserNotFoundHTTPException
     return {"status": "ok"}
@@ -158,6 +150,8 @@ async def reset_password_confirmation(
         await service.reset_password(form_data)
     except InvalidVerificationCodeException:
         raise InvalidVerificationCodeHTTPException
+    except UserNotFoundException:
+        raise UserNotFoundHTTPException
     return {"status": "ok"}
 
 
@@ -170,7 +164,7 @@ async def change_password(
     try:
         await service.change_password(user_id, form_data)
     except IncorrectPasswordException:
-        raise IncorrectPasswordHTTPException
+        raise IncorrectPasswordHTTPException(status_code=400)
     except SamePasswordException:
         raise SamePasswordHTTPException
     return {"status": "ok"}

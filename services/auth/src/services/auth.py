@@ -200,11 +200,14 @@ class AuthService(BaseService):
             raise InvalidVerificationCodeException
 
         password_hash = self.hasher.hash(form_data.new_password)
-        await self.db.users.update(
-            UserUpdateDTO(password_hash=password_hash),
-            email=form_data.email,
-            exclude_unset=True,
-        )
+        try:
+            await self.db.users.update(
+                UserUpdateDTO(password_hash=password_hash),
+                email=form_data.email,
+                exclude_unset=True,
+            )
+        except ObjectNotFoundException:
+            raise UserNotFoundException
 
         await self.redis.delete(verification_key)
         await self.db.commit()
@@ -228,7 +231,7 @@ class AuthService(BaseService):
         )
         await self.db.commit()
 
-        log.debug(f"Auth Service: Password changed. User email: {form_data.email}")
+        log.debug(f"Auth Service: Password changed. User email: {user.email}")
 
     async def get_google_redirect_uri(self) -> str:
         return await self.google.get_redirect_uri()
