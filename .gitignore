@@ -6,6 +6,7 @@ dist/
 wheels/
 *.egg-info
 .idea
+celerybeat-schedule
 
 # Virtual environments
 .venv

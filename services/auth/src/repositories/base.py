@@ -61,8 +61,8 @@ class BaseRepository:
         if res.rowcount == 0:
             raise ObjectNotFoundException
 
-    async def delete(self, **filter_by) -> None:
-        stmt = delete(self.model).filter_by(**filter_by)
+    async def delete(self, *filter, **filter_by) -> None:
+        stmt = delete(self.model).filter(*filter).filter_by(**filter_by)
         await self.session.execute(stmt)
 
     @staticmethod
