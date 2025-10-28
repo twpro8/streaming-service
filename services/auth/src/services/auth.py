@@ -112,7 +112,6 @@ class AuthService(BaseService):
             id=uuid7(),
             email=user_data.normalized_email,
             password_hash=password_hash,
-            name=user_data.name,
             first_name=user_data.first_name,
             last_name=user_data.last_name,
             birth_date=user_data.birth_date,

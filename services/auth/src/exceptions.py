@@ -427,3 +427,11 @@ class TokenVerificationException(GoogleOAuthClientException):
     """Raised when a Google ID token fails verification."""
 
     detail = "Google ID token verification failed."
+
+
+# =======
+
+
+class AtLeastOneFieldRequiredException(MasterHTTPException):
+    status_code = 422
+    detail = "At least one field must be provided"

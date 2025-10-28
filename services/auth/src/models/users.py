@@ -3,14 +3,13 @@ from datetime import date
 from sqlalchemy import Boolean
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.models.base import Base, uuid_pk, str_1024, str_256, str_128, str_48, created_at
+from src.models.base import Base, uuid_pk, str_1024, str_256, str_48, created_at
 
 
 class UserORM(Base):
     __tablename__ = "users"
 
     id: Mapped[uuid_pk]
-    name: Mapped[str_128]
     first_name: Mapped[str_48]
     last_name: Mapped[str_48 | None]
     email: Mapped[str_256] = mapped_column(unique=True)

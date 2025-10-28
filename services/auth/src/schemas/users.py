@@ -1,9 +1,9 @@
 from datetime import date, datetime
 from uuid import UUID
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, AnyUrl
 
-from src.schemas.base import BaseSchema
+from src.schemas.base import BaseSchema, AtLeastOneFieldMixin
 from src.schemas.pydatic_types import Str48, Date, PasswordStr, Str1024
 
 
@@ -15,18 +15,9 @@ class UserAddRequestDTO(BaseSchema):
     birth_date: Date | None = None
     bio: Str1024 | None = None
 
-    @property
-    def name(self):
-        return self.first_name + " " + self.last_name if self.last_name else self.first_name
-
-    @property
-    def normalized_email(self) -> str:
-        return str(self.email).strip().lower()
-
 
 class UserAddDTO(BaseModel):
     id: UUID
-    name: str
     first_name: str
     last_name: str | None = None
     email: str
@@ -40,7 +31,6 @@ class UserAddDTO(BaseModel):
 
 class UserDTO(BaseModel):
     id: UUID
-    name: str
     first_name: str
     last_name: str | None
     email: str
@@ -52,6 +42,18 @@ class UserDTO(BaseModel):
     is_active: bool
     created_at: datetime
     updated_at: datetime
+
+
+class UserPatchRequestDTO(BaseSchema, AtLeastOneFieldMixin):
+    first_name: Str48 | None = None
+    last_name: Str48 | None = None
+    birth_date: Date | None = None
+    bio: Str1024 | None = None
+    picture_url: AnyUrl | None = None
+
+
+class UserPatchDTO(UserPatchRequestDTO):
+    picture: str
 
 
 class DBUserDTO(UserDTO):
