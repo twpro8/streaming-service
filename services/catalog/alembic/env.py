@@ -12,7 +12,9 @@ from src.models import *  # noqa
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
-config.set_main_option("sqlalchemy.url", settings.DB_URL)
+config.set_main_option(
+    "sqlalchemy.url", f"{settings.DB_URL}?async_fallback=True"
+)  # it's strictly sync process
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.

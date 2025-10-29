@@ -29,7 +29,7 @@ class Settings(BaseSettings):
     def REDIS_URL(self) -> str:
         return f"redis://default:{self.REDIS_PASS}@{self.REDIS_HOST}:{self.REDIS_PORT}/0"
 
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=[".env", ".env-example"], extra="ignore")
 
 
 settings = Settings()

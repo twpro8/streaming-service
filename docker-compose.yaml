@@ -1,78 +1,124 @@
 services:
-  postgres:
-    image: postgres:17.2
-    container_name: postgres
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - mainnet
-
-  rabbitmq:
-    container_name: "rabbitmq"
-    image: rabbitmq:3.10.7-management
-    ports:
-      - "15672:15672"
-      - "5672:5672"
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - mainnet
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
-      - prometheus_data:/prometheus
-
-  minio:
-    image: minio/minio:latest
-    container_name: minio
-    ports:
-      - "9000:9000"   # API
-      - "9001:9001"   # Web API
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
-    restart: unless-stopped
-    networks:
-      - mainnet
-
   redis:
     image: redis:7.4
     container_name: redis
+    restart: unless-stopped
+    env_file:
+      - .env
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASS}
+    command: sh -c "redis-server --requirepass \"${REDIS_PASS}\""
+    healthcheck:
+      test: "redis-cli -a ${REDIS_PASS} -h localhost ping"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - mainnet
+
+  postgres:
+    image: postgres:17.2
+    container_name: postgres
+    env_file:
+      - .env
+    ports:
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASS}
+      POSTGRES_DB: ${POSTGRES_DB}
+    restart: unless-stopped
+    volumes:
+      - ./docker/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: "pg_isready -U $POSTGRES_USER -h localhost"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - mainnet
+
+  auth_service:
+    container_name: auth_service
+    build:
+      context: ./services/auth
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+#      - ./services/auth/.env
+      - ./services/auth/.env-example
     restart: unless-stopped
     networks:
       - mainnet
-    environment:
-      - REDIS_PASSWORD=${REDIS_PASS}
-    command: [ "redis-server", "--requirepass", "${REDIS_PASS}" ]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  auth_service_celery_worker:
+    container_name: auth_service_celery_worker
+    build:
+      context: ./services/auth
+    env_file:
+#      - ./services/auth/.env
+      - ./services/auth/.env-example
+    command: "uv run celery -A src.tasks.celery_app worker -l INFO"
+    restart: unless-stopped
+    networks:
+      - mainnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  auth_service_celery_beat:
+    container_name: auth_service_celery_beat
+    build:
+      context: ./services/auth
+    env_file:
+#      - ./services/auth/.env
+      - ./services/auth/.env-example
+    command: "uv run celery -A src.tasks.celery_app beat -l INFO"
+    restart: unless-stopped
+    networks:
+      - mainnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  catalog_service:
+    container_name: catalog_service
+    build:
+      context: ./services/catalog
+    env_file:
+#      - ./services/catalog/.env
+      - ./services/catalog/.env-example
+    ports:
+      - "127.0.0.1:8001:8001"
+    restart: unless-stopped
+    networks:
+      - mainnet
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
 volumes:
   postgres_data:
-  rabbitmq_data:
-  prometheus_data:
-  minio_data:
   redis_data:
 
 networks:
   mainnet:
-    external: true
+    driver: bridge
