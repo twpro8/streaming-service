@@ -14,7 +14,7 @@ from src.schemas.genres import GenreAddDTO
 from src.services.genres import GenreService
 
 
-v1_router = APIRouter(prefix="/v1/genres", tags=["genres"])
+v1_router = APIRouter(prefix="/v1/genres", tags=["Genres"])
 
 
 @v1_router.get("")

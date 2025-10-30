@@ -17,7 +17,7 @@ from src.services.seasons import SeasonService
 from src.api.dependencies import AdminDep, PaginationDep
 
 
-v1_router = APIRouter(prefix="/v1/seasons", tags=["seasons"])
+v1_router = APIRouter(prefix="/v1/seasons", tags=["Seasons"])
 
 
 @v1_router.get("")

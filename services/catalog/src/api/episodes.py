@@ -22,7 +22,7 @@ from src.exceptions import (
 )
 
 
-v1_router = APIRouter(prefix="/v1/episodes", tags=["episodes"])
+v1_router = APIRouter(prefix="/v1/episodes", tags=["Episodes"])
 
 
 @v1_router.get("", summary="Get episodes")

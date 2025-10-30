@@ -15,7 +15,7 @@ from src.schemas.directors import DirectorAddRequestDTO, DirectorPatchDTO
 from src.services.directors import DirectorService
 
 
-v1_router = APIRouter(prefix="/v1/directors", tags=["directors"])
+v1_router = APIRouter(prefix="/v1/directors", tags=["Directors"])
 
 
 @v1_router.get("")

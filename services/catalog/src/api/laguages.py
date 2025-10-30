@@ -14,7 +14,7 @@ from src.schemas.languages import LanguageAddRequestDTO
 from src.services.languages import LanguageService
 
 
-v1_router = APIRouter(prefix="/v1/languages", tags=["languages"])
+v1_router = APIRouter(prefix="/v1/languages", tags=["Languages"])
 
 
 @v1_router.get("")

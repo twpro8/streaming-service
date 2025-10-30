@@ -17,7 +17,7 @@ from src.services.comments import CommentService
 from src.api.dependencies import UserIDDep, PaginationDep
 
 
-v1_router = APIRouter(prefix="/v1/comments", tags=["comments"])
+v1_router = APIRouter(prefix="/v1/comments", tags=["Comments"])
 
 
 @v1_router.get("")

@@ -25,7 +25,7 @@ from src.services.shows import ShowService
 from src.api.dependencies import AdminDep, ContentParamsDep, SortDep
 
 
-v1_router = APIRouter(prefix="/v1/shows", tags=["shows"])
+v1_router = APIRouter(prefix="/v1/shows", tags=["Shows"])
 
 
 @v1_router.get("")

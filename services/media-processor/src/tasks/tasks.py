@@ -9,7 +9,7 @@ from pathlib import Path
 from src.exceptions import UploadFailureException
 from src.factories.storage_adapter_factories import StorageAdapterFactory
 from src.enums import Qualities
-from src.tasks.celery_app import celery_instance
+from src.tasks.celery_app import app
 from src.tasks.utils import update_master_playlist_from_s3
 from src.utils.transcoder import HlsTranscoder
 
@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 storage = StorageAdapterFactory.s3_adapter_sync_factory()
 
 
-@celery_instance.task
+@app.task
 def process_video(
     storage_src_key: str,
     storage_dst_key: str,
@@ -62,7 +62,7 @@ def process_video(
     os.remove(input_file_path)
 
 
-@celery_instance.task
+@app.task
 def upload_file_to_storage(
     input_file_path: str,
     s3_key: str,

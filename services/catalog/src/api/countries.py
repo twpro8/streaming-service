@@ -14,7 +14,7 @@ from src.schemas.countries import CountryAddRequestDTO
 from src.services.countries import CountryService
 
 
-v1_router = APIRouter(prefix="/v1/countries", tags=["countries"])
+v1_router = APIRouter(prefix="/v1/countries", tags=["Countries"])
 
 
 @v1_router.get("")
