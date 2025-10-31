@@ -3,12 +3,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from src.api.dependencies import PaginationDep, AdminDep
-from src.exceptions import (
-    LanguageAlreadyExistsException,
-    LanguageAlreadyExistsHTTPException,
-    LanguageNotFoundException,
-    LanguageNotFoundHTTPException,
-)
 from src.factories.service import ServiceFactory
 from src.schemas.languages import LanguageAddRequestDTO
 from src.services.languages import LanguageService
@@ -34,10 +28,7 @@ async def get_language(
     service: Annotated[LanguageService, Depends(ServiceFactory.language_service_factory)],
     lang_id: int,
 ):
-    try:
-        lang = await service.get_language(lang_id=lang_id)
-    except LanguageNotFoundException:
-        raise LanguageNotFoundHTTPException
+    lang = await service.get_language(lang_id=lang_id)
     return {"status": "ok", "data": lang}
 
 
@@ -46,10 +37,7 @@ async def add_language(
     service: Annotated[LanguageService, Depends(ServiceFactory.language_service_factory)],
     lang_data: LanguageAddRequestDTO,
 ):
-    try:
-        lang_id = await service.add_language(lang_data=lang_data)
-    except LanguageAlreadyExistsException:
-        raise LanguageAlreadyExistsHTTPException
+    lang_id = await service.add_language(lang_data=lang_data)
     return {"status": "ok", "data": {"id": lang_id}}
 
 

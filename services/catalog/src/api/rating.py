@@ -2,7 +2,6 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from src.exceptions import ContentNotFoundException, ContentNotFoundHTTPException
 from src.factories.service import ServiceFactory
 from src.schemas.rating import RatingAddRequestDTO
 from src.services.rating import RatingService
@@ -18,8 +17,5 @@ async def rate_content(
     user_id: UserIDDep,
     rating_data: RatingAddRequestDTO,
 ):
-    try:
-        await service.rate(user_id=user_id, rating_data=rating_data)
-    except ContentNotFoundException:
-        raise ContentNotFoundHTTPException
+    await service.rate(user_id=user_id, rating_data=rating_data)
     return {"status": "ok"}

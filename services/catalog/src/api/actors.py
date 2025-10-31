@@ -4,12 +4,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 
 from src.api.dependencies import PaginationDep, AdminDep
-from src.exceptions import (
-    ActorAlreadyExistsException,
-    ActorAlreadyExistsHTTPException,
-    ActorNotFoundException,
-    ActorNotFoundHTTPException,
-)
 from src.factories.service import ServiceFactory
 from src.schemas.actors import ActorAddRequestDTO, ActorPatchDTO
 from src.services.actors import ActorService
@@ -35,10 +29,7 @@ async def get_actor(
     service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
     actor_id: UUID,
 ):
-    try:
-        actor = await service.get_actor(actor_id=actor_id)
-    except ActorNotFoundException:
-        raise ActorNotFoundHTTPException
+    actor = await service.get_actor(actor_id=actor_id)
     return {"status": "ok", "data": actor}
 
 
@@ -47,10 +38,7 @@ async def add_actor(
     service: Annotated[ActorService, Depends(ServiceFactory.actor_service_factory)],
     actor_data: ActorAddRequestDTO,
 ):
-    try:
-        actor_id = await service.add_actor(actor_data=actor_data)
-    except ActorAlreadyExistsException:
-        raise ActorAlreadyExistsHTTPException
+    actor_id = await service.add_actor(actor_data=actor_data)
     return {"status": "ok", "data": {"id": actor_id}}
 
 
@@ -60,12 +48,7 @@ async def update_actor(
     actor_id: UUID,
     actor_data: ActorPatchDTO,
 ):
-    try:
-        await service.update_actor(actor_id=actor_id, actor_data=actor_data)
-    except ActorNotFoundException:
-        raise ActorNotFoundHTTPException
-    except ActorAlreadyExistsException:
-        raise ActorAlreadyExistsHTTPException
+    await service.update_actor(actor_id=actor_id, actor_data=actor_data)
     return {"status": "ok"}
 
 

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, model_validator
 
-from src.exceptions import AtLeastOneFieldRequiredException
+from src.exceptions import FieldRequiredException
 
 
 class BaseSchema(BaseModel):
@@ -11,5 +11,5 @@ class AtLeastOneFieldMixin(BaseModel):
     @model_validator(mode="after")
     def check_some_field(self):
         if not self.model_fields_set:
-            raise AtLeastOneFieldRequiredException
+            raise FieldRequiredException
         return self

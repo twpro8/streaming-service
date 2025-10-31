@@ -4,12 +4,6 @@ from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.params import Query
 
-from src.exceptions import (
-    ContentNotFoundHTTPException,
-    ContentNotFoundException,
-    CommentNotFoundException,
-    CommentNotFoundHTTPException,
-)
 from src.factories.service import ServiceFactory
 from src.schemas.comments import CommentAddRequestDTO, CommentPutRequestDTO
 from src.enums import ContentType
@@ -55,10 +49,7 @@ async def get_comment(
     service: Annotated[CommentService, Depends(ServiceFactory.comment_service_factory)],
     comment_id: UUID,
 ):
-    try:
-        comment = await service.get_comment(comment_id=comment_id)
-    except CommentNotFoundException:
-        raise CommentNotFoundHTTPException
+    comment = await service.get_comment(comment_id=comment_id)
     return {"status": "ok", "data": comment}
 
 
@@ -68,10 +59,7 @@ async def add_comment(
     user_id: UserIDDep,
     comment_data: CommentAddRequestDTO,
 ):
-    try:
-        comment_id = await service.add_comment(user_id=user_id, comment_data=comment_data)
-    except ContentNotFoundException:
-        raise ContentNotFoundHTTPException
+    comment_id = await service.add_comment(user_id=user_id, comment_data=comment_data)
     return {"status": "ok", "data": {"id": comment_id}}
 
 
@@ -82,14 +70,11 @@ async def update_comment(
     comment_id: UUID,
     comment_data: CommentPutRequestDTO,
 ):
-    try:
-        await service.update_comment(
-            user_id=user_id,
-            comment_id=comment_id,
-            comment_data=comment_data,
-        )
-    except CommentNotFoundException:
-        raise CommentNotFoundHTTPException
+    await service.update_comment(
+        user_id=user_id,
+        comment_id=comment_id,
+        comment_data=comment_data,
+    )
     return {"status": "ok"}
 
 

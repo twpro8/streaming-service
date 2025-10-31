@@ -1,7 +1,7 @@
 import jwt
 
 from src.config import settings
-from src.exceptions import InvalidCredentialsException, SignatureExpiredException
+from src.exceptions import InvalidTokenException, SignatureExpiredException
 
 
 class AuthService:
@@ -12,7 +12,7 @@ class AuthService:
                 token, key=settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
             )
         except jwt.exceptions.DecodeError:
-            raise InvalidCredentialsException
+            raise InvalidTokenException
         except jwt.exceptions.ExpiredSignatureError:
             raise SignatureExpiredException
         return data

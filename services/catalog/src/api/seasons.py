@@ -3,14 +3,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Depends
 
-from src.exceptions import (
-    SeasonNotFoundException,
-    ShowNotFoundException,
-    ShowNotFoundHTTPException,
-    SeasonNotFoundHTTPException,
-    SeasonAlreadyExistsException,
-    SeasonAlreadyExistsHTTPException,
-)
 from src.factories.service import ServiceFactory
 from src.schemas.seasons import SeasonPatchRequestDTO, SeasonAddRequestDTO
 from src.services.seasons import SeasonService
@@ -39,10 +31,7 @@ async def get_season(
     service: Annotated[SeasonService, Depends(ServiceFactory.season_service_factory)],
     season_id: UUID,
 ):
-    try:
-        data = await service.get_season(season_id=season_id)
-    except SeasonNotFoundException:
-        raise SeasonNotFoundHTTPException
+    data = await service.get_season(season_id=season_id)
     return {"status": "ok", "data": data}
 
 
@@ -51,12 +40,7 @@ async def add_season(
     service: Annotated[SeasonService, Depends(ServiceFactory.season_service_factory)],
     season_data: SeasonAddRequestDTO,
 ):
-    try:
-        season_id = await service.add_season(season_data=season_data)
-    except ShowNotFoundException:
-        raise ShowNotFoundHTTPException
-    except SeasonAlreadyExistsException:
-        raise SeasonAlreadyExistsHTTPException
+    season_id = await service.add_season(season_data=season_data)
     return {"status": "ok", "data": {"id": season_id}}
 
 
@@ -66,12 +50,7 @@ async def update_season(
     season_id: UUID,
     season_data: SeasonPatchRequestDTO,
 ):
-    try:
-        await service.update_season(season_id=season_id, season_data=season_data)
-    except SeasonNotFoundException:
-        raise SeasonNotFoundHTTPException
-    except SeasonAlreadyExistsException:
-        raise SeasonAlreadyExistsHTTPException
+    await service.update_season(season_id=season_id, season_data=season_data)
     return {"status": "ok"}
 
 

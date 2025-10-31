@@ -8,10 +8,10 @@ from pydantic import BaseModel
 
 from src.enums import SortBy, SortOrder
 from src.exceptions import (
-    NoTokenHTTPException,
-    PermissionDeniedHTTPException,
-    UnknownSortFieldHTTPException,
-    UnknownSortOrderHTTPException,
+    NoAccessTokenException,
+    PermissionDeniedException,
+    UnknownSortFieldException,
+    UnknownSortOrderException,
 )
 from src.services.auth import AuthService
 
@@ -19,7 +19,7 @@ from src.services.auth import AuthService
 def get_token(request: Request) -> str:
     token = request.cookies.get("access_token", None)
     if not token:
-        raise NoTokenHTTPException
+        raise NoAccessTokenException
     return token
 
 
@@ -39,7 +39,7 @@ def get_admin(token: str = Depends(get_token)):
         is_admin = is_admin.lower() == "true"
 
     if not is_admin:
-        raise PermissionDeniedHTTPException
+        raise PermissionDeniedException
 
 
 AdminDep = Depends(get_admin)
@@ -126,11 +126,11 @@ class SortParams(BaseModel):
 
         field = parts[0].lower()
         if field not in SortBy.__members__:
-            raise UnknownSortFieldHTTPException(detail=f"Unknown sort field: {field}")
+            raise UnknownSortFieldException(detail=f"Unknown sort field: {field}")
 
         order = parts[1].lower() if len(parts) > 1 else "desc"
         if order not in SortOrder.__members__:
-            raise UnknownSortOrderHTTPException(detail=f"Unknown sort order: {order}")
+            raise UnknownSortOrderException(detail=f"Unknown sort order: {order}")
 
         return cls(field=SortBy(field), order=SortOrder(order))
 
@@ -149,12 +149,3 @@ class CommonContentParams(PaginationParams):
 
 
 ContentParamsDep = Annotated[CommonContentParams, Depends()]
-
-
-class EpisodesParams(PaginationParams):
-    show_id: Annotated[UUID | None, Query(None)]
-    season_id: Annotated[UUID | None, Query(None)]
-    episode_number: Annotated[int | None, Query(None, ge=1, le=9999)]
-
-
-EpisodesParamsDep = Annotated[EpisodesParams, Depends()]

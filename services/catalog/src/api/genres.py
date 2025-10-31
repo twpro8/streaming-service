@@ -3,12 +3,6 @@ from typing import Annotated
 from fastapi import APIRouter, Depends
 
 from src.api.dependencies import PaginationDep, AdminDep
-from src.exceptions import (
-    GenreNotFoundException,
-    GenreNotFoundHTTPException,
-    GenreAlreadyExistsException,
-    GenreAlreadyExistsHTTPException,
-)
 from src.factories.service import ServiceFactory
 from src.schemas.genres import GenreAddDTO
 from src.services.genres import GenreService
@@ -34,10 +28,7 @@ async def get_genre(
     service: Annotated[GenreService, Depends(ServiceFactory.genre_service_factory)],
     genre_id: int,
 ):
-    try:
-        genre = await service.get_genre(genre_id=genre_id)
-    except GenreNotFoundException:
-        raise GenreNotFoundHTTPException
+    genre = await service.get_genre(genre_id=genre_id)
     return {"status": "ok", "data": genre}
 
 
@@ -46,10 +37,7 @@ async def add_genre(
     service: Annotated[GenreService, Depends(ServiceFactory.genre_service_factory)],
     genre_data: GenreAddDTO,
 ):
-    try:
-        genre_id = await service.add_genre(genre_data=genre_data)
-    except GenreAlreadyExistsException:
-        raise GenreAlreadyExistsHTTPException
+    genre_id = await service.add_genre(genre_data=genre_data)
     return {"status": "ok", "data": {"id": genre_id}}
 
 

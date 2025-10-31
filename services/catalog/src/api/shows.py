@@ -3,22 +3,6 @@ from uuid import UUID
 
 from fastapi import APIRouter, Query, Depends
 
-from src.exceptions import (
-    ShowNotFoundException,
-    ShowNotFoundHTTPException,
-    CoverUrlAlreadyExistsException,
-    CoverUrlAlreadyExistsHTTPException,
-    GenreNotFoundException,
-    GenreNotFoundHTTPException,
-    ActorNotFoundException,
-    ActorNotFoundHTTPException,
-    DirectorNotFoundException,
-    DirectorNotFoundHTTPException,
-    CountryNotFoundException,
-    CountryNotFoundHTTPException,
-    ShowAlreadyExistsException,
-    ShowAlreadyExistsHTTPException,
-)
 from src.factories.service import ServiceFactory
 from src.schemas.shows import ShowAddRequestDTO, ShowPatchRequestDTO
 from src.services.shows import ShowService
@@ -55,10 +39,7 @@ async def get_show(
     service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
     show_id: UUID,
 ):
-    try:
-        show = await service.get_show(show_id=show_id)
-    except ShowNotFoundException:
-        raise ShowNotFoundHTTPException
+    show = await service.get_show(show_id=show_id)
     return {"status": "ok", "data": show}
 
 
@@ -67,20 +48,7 @@ async def add_show(
     service: Annotated[ShowService, Depends(ServiceFactory.show_service_factory)],
     show_data: ShowAddRequestDTO,
 ):
-    try:
-        show_id = await service.add_show(show_data=show_data)
-    except ShowAlreadyExistsException:
-        raise ShowAlreadyExistsHTTPException
-    except CoverUrlAlreadyExistsException:
-        raise CoverUrlAlreadyExistsHTTPException
-    except GenreNotFoundException:
-        raise GenreNotFoundHTTPException
-    except ActorNotFoundException:
-        raise ActorNotFoundHTTPException
-    except DirectorNotFoundException:
-        raise DirectorNotFoundHTTPException
-    except CountryNotFoundException:
-        raise CountryNotFoundHTTPException
+    show_id = await service.add_show(show_data=show_data)
     return {"status": "ok", "data": {"id": show_id}}
 
 
@@ -90,22 +58,7 @@ async def update_show(
     show_id: UUID,
     show_data: ShowPatchRequestDTO,
 ):
-    try:
-        await service.update_show(show_id=show_id, show_data=show_data)
-    except ShowNotFoundException:
-        raise ShowNotFoundHTTPException
-    except ShowAlreadyExistsException:
-        raise ShowAlreadyExistsHTTPException
-    except CoverUrlAlreadyExistsException:
-        raise CoverUrlAlreadyExistsHTTPException
-    except GenreNotFoundException:
-        raise GenreNotFoundHTTPException
-    except ActorNotFoundException:
-        raise ActorNotFoundHTTPException
-    except DirectorNotFoundException:
-        raise DirectorNotFoundHTTPException
-    except CountryNotFoundException:
-        raise CountryNotFoundHTTPException
+    await service.update_show(show_id=show_id, show_data=show_data)
     return {"status": "ok"}
 
 

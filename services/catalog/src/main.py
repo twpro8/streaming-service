@@ -12,6 +12,8 @@ from src.log_config import configure_logging
 from src import redis_manager
 from src.middleware import MetricsMiddleware
 from src.api import master_router
+from src.api.handlers import app_exception_handler
+from src.exceptions import MasterException
 
 
 # Configuring the logging level and format
@@ -29,6 +31,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan, title="Catalog Service")
 app.add_middleware(MetricsMiddleware)
 app.include_router(master_router)
+app.add_exception_handler(MasterException, app_exception_handler)
 
 
 if __name__ == "__main__":

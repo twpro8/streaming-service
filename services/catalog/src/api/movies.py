@@ -7,24 +7,6 @@ from src.factories.service import ServiceFactory
 from src.schemas.movies import MoviePatchRequestDTO, MovieAddRequestDTO
 from src.api.dependencies import AdminDep, ContentParamsDep, SortDep
 from src.services.movies import MovieService
-from src.exceptions import (
-    MovieNotFoundException,
-    MovieNotFoundHTTPException,
-    CoverUrlAlreadyExistsException,
-    VideoUrlAlreadyExistsException,
-    CoverUrlAlreadyExistsHTTPException,
-    VideoUrlAlreadyExistsHTTPException,
-    GenreNotFoundException,
-    GenreNotFoundHTTPException,
-    ActorNotFoundException,
-    ActorNotFoundHTTPException,
-    DirectorNotFoundException,
-    DirectorNotFoundHTTPException,
-    CountryNotFoundException,
-    CountryNotFoundHTTPException,
-    MovieAlreadyExistsException,
-    MovieAlreadyExistsHTTPException,
-)
 
 
 v1_router = APIRouter(prefix="/v1/movies", tags=["Movies"])
@@ -57,10 +39,7 @@ async def get_movie(
     service: Annotated[MovieService, Depends(ServiceFactory.movie_service_factory)],
     movie_id: UUID,
 ):
-    try:
-        movie = await service.get_movie(movie_id=movie_id)
-    except MovieNotFoundException:
-        raise MovieNotFoundHTTPException
+    movie = await service.get_movie(movie_id=movie_id)
     return {"status": "ok", "data": movie}
 
 
@@ -69,20 +48,7 @@ async def add_movie(
     service: Annotated[MovieService, Depends(ServiceFactory.movie_service_factory)],
     movie_data: MovieAddRequestDTO,
 ):
-    try:
-        movie_id = await service.add_movie(movie_data=movie_data)
-    except MovieAlreadyExistsException:
-        raise MovieAlreadyExistsHTTPException
-    except CoverUrlAlreadyExistsException:
-        raise CoverUrlAlreadyExistsHTTPException
-    except GenreNotFoundException:
-        raise GenreNotFoundHTTPException
-    except ActorNotFoundException:
-        raise ActorNotFoundHTTPException
-    except DirectorNotFoundException:
-        raise DirectorNotFoundHTTPException
-    except CountryNotFoundException:
-        raise CountryNotFoundHTTPException
+    movie_id = await service.add_movie(movie_data=movie_data)
     return {"status": "ok", "data": {"id": movie_id}}
 
 
@@ -92,24 +58,7 @@ async def update_movie(
     movie_id: UUID,
     movie_data: MoviePatchRequestDTO,
 ):
-    try:
-        await service.update_movie(movie_id=movie_id, movie_data=movie_data)
-    except MovieNotFoundException:
-        raise MovieNotFoundHTTPException
-    except MovieAlreadyExistsException:
-        raise MovieAlreadyExistsHTTPException
-    except CoverUrlAlreadyExistsException:
-        raise CoverUrlAlreadyExistsHTTPException
-    except VideoUrlAlreadyExistsException:
-        raise VideoUrlAlreadyExistsHTTPException
-    except GenreNotFoundException:
-        raise GenreNotFoundHTTPException
-    except ActorNotFoundException:
-        raise ActorNotFoundHTTPException
-    except DirectorNotFoundException:
-        raise DirectorNotFoundHTTPException
-    except CountryNotFoundException:
-        raise CountryNotFoundHTTPException
+    await service.update_movie(movie_id=movie_id, movie_data=movie_data)
     return {"status": "ok"}
 
 

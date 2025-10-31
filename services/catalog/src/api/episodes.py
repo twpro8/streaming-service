@@ -1,25 +1,12 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from src.factories.service import ServiceFactory
 from src.services.episodes import EpisodeService
-from src.api.dependencies import AdminDep, EpisodesParamsDep
+from src.api.dependencies import AdminDep, PaginationDep
 from src.schemas.episodes import EpisodePatchRequestDTO, EpisodeAddRequestDTO
-
-from src.exceptions import (
-    ShowNotFoundException,
-    SeasonNotFoundException,
-    EpisodeNotFoundException,
-    ShowNotFoundHTTPException,
-    SeasonNotFoundHTTPException,
-    EpisodeNotFoundHTTPException,
-    EpisodeAlreadyExistsHTTPException,
-    EpisodeAlreadyExistsException,
-    VideoUrlAlreadyExistsException,
-    VideoUrlAlreadyExistsHTTPException,
-)
 
 
 v1_router = APIRouter(prefix="/v1/episodes", tags=["Episodes"])
@@ -28,9 +15,18 @@ v1_router = APIRouter(prefix="/v1/episodes", tags=["Episodes"])
 @v1_router.get("", summary="Get episodes")
 async def get_episodes(
     service: Annotated[EpisodeService, Depends(ServiceFactory.episode_service_factory)],
-    episodes_params: EpisodesParamsDep,
+    pagination: PaginationDep,
+    show_id: Annotated[UUID | None, Query()] = None,
+    season_id: Annotated[UUID | None, Query()] = None,
+    episode_number: Annotated[int | None, Query(ge=1, le=9999)] = None,
 ):
-    episodes = await service.get_episodes(**episodes_params.model_dump())
+    episodes = await service.get_episodes(
+        show_id=show_id,
+        season_id=season_id,
+        episode_number=episode_number,
+        page=pagination.page,
+        per_page=pagination.per_page,
+    )
     return {"status": "ok", "data": episodes}
 
 
@@ -39,10 +35,7 @@ async def get_episode(
     service: Annotated[EpisodeService, Depends(ServiceFactory.episode_service_factory)],
     episode_id: UUID,
 ):
-    try:
-        episode = await service.get_episode(episode_id=episode_id)
-    except EpisodeNotFoundException:
-        raise EpisodeNotFoundHTTPException
+    episode = await service.get_episode(episode_id=episode_id)
     return {"status": "ok", "data": episode}
 
 
@@ -51,16 +44,7 @@ async def add_episode(
     service: Annotated[EpisodeService, Depends(ServiceFactory.episode_service_factory)],
     episode_data: EpisodeAddRequestDTO,
 ):
-    try:
-        episode_id = await service.add_episode(episode_data=episode_data)
-    except ShowNotFoundException:
-        raise ShowNotFoundHTTPException
-    except SeasonNotFoundException:
-        raise SeasonNotFoundHTTPException
-    except EpisodeAlreadyExistsException:
-        raise EpisodeAlreadyExistsHTTPException
-    except VideoUrlAlreadyExistsException:
-        raise VideoUrlAlreadyExistsHTTPException
+    episode_id = await service.add_episode(episode_data=episode_data)
     return {"status": "ok", "data": {"id": episode_id}}
 
 
@@ -70,14 +54,7 @@ async def update_episode(
     episode_id: UUID,
     episode_data: EpisodePatchRequestDTO,
 ):
-    try:
-        await service.update_episode(episode_id=episode_id, episode_data=episode_data)
-    except EpisodeNotFoundException:
-        raise EpisodeNotFoundHTTPException
-    except EpisodeAlreadyExistsException:
-        raise EpisodeAlreadyExistsHTTPException
-    except VideoUrlAlreadyExistsException:
-        raise VideoUrlAlreadyExistsHTTPException
+    await service.update_episode(episode_id=episode_id, episode_data=episode_data)
     return {"status": "ok"}
 
 
