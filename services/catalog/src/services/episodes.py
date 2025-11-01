@@ -14,7 +14,7 @@ from src.exceptions import (
     ShowNotFoundException,
     SeasonNotFoundException,
     EpisodeAlreadyExistsException,
-    ObjectNotFoundException,
+    NotFoundException,
     VideoUrlAlreadyExistsException,
 )
 
@@ -87,7 +87,7 @@ class EpisodeService(BaseService):
                 data=_episode_data,
                 exclude_unset=True,
             )
-        except ObjectNotFoundException:
+        except NotFoundException:
             raise EpisodeNotFoundException
         except (EpisodeAlreadyExistsException, VideoUrlAlreadyExistsException):
             raise

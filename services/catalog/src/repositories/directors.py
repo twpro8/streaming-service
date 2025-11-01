@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from src.exceptions import (
     DirectorAlreadyExistsException,
     DirectorNotFoundException,
-    ObjectNotFoundException,
+    NotFoundException,
 )
 from src.models import MovieDirectorORM, ShowDirectorORM
 from src.models.directors import DirectorORM
@@ -38,7 +38,7 @@ class DirectorRepository(BaseRepository):
     ) -> None:
         try:
             await self.update(id=director_id, data=data, exclude_unset=exclude_unset)
-        except ObjectNotFoundException as e:
+        except NotFoundException as e:
             raise DirectorNotFoundException from e
         except IntegrityError as e:
             raise DirectorAlreadyExistsException from e

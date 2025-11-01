@@ -3,7 +3,7 @@ from typing import List
 from pydantic import BaseModel
 
 from src.exceptions import (
-    ObjectNotFoundException,
+    NotFoundException,
     GenreNotFoundException,
     GenreAlreadyExistsException,
 )
@@ -19,7 +19,7 @@ class GenreService(BaseService):
     async def get_genre(self, genre_id: int) -> BaseModel:
         try:
             genre = await self.db.genres.get_one(id=genre_id)
-        except ObjectNotFoundException:
+        except NotFoundException:
             raise GenreNotFoundException
         return genre
 

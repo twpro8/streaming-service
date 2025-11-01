@@ -204,10 +204,3 @@ class UnknownSortFieldException(ValidationException):
 
 class UnknownSortOrderException(ValidationException):
     detail = "Unknown sort order. Use field:asc|desc"
-
-
-# -------- Other exceptions ------------
-
-
-class ObjectNotFoundException(MasterException):
-    detail = "Object not found"

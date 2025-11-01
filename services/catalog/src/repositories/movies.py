@@ -13,7 +13,7 @@ from src.exceptions import (
     CoverUrlAlreadyExistsException,
     VideoUrlAlreadyExistsException,
     MovieAlreadyExistsException,
-    ObjectNotFoundException,
+    NotFoundException,
     MovieNotFoundException,
 )
 from src.models import MovieORM, MovieGenreORM
@@ -129,7 +129,7 @@ class MovieRepository(BaseRepository):
     async def update_movie(self, data: BaseModel, exclude_unset: bool = False, **filter_by) -> None:
         try:
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
-        except ObjectNotFoundException as e:
+        except NotFoundException as e:
             raise MovieNotFoundException from e
         except IntegrityError as e:
             cause = getattr(e.orig, "__cause__", None)

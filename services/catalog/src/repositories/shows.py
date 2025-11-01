@@ -12,7 +12,7 @@ from sqlalchemy.orm import selectinload
 from src.exceptions import (
     CoverUrlAlreadyExistsException,
     ShowAlreadyExistsException,
-    ObjectNotFoundException,
+    NotFoundException,
     ShowNotFoundException,
 )
 from src.models import ShowORM, ShowGenreORM
@@ -133,7 +133,7 @@ class ShowRepository(BaseRepository):
     ) -> None:
         try:
             await self.update(data, exclude_unset=exclude_unset, **filter_by)
-        except ObjectNotFoundException as e:
+        except NotFoundException as e:
             raise ShowNotFoundException from e
         except IntegrityError as e:
             cause = getattr(e.orig, "__cause__", None)

@@ -5,7 +5,7 @@ from uuid_extensions import uuid7
 from src.exceptions import (
     ContentNotFoundException,
     CommentNotFoundException,
-    ObjectNotFoundException,
+    NotFoundException,
 )
 from src.schemas.comments import CommentAddRequestDTO, CommentAddDTO, CommentPutRequestDTO
 from src.enums import ContentType
@@ -68,7 +68,7 @@ class CommentService(BaseService):
     ):
         try:
             await self.db.comments.update(id=comment_id, user_id=user_id, data=comment_data)
-        except ObjectNotFoundException as e:
+        except NotFoundException as e:
             raise CommentNotFoundException from e
         await self.db.commit()
 

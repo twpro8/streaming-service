@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from src.exceptions import (
     ActorAlreadyExistsException,
     ActorNotFoundException,
-    ObjectNotFoundException,
+    NotFoundException,
 )
 from src.models.actors import ActorORM
 from src.models.associations import MovieActorORM, ShowActorORM
@@ -38,7 +38,7 @@ class ActorRepository(BaseRepository):
     ):
         try:
             await self.update(id=actor_id, data=actor_data, exclude_unset=exclude_unset)
-        except ObjectNotFoundException:
+        except NotFoundException:
             raise ActorNotFoundException
         except IntegrityError as e:
             raise ActorAlreadyExistsException from e

@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 
 from src.exceptions import (
     SeasonAlreadyExistsException,
-    ObjectNotFoundException,
+    NotFoundException,
     SeasonNotFoundException,
 )
 from src.models import SeasonORM
@@ -38,7 +38,7 @@ class SeasonRepository(BaseRepository):
     async def update_season(self, season_id: UUID, data: BaseModel, exclude_unset: bool = False):
         try:
             data = await self.update(id=season_id, data=data, exclude_unset=exclude_unset)
-        except ObjectNotFoundException as e:
+        except NotFoundException as e:
             raise SeasonNotFoundException from e
         except IntegrityError as e:
             cause = getattr(e.orig, "__cause__", None)
