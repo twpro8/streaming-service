@@ -9,12 +9,12 @@ from fastapi import Depends, Request, Query, Cookie, Body
 from src.config import settings
 from src.exceptions import (
     JWTProviderException,
-    InvalidRefreshTokenHTTPException,
-    NoRefreshTokenHTTPException,
-    NoAccessTokenHTTPException,
-    InvalidAccessTokenHTTPException,
-    UserAlreadyAuthorizedHTTPException,
-    TooManyRequestsHTTPException,
+    InvalidRefreshTokenException,
+    NoRefreshTokenException,
+    NoAccessTokenException,
+    InvalidTokenException,
+    AlreadyAuthorizedException,
+    TooManyRequestsException,
 )
 from src.factories.db_manager import DBManagerFactory
 from src.adapters.aiohttp_client import AiohttpClient
@@ -34,7 +34,7 @@ async def get_db():
 
 def get_access_token(access_token: Annotated[str | None, Cookie()] = None) -> str:
     if not access_token:
-        raise NoAccessTokenHTTPException
+        raise NoAccessTokenException
 
     return access_token
 
@@ -93,7 +93,7 @@ def get_current_user_id(
     try:
         data = jwt.decode_token(token)
     except JWTProviderException:
-        raise InvalidAccessTokenHTTPException
+        raise InvalidTokenException
 
     return data.get("id")
 
@@ -109,7 +109,7 @@ def get_refresh_token(
     refresh_token: Annotated[str | None, Cookie()] = None,
 ) -> str:
     if not refresh_token:
-        raise NoRefreshTokenHTTPException
+        raise NoRefreshTokenException
 
     return refresh_token
 
@@ -121,7 +121,7 @@ def get_refresh_token_data(
     try:
         payload = jwt.decode_token(refresh_token)
     except JWTProviderException:
-        raise InvalidRefreshTokenHTTPException
+        raise InvalidRefreshTokenException
 
     return payload
 
@@ -140,7 +140,7 @@ def prevent_duplicate_login(
         return None
 
     # token is valid, user is already authorized
-    raise UserAlreadyAuthorizedHTTPException
+    raise AlreadyAuthorizedException
 
 
 async def get_email_rate_limiter(
@@ -150,7 +150,7 @@ async def get_email_rate_limiter(
     # checking rate limit
     rate_limit_key = f"rate-limit:{email}"
     if await redis.get(rate_limit_key):
-        raise TooManyRequestsHTTPException
+        raise TooManyRequestsException
 
     # setting rate limit
     await redis.set(rate_limit_key, "1", expire=settings.USER_VERIFY_RATE_LIMIT)

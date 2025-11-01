@@ -11,6 +11,8 @@ from fastapi import FastAPI
 from src.api import master_router
 from src.log_config import configure_logging
 from src.api.dependencies import get_redis_manager, get_async_http_client
+from src.exceptions import MasterException
+from src.api.handler import app_exception_handler
 
 
 # Configuring the logging level and format
@@ -32,6 +34,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan, title="Auth Service")
 app.include_router(master_router)
+app.add_exception_handler(MasterException, app_exception_handler)
 
 
 if __name__ == "__main__":

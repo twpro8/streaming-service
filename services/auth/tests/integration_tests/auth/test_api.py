@@ -254,7 +254,7 @@ async def test_login_user_already_authorized(authed_ac):
     assert res.status_code == 409
 
 
-async def test_refresh_tokens(authed_ac, jwt_provider):
+async def test_refresh_token(authed_ac, jwt_provider):
     old_access, old_refresh = _assert_tokens_present(authed_ac)
 
     await asyncio.sleep(1)  # wait so that exp changes
@@ -262,13 +262,13 @@ async def test_refresh_tokens(authed_ac, jwt_provider):
     res = await authed_ac.post("/v1/auth/refresh")
     assert res.status_code == 200
 
-    new_access, new_refresh = _assert_tokens_present(authed_ac)
+    new_access, same_refresh = _assert_tokens_present(authed_ac)
 
     assert old_access != new_access
-    assert old_refresh != new_refresh
+    assert old_refresh == same_refresh
 
     access_payload, refresh_payload = _decode_tokens_and_basic_asserts(
-        jwt_provider, new_access, new_refresh
+        jwt_provider, new_access, same_refresh
     )
     _assert_token_ttls(access_payload, refresh_payload)
 
@@ -302,7 +302,7 @@ async def test_refresh_tokens_client_mismatch(ac, get_active_users):
     ac.headers["user-agent"] = "Unknown User Agent v1/0"
 
     res = await ac.post("/v1/auth/refresh")
-    assert res.status_code == 403
+    assert res.status_code == 401
 
 
 async def test_logout(ac, get_active_users):

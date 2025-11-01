@@ -15,7 +15,7 @@ from src.managers.redis import RedisManager
 from src.exceptions import (
     NoIDTokenException,
     InvalidStateException,
-    ObjectNotFoundException,
+    NotFoundException,
     UserNotFoundException,
     IncorrectPasswordException,
     UserAlreadyExistsException,
@@ -152,7 +152,7 @@ class AuthService(BaseService):
                 email=form_data.email,
                 exclude_unset=True,
             )
-        except ObjectNotFoundException:
+        except NotFoundException:
             raise UserNotFoundException
 
         await self.redis.delete(verification_key)
@@ -205,7 +205,7 @@ class AuthService(BaseService):
                 email=form_data.email,
                 exclude_unset=True,
             )
-        except ObjectNotFoundException:
+        except NotFoundException:
             raise UserNotFoundException
 
         await self.redis.delete(verification_key)
@@ -257,13 +257,13 @@ class AuthService(BaseService):
         self,
         refresh_token_data: dict,
         info: ClientInfo,
-    ) -> tuple[str, str]:
-        old_token_id = refresh_token_data["jti"]
+    ) -> str:
+        refresh_token_id = refresh_token_data["jti"]
         user_id = refresh_token_data["sub"]
 
-        db_token = await self.db.refresh_tokens.get_one_or_none(id=old_token_id)
+        db_token = await self.db.refresh_tokens.get_one_or_none(id=refresh_token_id)
         if not db_token:
-            log.exception(f"Auth Service: Refresh token {old_token_id} not found")
+            log.exception(f"Auth Service: Refresh token {refresh_token_id} not found")
             raise TokenRevokedException
 
         user = await self.db.users.get_one_or_none(id=user_id)
@@ -273,7 +273,7 @@ class AuthService(BaseService):
         if db_token.ip != info.ip or db_token.user_agent != info.user_agent:
             log.warning(
                 "Client mismatch for token %s: expected %s/%s, got %s/%s",
-                old_token_id,
+                refresh_token_id,
                 db_token.ip,
                 db_token.user_agent,
                 info.ip,
@@ -281,14 +281,17 @@ class AuthService(BaseService):
             )
             raise ClientMismatchException  # I recommend using fingerprint here instead
 
-        # Token rotation: delete old and insert new
-        await self.db.refresh_tokens.delete(id=old_token_id)
-        new_access, new_refresh = await self._issue_tokens(user, info)
+        # issue new access token
+        _user_data = user.model_dump(
+            mode="json",
+            include={"id", "name", "email", "picture", "is_admin"},
+        )
+        new_access = self.jwt.create_access_token(_user_data)
 
         await self.db.commit()
 
-        log.debug(f"Auth Service: Refreshed tokens for user {user.email}")
-        return new_access, new_refresh
+        log.debug(f"Auth Service: Refreshed access token for user {user.email}")
+        return new_access
 
     async def delete_refresh_token(self, token_data: dict) -> None:
         await self.db.refresh_tokens.delete(id=token_data["jti"])

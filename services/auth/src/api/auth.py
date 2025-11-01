@@ -11,30 +11,7 @@ from src.api.dependencies import (
     UserIDDep,
     get_email_rate_limiter,
 )
-from src.exceptions import (
-    UserNotFoundException,
-    UserNotFoundHTTPException,
-    InvalidRefreshTokenException,
-    InvalidRefreshTokenHTTPException,
-    RefreshTokenNotFoundException,
-    NoRefreshTokenHTTPException,
-    IncorrectPasswordException,
-    IncorrectPasswordHTTPException,
-    UserAlreadyExistsException,
-    UserAlreadyExistsHTTPException,
-    TokenRevokedException,
-    TokenRevokedHTTPException,
-    ClientMismatchException,
-    ClientMismatchHTTPException,
-    InvalidVerificationCodeException,
-    InvalidVerificationCodeHTTPException,
-    UserAlreadyVerifiedException,
-    UserAlreadyVerifiedHTTPException,
-    SamePasswordException,
-    SamePasswordHTTPException,
-    UserUnverifiedException,
-    UserUnverifiedHTTPException,
-)
+from src.exceptions import IncorrectPasswordException
 from src.factories.service import ServiceFactory
 from src.schemas.auth import (
     EmailVerifyRequestDTO,
@@ -56,14 +33,7 @@ async def login(
     client_info: ClientInfoDep,
     response: Response,
 ):
-    try:
-        access, refresh = await service.login(user_data, client_info)
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
-    except IncorrectPasswordException:
-        raise IncorrectPasswordHTTPException
-    except UserUnverifiedException:
-        raise UserUnverifiedHTTPException
+    access, refresh = await service.login(user_data, client_info)
     response.set_cookie("access_token", access, httponly=True)
     response.set_cookie("refresh_token", refresh, httponly=True)
     return {"status": "ok"}
@@ -74,10 +44,7 @@ async def signup(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     user_data: UserAddRequestDTO,
 ):
-    try:
-        await service.register(user_data)
-    except UserAlreadyExistsException:
-        raise UserAlreadyExistsHTTPException
+    await service.register(user_data)
     return {"status": "ok"}
 
 
@@ -88,16 +55,8 @@ async def refresh_token(
     client_info: ClientInfoDep,
     refresh_token_data: RefreshTokenDep,
 ):
-    try:
-        access, refresh = await service.refresh_token(refresh_token_data, client_info)
-    except TokenRevokedException:
-        raise TokenRevokedHTTPException
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
-    except ClientMismatchException:
-        raise ClientMismatchHTTPException
+    access = await service.refresh_token(refresh_token_data, client_info)
     response.set_cookie("access_token", access, httponly=True)
-    response.set_cookie("refresh_token", refresh, httponly=True)  # Add path here
     return {"status": "ok"}
 
 
@@ -106,12 +65,7 @@ async def verify_email(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     form_data: EmailVerifyRequestDTO,
 ):
-    try:
-        await service.verify_email(form_data)
-    except InvalidVerificationCodeException:
-        raise InvalidVerificationCodeHTTPException
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
+    await service.verify_email(form_data)
     return {"status": "verified"}
 
 
@@ -120,12 +74,7 @@ async def resend_verification_code(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     email: EmailStr = Body(embed=True),
 ):
-    try:
-        await service.resend_verification_code(email)
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
-    except UserAlreadyVerifiedException:
-        raise UserAlreadyVerifiedHTTPException
+    await service.resend_verification_code(email)
     return {"status": "ok"}
 
 
@@ -134,10 +83,7 @@ async def forgot_password(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     email: EmailStr = Body(embed=True),
 ):
-    try:
-        await service.forgot_password(email)
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
+    await service.forgot_password(email)
     return {"status": "ok"}
 
 
@@ -146,12 +92,7 @@ async def reset_password_confirmation(
     service: Annotated[AuthService, Depends(ServiceFactory.auth_service_factory)],
     form_data: PasswordResetRequestDTO,
 ):
-    try:
-        await service.reset_password(form_data)
-    except InvalidVerificationCodeException:
-        raise InvalidVerificationCodeHTTPException
-    except UserNotFoundException:
-        raise UserNotFoundHTTPException
+    await service.reset_password(form_data)
     return {"status": "ok"}
 
 
@@ -164,9 +105,7 @@ async def change_password(
     try:
         await service.change_password(user_id, form_data)
     except IncorrectPasswordException:
-        raise IncorrectPasswordHTTPException(status_code=400)
-    except SamePasswordException:
-        raise SamePasswordHTTPException
+        raise IncorrectPasswordException(status_code=400)
     return {"status": "ok"}
 
 
@@ -176,12 +115,7 @@ async def logout(
     refresh_token_data: RefreshTokenDep,
     response: Response,
 ):
-    try:
-        await service.delete_refresh_token(refresh_token_data)
-    except InvalidRefreshTokenException:
-        raise InvalidRefreshTokenHTTPException
-    except RefreshTokenNotFoundException:
-        raise NoRefreshTokenHTTPException
+    await service.delete_refresh_token(refresh_token_data)
     response.delete_cookie("access_token")
     response.delete_cookie("refresh_token")  # Add path here
     return {"status": "ok"}

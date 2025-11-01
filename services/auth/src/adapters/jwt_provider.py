@@ -5,7 +5,7 @@ import jwt
 from jwt.exceptions import InvalidTokenError, ExpiredSignatureError
 
 from src.exceptions import (
-    InvalidCredentialsException,
+    InvalidTokenException,
     SignatureExpiredException,
     JWTProviderException,
 )
@@ -62,7 +62,7 @@ class JwtProvider:
             raise SignatureExpiredException from e
         except InvalidTokenError as e:
             log.warning("JWT: Invalid token provided.")
-            raise InvalidCredentialsException from e
+            raise InvalidTokenException from e
         except Exception as e:
             log.exception("JWT: Unexpected error during token decoding.")
             raise JWTProviderException("Unexpected error while decoding token.") from e

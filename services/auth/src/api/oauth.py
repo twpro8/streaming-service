@@ -10,7 +10,6 @@ from src.api.dependencies import (
     ClientInfoDep,
     PreventDuplicateLoginDep,
 )
-from src.exceptions import InvalidStateException, InvalidStateHTTPException
 from src.factories.service import ServiceFactory
 from src.services.auth import AuthService
 
@@ -38,14 +37,11 @@ async def google_callback(
     state: str = Query(),
     code: str = Query(),
 ):
-    try:
-        access, refresh = await service.handle_google_callback(
-            state=state,
-            code=code,
-            info=client_info,
-        )
-    except InvalidStateException:
-        raise InvalidStateHTTPException
+    access, refresh = await service.handle_google_callback(
+        state=state,
+        code=code,
+        info=client_info,
+    )
     response.set_cookie("access_token", access, httponly=True)
     response.set_cookie("refresh_token", refresh, httponly=True)  # Add path here
     return {"status": "ok"}
