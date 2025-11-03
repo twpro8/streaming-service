@@ -7,7 +7,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import uvicorn
 from fastapi import FastAPI
+from starlette.middleware.sessions import SessionMiddleware
 
+from src.config import settings
 from src.api import master_router
 from src.log_config import configure_logging
 from src.api.dependencies import get_redis_manager, get_async_http_client
@@ -33,6 +35,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan, title="Auth Service")
+# Session cookie: in prod set same_site="lax" or "strict", secure=True
+app.add_middleware(SessionMiddleware, secret_key=settings.SESSION_SECRET_KEY)
 app.include_router(master_router)
 app.add_exception_handler(MasterException, app_exception_handler)
 

@@ -5,7 +5,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     MODE: Literal["TEST", "LOCAL", "DEV", "PROD"]
+
     LOG_LEVEL: Literal["DEBUG", "INFO", "WARN", "ERROR"]
+
+    SESSION_SECRET_KEY: str
 
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str

@@ -13,8 +13,6 @@ from src.api.dependencies import ClientInfo
 from src.managers.db import DBManager
 from src.managers.redis import RedisManager
 from src.exceptions import (
-    NoIDTokenException,
-    InvalidStateException,
     NotFoundException,
     UserNotFoundException,
     IncorrectPasswordException,
@@ -232,23 +230,16 @@ class AuthService(BaseService):
 
         log.debug(f"Auth Service: Password changed. User email: {user.email}")
 
-    async def get_google_redirect_uri(self) -> str:
-        return await self.google.get_redirect_uri()
+    async def get_google_redirect_uri(self, state: str, code_challenge: str) -> str:
+        return await self.google.create_redirect_uri(state, code_challenge)
 
     async def handle_google_callback(
         self,
-        state: str,
         code: str,
+        code_verifier: str,
         info: ClientInfo,
     ) -> tuple[str, str]:
-        try:
-            user_data = await self.google.exchange_code(code, state)
-        except InvalidStateException:
-            log.exception("Auth Service: State is invalid or expired")
-            raise
-        except NoIDTokenException:
-            log.exception("Auth Service: No ID token received from Google")
-            raise
+        user_data = await self.google.exchange_code(code, code_verifier)
 
         log.debug(f"Auth Service: Successfully got user data from Google: {user_data}")
         return await self._login_or_register_google_user(user_data, info)

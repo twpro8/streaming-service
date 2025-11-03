@@ -1,6 +1,5 @@
 import json
 import logging
-from secrets import token_urlsafe
 from urllib.parse import urlencode
 
 import jwt
@@ -11,7 +10,6 @@ from src.managers.redis import RedisManager
 from src.exceptions import (
     GoogleOAuthClientException,
     NoIDTokenException,
-    InvalidStateException,
     TokenVerificationException,
     JWKSFetchException,
 )
@@ -41,29 +39,33 @@ class GoogleOAuthClient:
         self.jwks_url = jwks_url
         self.base_url = base_url
 
-    async def get_redirect_uri(self) -> str:
-        """Generate the Google OAuth redirect URL and store a temporary state in Redis."""
-        try:
-            state = token_urlsafe(16)
-            await self.redis.set(state, "1", expire=120)
-            log.debug(f"Google OAuth: state {state} stored in Redis.")
-            return self._generate_google_oauth_redirect_uri(state)
-        except Exception as e:
-            log.exception("Google OAuth: Failed to generate redirect URI.")
-            raise GoogleOAuthClientException("Failed to generate redirect URI.") from e
+    async def create_redirect_uri(self, state: str, code_challenge: str) -> str:
+        """Generate the OAuth2 authorization URL for Google sign-in."""
+        params = {
+            "client_id": self.client_id,
+            "redirect_uri": self.redirect_uri,
+            "response_type": "code",
+            "scope": "openid email profile",
+            "state": state,
+            "code_challenge": code_challenge,
+            "code_challenge_method": "S256",
+        }
+        redirect_uri = f"{self.base_url}?{urlencode(params)}"
+        log.debug(f"Google OAuth: Generated redirect URI {redirect_uri}")
+        return redirect_uri
 
-    async def exchange_code(self, code: str, state: str) -> dict:
+    async def exchange_code(self, code: str, code_verifier: str) -> dict:
         """Exchange an authorization code for an ID token and verify it."""
-        await self._validate_state(state)
         try:
             response = await self.ac.post(
                 url=self.token_url,
                 data={
+                    "code": code,
                     "client_id": self.client_id,
                     "client_secret": self.client_secret,
-                    "code": code,
-                    "grant_type": "authorization_code",
                     "redirect_uri": self.redirect_uri,
+                    "grant_type": "authorization_code",
+                    "code_verifier": code_verifier,
                 },
             )
             id_token = response.get("id_token")
@@ -77,21 +79,10 @@ class GoogleOAuthClient:
             log.exception("Google OAuth: Failed to exchange code for token.")
             raise GoogleOAuthClientException("Failed to exchange code for token.") from e
 
-    async def _validate_state(self, state: str) -> bool:
-        """Validate the stored OAuth state token."""
-        try:
-            valid = await self.redis.getdel(state) is not None
-            if not valid:
-                log.warning(f"Google OAuth: Invalid or expired state '{state}'.")
-            return valid
-        except Exception as e:
-            log.exception("Google OAuth: Failed to validate state.")
-            raise InvalidStateException("Failed to validate state.") from e
-
     async def _verify_token(self, id_token: str) -> dict:
         """Verify the Google ID token using cached or fetched JWKS."""
         try:
-            jwks = await self._get_cached_jwks()
+            jwks = await self._get_jwks()
             public_key = self._get_jwk_public_key(id_token, jwks)
 
             payload = jwt.decode(
@@ -110,7 +101,7 @@ class GoogleOAuthClient:
             log.exception("Google OAuth: Failed to verify ID token.")
             raise TokenVerificationException("Failed to verify Google ID token.") from e
 
-    async def _get_cached_jwks(self) -> dict:
+    async def _get_jwks(self) -> dict:
         """Get JWKS from Redis cache or fetch from Google if not cached."""
         try:
             jwks_raw = await self.redis.get("google_jwks")
@@ -138,19 +129,6 @@ class GoogleOAuthClient:
         except Exception as e:
             log.exception("Google OAuth: Failed to fetch JWKS from Google.")
             raise JWKSFetchException("Failed to fetch JWKS from Google.") from e
-
-    def _generate_google_oauth_redirect_uri(self, state: str) -> str:
-        """Generate the OAuth2 authorization URL for Google sign-in."""
-        params = {
-            "client_id": self.client_id,
-            "redirect_uri": self.redirect_uri,
-            "response_type": "code",
-            "scope": "openid email profile",
-            "state": state,
-        }
-        redirect_uri = f"{self.base_url}?{urlencode(params)}"
-        log.debug(f"Google OAuth: Generated redirect URI {redirect_uri}")
-        return redirect_uri
 
     @staticmethod
     def _get_jwk_public_key(id_token: str, jwks: dict):

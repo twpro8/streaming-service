@@ -11,11 +11,11 @@ class MasterException(Exception):
     status_code: int = 500
     detail: str = "Unexpected error"
 
-    def __init__(self, status_code: int = None, detail: str = None, *args):
-        if status_code:
-            self.status_code = status_code
+    def __init__(self, detail: str = None, status_code: int = None, *args):
         if detail:
             self.detail = detail
+        if status_code:
+            self.status_code = status_code
         super().__init__(self.detail, *args)
 
 
@@ -204,8 +204,16 @@ class NoIDTokenException(GoogleOAuthClientException):
     detail = "No ID token found in the response"
 
 
-class InvalidStateException(ValidationException):
+class InvalidStateException(BadRequest):
     detail = "State is invalid or expired"
+
+
+class NoStateException(BadRequest):
+    detail = "No state found in session"
+
+
+class NoCodeVerifierException(BadRequest):
+    detail = "No code verifier found in session"
 
 
 class JWKSFetchException(GoogleOAuthClientException):

@@ -1,3 +1,7 @@
+import base64
+import hashlib
+import logging
+import secrets
 from uuid import UUID
 from functools import lru_cache
 
@@ -15,6 +19,9 @@ from src.exceptions import (
     InvalidTokenException,
     AlreadyAuthorizedException,
     TooManyRequestsException,
+    InvalidStateException,
+    NoCodeVerifierException,
+    NoStateException,
 )
 from src.factories.db_manager import DBManagerFactory
 from src.adapters.aiohttp_client import AiohttpClient
@@ -25,6 +32,9 @@ from src.managers.db import DBManager
 from src.managers.redis import RedisManager
 from src.schemas.auth import ClientInfo
 from src.schemas.pydatic_types import EmailStr
+
+
+log = logging.getLogger(__name__)
 
 
 async def get_db():
@@ -154,6 +164,52 @@ async def get_email_rate_limiter(
 
     # setting rate limit
     await redis.set(rate_limit_key, "1", expire=settings.USER_VERIFY_RATE_LIMIT)
+
+
+def get_expected_oauth_state(request: Request) -> str:
+    expected_state: str | None = request.session.pop("oauth_state", None)
+    if expected_state is None:
+        log.exception("No state found in session")
+        raise NoStateException
+
+    return expected_state
+
+
+def verify_oauth_state(
+    expected_state: Annotated[str, Depends(get_expected_oauth_state)],
+    state: Annotated[str, Query()],
+):
+    # Validate state against server-side stored value (session)
+    if expected_state is None or not secrets.compare_digest(expected_state, state):
+        log.exception("State is invalid or expired")
+        raise InvalidStateException
+
+
+def get_oauth_code_verifier(request: Request) -> str:
+    # Retrieve and remove code_verifier from session
+    code_verifier: str | None = request.session.pop("oauth_code_verifier", None)
+    if not code_verifier:
+        log.exception("No code verifier found in session")
+        raise NoCodeVerifierException
+
+    return code_verifier
+
+
+def create_pkce_pair():
+    """Generate (code_verifier, code_challenge) PKCE pair."""
+    # generate code_verifier (high-entropy random), and its S256 challenge
+    code_verifier = base64.urlsafe_b64encode(secrets.token_bytes(32)).rstrip(b"=").decode("ascii")
+    # S256
+    digest = hashlib.sha256(code_verifier.encode("ascii")).digest()
+    code_challenge = base64.urlsafe_b64encode(digest).rstrip(b"=").decode("ascii")
+
+    return code_verifier, code_challenge
+
+
+def create_oauth_state():
+    """Generate a secure random state for OAuth2."""
+
+    return secrets.token_urlsafe(32)
 
 
 DBDep = Annotated[DBManager, Depends(get_db)]
