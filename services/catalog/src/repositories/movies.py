@@ -5,7 +5,7 @@ from uuid import UUID
 
 from asyncpg import UniqueViolationError
 from pydantic import BaseModel
-from sqlalchemy import select, func, exists
+from sqlalchemy import select, func, exists, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import selectinload
 
@@ -144,3 +144,7 @@ class MovieRepository(BaseRepository):
                         raise VideoUrlAlreadyExistsException from e
             log.exception("Unknown error: failed to update data in database, input data: %s", data)
             raise
+
+    async def update_rating(self, value, **filter_by):
+        stmt = update(self.model).filter_by(**filter_by).values(rating=value)
+        await self.session.execute(stmt)

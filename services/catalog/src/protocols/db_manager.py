@@ -24,7 +24,7 @@ from src.repositories.genres import (
     MovieGenreRepository,
     ShowGenreRepository,
 )
-from src.repositories.rating import RatingRepository
+from src.repositories.rating import RatingRepository, RatingAggregateRepository
 from src.repositories.seasons import SeasonRepository
 from src.repositories.shows import ShowRepository
 
@@ -36,6 +36,7 @@ class DBManagerProtocol(Protocol):
     episodes: EpisodeRepository
     comments: CommentRepository
     rating: RatingRepository
+    rating_aggregates: RatingAggregateRepository
     genres: GenreRepository
     movies_genres: MovieGenreRepository
     shows_genres: ShowGenreRepository

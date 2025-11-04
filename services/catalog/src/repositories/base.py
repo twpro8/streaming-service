@@ -34,8 +34,10 @@ class BaseRepository:
         query = select(self.model).filter_by(**filter_by)
         return await self._execute_and_map_one(query)
 
-    async def get_one_or_none(self, **filter_by) -> BaseModel | None:
+    async def get_one_or_none(self, for_update: bool = False, **filter_by) -> BaseModel | None:
         query = select(self.model).filter_by(**filter_by)
+        if for_update:
+            query = query.with_for_update()
         return await self._execute_and_map_one_or_none(query)
 
     async def add(self, data: BaseModel) -> None:

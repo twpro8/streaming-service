@@ -20,6 +20,11 @@ class MasterException(Exception):
 # ---------- Base exceptions ----------
 
 
+class BadRequestException(MasterException):
+    status_code = 400
+    detail = "Bad Request"
+
+
 class UnauthorizedException(MasterException):
     status_code = 401
     detail = "Unauthorized"
@@ -204,3 +209,7 @@ class UnknownSortFieldException(ValidationException):
 
 class UnknownSortOrderException(ValidationException):
     detail = "Unknown sort order. Use field:asc|desc"
+
+
+class SameRatingValueException(BadRequestException):
+    detail = "Rating value must be different"

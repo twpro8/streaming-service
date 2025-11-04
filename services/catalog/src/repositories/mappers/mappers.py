@@ -2,7 +2,7 @@ from src.models.languages import LanguageORM
 from src.models.countries import CountryORM
 from src.models.actors import ActorORM
 from src.models.genres import GenreORM
-from src.models.rating import RatingORM
+from src.models.rating import RatingORM, RatingAggregateORM
 from src.models.comments import CommentORM
 from src.models.episodes import EpisodeORM
 from src.models.seasons import SeasonORM
@@ -25,7 +25,7 @@ from src.schemas.directors import DirectorDTO, MovieDirectorDTO, ShowDirectorDTO
 from src.schemas.languages import LanguageDTO
 from src.schemas.movies import MovieDTO, MovieWithRelsDTO
 from src.schemas.genres import GenreDTO, MovieGenreDTO, ShowGenreDTO
-from src.schemas.rating import RatingDTO
+from src.schemas.rating import RatingDTO, RatingAggregateDTO
 from src.schemas.seasons import SeasonDTO
 from src.schemas.shows import ShowDTO, ShowWithRelsDTO
 from src.schemas.episodes import EpisodeDTO
@@ -59,6 +59,11 @@ class CommentDataMapper(DataMapper):
 class RatingDataMapper(DataMapper):
     db_model = RatingORM
     schema = RatingDTO
+
+
+class RatingAggregateDataMapper(DataMapper):
+    db_model = RatingAggregateORM
+    schema = RatingAggregateDTO
 
 
 class GenreDataMapper(DataMapper):

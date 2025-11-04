@@ -22,7 +22,7 @@ from src.repositories.genres import (
     MovieGenreRepository,
     ShowGenreRepository,
 )
-from src.repositories.rating import RatingRepository
+from src.repositories.rating import RatingRepository, RatingAggregateRepository
 from src.repositories.seasons import SeasonRepository
 from src.repositories.shows import ShowRepository
 
@@ -67,6 +67,12 @@ class RepositoryFactory:
         if "rating" not in self._repos:
             self._repos["rating"] = RatingRepository(self.session)
         return self._repos["rating"]
+
+    @property
+    def rating_aggregates(self):
+        if "rating_aggregates" not in self._repos:
+            self._repos["rating_aggregates"] = RatingAggregateRepository(self.session)
+        return self._repos["rating_aggregates"]
 
     @property
     def genres(self):
