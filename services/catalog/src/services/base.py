@@ -22,14 +22,6 @@ class BaseService:
         season = await self.db.seasons.get_one_or_none(**filter_by)
         return season is not None
 
-    async def check_episode_exists(self, **filter_by) -> bool:
-        episode = await self.db.episodes.get_one_or_none(**filter_by)
-        return episode is not None
-
-    async def check_comment_exists(self, **filter_by) -> bool:
-        comment = await self.db.comments.get_one_or_none(**filter_by)
-        return comment is not None
-
     async def check_genre_exists(self, **filter_by) -> bool:
         genre = await self.db.genres.get_one_or_none(**filter_by)
         return genre is not None
@@ -44,14 +36,10 @@ class BaseService:
 
         return exists
 
-    async def check_director_exists(self, **filter_by) -> bool:
-        director = await self.db.directors.get_one_or_none(**filter_by)
-        return director is not None
+    async def get_content_or_none(self, content_id: UUID, content_type: ContentType):
+        if content_type == ContentType.movie:
+            content = await self.db.movies.get_one_or_none(id=content_id)
+        else:
+            content = await self.db.shows.get_one_or_none(id=content_id)
 
-    async def check_country_exists(self, **filter_by) -> bool:
-        country = await self.db.countries.get_one_or_none(**filter_by)
-        return country is not None
-
-    async def check_language_exists(self, **filter_by) -> bool:
-        lang = await self.db.languages.get_one_or_none(**filter_by)
-        return lang is not None
+        return content

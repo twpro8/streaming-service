@@ -25,11 +25,14 @@ class RatingDTO(RatingAddDTO):
     id: UUID
 
 
-class RatingAggregateUpdateDTO(BaseSchema):
+class RatingAggregateDTO(BaseSchema):
+    content_id: UUID
     rating_sum: condecimal(max_digits=10, decimal_places=1)
     rating_count: int
     rating_avg: condecimal(max_digits=3, decimal_places=1, ge=1, le=10)
 
 
-class RatingAggregateDTO(RatingAggregateUpdateDTO):
+class RatingAggregateAddUpdateDTO(BaseSchema):
     content_id: UUID
+    delta_sum: condecimal(max_digits=10, decimal_places=1)
+    delta_count: int
